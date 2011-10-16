@@ -1,142 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4.QtCore import SIGNAL
-from PyQt4.QtGui import QComboBox,QSpinBox,QDialog,QVBoxLayout,QTabWidget,QDialogButtonBox,QApplication
+from PyQt4.QtGui import QDialog,QVBoxLayout,QTabWidget,QDialogButtonBox,QApplication,QLineEdit
 from widgety.infotab import InfoTab
-from widgety.tabelatab import TabelaTab
+from widgety.tabelatab import MaterialyTab
 import uzytki
-
-class MaterialyTab(TabelaTab):
-    def __init__(self,stan,dane): # epoki_dict - slownik epok, kultury_dict - slownik kultur, fazy_dict - slownik funkcji
-        TabelaTab.__init__(self)
-        self.set_slowniki(dane.epoki(),dane.kultury(),dane.funkcje())
-        self.fakty = dane.fakty(stan)
-        self.dane = dane
-        self.stan = stan
-        for fakt in self.fakty:
-            self.wstaw_fakt(fakt)
-    
-    def wstaw_fakt(self,fakt):
-        #print unicode(fakt)
-        self.dodajWiersz([fakt.epoka_nazwa,fakt.kultura_nazwa,fakt.funkcja_nazwa,fakt.cer,fakt.kam,fakt.met])   
-    
-    def set_slowniki(self,ed,kd,fd):
-        self.epoki_dict = ed
-        self.epoka_cb.addItems(ed.lista())
-        self.kultury_dict = kd
-        self.kul_cb.addItems(kd.lista())
-        self.fazy_dict = fd
-        self.fun_cb.addItems(fd.lista())
-        
-    def dodajPola(self,pasek): # metoda wywolywana w konstruktorze przodka (TableTab)
-        self.epoka_cb = pasek.dodaj_widget(QComboBox(),prefsz=80)
-        self.epoka_cb.addItem('Epoki')
-        self.epoka_cb.addItem(uzytki.to_unicode('Nieokreślona'))
-        
-        self.kul_cb = pasek.dodaj_widget(QComboBox(),prefsz=80)
-        self.kul_cb.addItem('Kultury')
-        self.kul_cb.addItem(uzytki.to_unicode('Nieokreślona'))
-        
-        self.fun_cb = pasek.dodaj_widget(QComboBox(),prefsz=80)
-        self.fun_cb.addItem('Funkcje')
-        self.fun_cb.addItem(uzytki.to_unicode('Nieokreślona'))
-        
-        self.ceram_sb = pasek.dodaj_widget(QSpinBox(),prefsz=40)
-        self.kam_sb = pasek.dodaj_widget(QSpinBox(),prefsz=40)
-        self.met_sb = pasek.dodaj_widget(QSpinBox(),prefsz=40)
-        
-    def _nieokresl(self,i,klucz,slo):
-        if i < 2:
-            return 0
-        else:
-            return slo.nazwa_sid(klucz)
-            
-    def nieokresl(self,cb,slo):
-        i = cb.currentIndex()
-        if i < 2:
-            return (0,u'Nieokreślona')
-        else:
-            nazwa = unicode(cb.currentText())
-            slow_id = slo.nazwa_sid(nazwa)
-            return (slow_id,nazwa)
-        
-    def zatwierdzZmiany(self,i,nowy):
-        if nowy:
-            nowy_fakt = self.dane.nowy_fakt(self.stan)
-            tup = self.nieokresl(self.epoka_cb,self.epoki_dict)
-            nowy_fakt.epoka_nazwa = tup[1]
-            nowy_fakt.epoka = tup[0]
-            tup = self.nieokresl(self.kul_cb,self.kultury_dict)
-            nowy_fakt.kultura_nazwa = tup[1]
-            nowy_fakt.kultura = tup[0]
-            tup = self.nieokresl(self.fun_cb,self.fazy_dict)
-            nowy_fakt.funkcja_nazwa = tup[1]
-            nowy_fakt.funkcja = tup[0]
-            nowy_fakt.cer = self.ceram_sb.value()
-            nowy_fakt.kam = self.kam_sb.value()
-            nowy_fakt.met = self.met_sb.value()
-            self.fakty.append(nowy_fakt)
-            self.dodajWiersz([nowy_fakt.epoka_nazwa,nowy_fakt.kultura_nazwa,nowy_fakt.funkcja_nazwa,nowy_fakt.cer,nowy_fakt.kam,nowy_fakt.met])
-        else:
-            mod_fakt = self.fakty[i]
-            tup = self.nieokresl(self.epoka_cb, self.epoki_dict)
-            mod_fakt.epoka_nazwa = tup[1]
-            mod_fakt.epoka=tup[0]
-            tup = self.nieokresl(self.kul_cb,self.kultury_dict)
-            mod_fakt.kultura_nazwa = tup[1]
-            mod_fakt.kultura = tup[0]
-            tup = self.nieokresl(self.fun_cb,self.fazy_dict)
-            mod_fakt.funkcja_nazwa = tup[1]
-            mod_fakt.funkcja = tup[0]
-            mod_fakt.cer = self.ceram_sb.value()
-            mod_fakt.kam = self.kam_sb.value()
-            mod_fakt.met = self.met_sb.value()
-            mod_fakt.czy_mod = True
-            self.fakty[i] = mod_fakt
-            self.zmienWiersz(i, [mod_fakt.epoka_nazwa,mod_fakt.kultura_nazwa,mod_fakt.funkcja_nazwa,mod_fakt.cer,mod_fakt.kam,mod_fakt.met])
-            
-            
-    def zapisz(self):
-        for fakt in self.fakty:
-            if fakt.czy_nowy:
-                print 'nowy ',unicode(fakt)
-                print fakt.zapisz()
-            elif fakt.czy_mod:
-                print 'mod', unicode(fakt)
-                print fakt.zapisz()
-        
-    def aktywuj_edytor(self,i,wiersz):
-        '''
-        Aktualizuje pola combo, ktore sa uzywane do edycji tabeli
-        @param i: numer wiersza
-        @param wiersz: tabela reprezentujaca wiersz. jesli jest rowna None to znaczy ze dodawany jest nowy wiersz
-        '''
-        if wiersz is not None:
-            ed_pole = unicode(wiersz[0].text())
-            if ed_pole != u'Nieokreślona':
-                self.epoka_cb.setCurrentIndex(self.epoki_dict.nazwa_ind(unicode(wiersz[0].text()))+2)
-            else:
-                self.epoka_cb.setCurrentIndex(1)
-            ku = unicode(wiersz[1].text())
-            if ku != u'Nieokreślona':    
-                self.kul_cb.setCurrentIndex(self.kultury_dict.nazwa_ind(unicode(wiersz[1].text()))+2)
-            else:
-                self.kul_cb.setCurrentIndex(1)
-            fu = unicode(wiersz[2].text())
-            if fu != u'Nieokreślona':    
-                self.fun_cb.setCurrentIndex(self.fazy_dict.nazwa_ind(unicode(wiersz[2].text()))+2)
-            else:
-                self.fun_cb.setCurrentIndex(1)    
-            self.ceram_sb.setValue(int(str(wiersz[3].text())))
-            self.kam_sb.setValue(int(str(wiersz[4].text())))
-            self.met_sb.setValue(int(str(wiersz[5].text())))
-        else:
-            self.epoka_cb.setCurrentIndex(0)
-            self.kul_cb.setCurrentIndex(0)
-            self.fun_cb.setCurrentIndex(0)
-            self.ceram_sb.setValue(0)
-            self.kam_sb.setValue(0)
-            self.met_sb.setValue(0)
 
 class PolozenieTab(InfoTab):
     """ self.jedn = td[2].decode('utf-8')
@@ -240,7 +108,7 @@ class InfoDialog(QDialog):
         self.tabs = QTabWidget(self)
         vb.addWidget(self.tabs)
         self.btns = QDialogButtonBox(self)
-        #self.btns.setGeometry(QtCore.QRect(70, 290, 221, 41))
+        self.btns.setGeometry(70, 290, 221, 41)
         #self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.btns.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Save)
         vb.addWidget(self.btns)

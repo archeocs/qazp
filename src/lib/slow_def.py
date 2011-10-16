@@ -141,6 +141,9 @@ class Slow:
             return self.slow[n].ti
         else:
             return self.slow[n.decode('utf-8')].ti
+    
+    def indeks_naz(self,ind):
+        return self.tb[ind]
             
             
 class E:

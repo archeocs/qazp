@@ -6,7 +6,6 @@ from PyQt4.QtGui import QComboBox, QLineEdit
 from PyQt4.QtCore import SIGNAL, QString
 from uniwersalne import StronaSiatka
 
-
 # klasa konstruujaca zakladke z informacjami
 class InfoTab(StronaSiatka):
 

@@ -109,10 +109,11 @@ class PolPg(Polaczenie):
     def fakty_info(self,stan):
         c = self.p.cursor()
         sql = """ select mid,coalesce(epoka,0),coalesce(kultura,0),coalesce(funkcja,0),ceramika,kamien,metal, 
-                    coalesce(e.nazwa,'Nieokreślona') as "en", coalesce(k.nazwa,'Nieokreślona') as "kn", coalesce(f.nazwa,'Nieokreślona') as "fn" 
+                    coalesce(e.nazwa,'Nieokreślona') as "en", coalesce(k.nazwa,'Nieokreślona') as "kn", coalesce(f.nazwa,'Nieokreślona') 
+                    as "fn",m.masowy,m.wyodrebniony 
                     from materialy m left outer join epoki_slo e on m.epoka = e.sid left outer join kultury_slo k on m.kultura = k.sid 
                     left outer join funkcje_slo f on m.funkcja = f.sid  where
-                    stanowisko = %d """ % stan.sid
+                    stanowisko = %d order by mid""" % stan.sid
         c.execute(sql)
         fks = c.fetchall()
         tf = []
