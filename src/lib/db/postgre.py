@@ -124,8 +124,7 @@ class PolPg(Polaczenie):
         
     def eksp_info(self,stan):
         c = self.p.cursor()
-        sql = """select eksponowany, kraw_stok, sfal_cypel, cypl,wal_garb,okrezna,podst_stoku,dolina_niecka,kotl_zagl, jaskinia,eid,
-                    forma_szczegolna from ekspozycje where stanowisko = %d""" % stan.sid
+        sql = """select * from ekspozycje where stanowisko = %d""" % stan.sid
         c.execute(sql)
         ekst = c.fetchall()
         if len(ekst) == 0:
@@ -189,7 +188,7 @@ class PolPg(Polaczenie):
     
     def zagroz_info(self,stan):
         c = self.p.cursor()
-        sql = """ select zid,istnieje,stale,dorazne,ludzie,natura,prywatny,spoleczny,dodatkowe from zagrozenia 
+        sql = """ select zid,istnieje,stale,ludzie,natura,prywatny,spoleczny,dodatkowe from zagrozenia 
                 where stanowisko = %d """ % stan.sid
         c.execute(sql)
         ekst = c.fetchall()

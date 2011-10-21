@@ -1,18 +1,7 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import * 
+from PyQt4.QtGui import QPlainTextEdit,QStyledItemDelegate,QComboBox,QSpinBox,QTableWidget
+from PyQt4.QtGui import QWidget, QVBoxLayout, QAbstractItemView, QTableWidgetItem,QApplication
+from PyQt4.QtCore import Qt,SIGNAL
 
-class ComboEdytor(QStyledItemDelegate):
-    
-    def __init__(self,parent=None):
-        QStyledItemDelegate.__init__(self,parent)
-        
-    def createEditor(self,parent,opcje,indeks):
-        return QPlainTextEdit(parent)
-    
-    def sizeHint (self, option, index):
-        return QSize(200,100)
-    
-    
 class FaktyEdytor(QStyledItemDelegate):
     
     def __init__(self,stan,dane,parent=None):
@@ -44,21 +33,19 @@ class FaktyEdytor(QStyledItemDelegate):
         k = indeks.column()
         w = indeks.row()
         fep,fku,ffu = 0,0,0
+        wyb = 0
         if w < len(self.fakty):
             f = self.fakty[w]
             fep,fku,ffu = f.epoka,f.kultura,f.funkcja
         if k == 0:
-            wyb = 0
             if fep > 0:
                 wyb = self.epoki.indeks_sid(fep-1)
             return self._createCombo(parent, self.epoki.lista(),wyb)
         elif k == 1:
-            wyb = 0
             if fku > 0:
                 wyb = self.kultury.indeks_sid(fku-1)
             return self._createCombo(parent, self.kultury.lista(),wyb)
         elif k == 2:
-            wyb = 0
             if ffu > 0:
                 wyb = self.funkcje.indeks_sid(ffu-1)
             return self._createCombo(parent, self.funkcje.lista(),wyb)
