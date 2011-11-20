@@ -133,6 +133,8 @@ class Slow:
         if i >= 0:
             return self.nazwa_sid(self.tb[i])
         return -1
+    
+    #def sid_indeks(self,sid):    
         
     def nazwa_ind(self,n):
         if n is None:

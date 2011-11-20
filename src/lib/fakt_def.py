@@ -59,4 +59,4 @@ class Fakt:
             self.con.zatwierdz()
             
     def __unicode__(self):
-        return '%d %d %d %d %d %d %s %s %s' % (self.epoka,self.kultura,self.funkcja,self.cer,self.kam,self.met,self.epoka_nazwa,self.kultura_nazwa,self.funkcja_nazwa)
+        return 'epoka: %d\nkultura: %d\n:funkcja: %d\n %d %d %d %s %s %s' % (self.epoka,self.kultura,self.funkcja,self.cer,self.kam,self.met,self.epoka_nazwa,self.kultura_nazwa,self.funkcja_nazwa)

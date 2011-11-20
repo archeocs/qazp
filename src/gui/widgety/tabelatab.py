@@ -37,17 +37,22 @@ class FaktyEdytor(QStyledItemDelegate):
         if w < len(self.fakty):
             f = self.fakty[w]
             fep,fku,ffu = f.epoka,f.kultura,f.funkcja
+            nep,nku,nfu = f.epoka_nazwa, f.kultura_nazwa, f.funkcja_nazwa
+            #print unicode(f)
         if k == 0:
             if fep > 0:
-                wyb = self.epoki.indeks_sid(fep-1)
+                #wyb = self.epoki.indeks_sid(fep-1)
+                wyb = self.epoki.nazwa_ind(nep)+1
             return self._createCombo(parent, self.epoki.lista(),wyb)
         elif k == 1:
             if fku > 0:
-                wyb = self.kultury.indeks_sid(fku-1)
+                #wyb = self.kultury.indeks_sid(fku-1)
+                wyb = self.kultury.nazwa_ind(nku)+1
             return self._createCombo(parent, self.kultury.lista(),wyb)
         elif k == 2:
             if ffu > 0:
-                wyb = self.funkcje.indeks_sid(ffu-1)
+                #wyb = self.funkcje.indeks_sid(ffu-1)
+                wyb = self.funkcje.nazwa_ind(nfu)+1
             return self._createCombo(parent, self.funkcje.lista(),wyb)
         elif k == 3 or k == 4 :
             return self._createPte(parent)

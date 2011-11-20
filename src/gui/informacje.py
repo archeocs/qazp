@@ -7,25 +7,26 @@ from widgety.tabelatab import MaterialyTab
 import uzytki
 
 class PolozenieTab(InfoTab):
-    """ self.jedn = td[2].decode('utf-8')
-            self.morze,self.plaza,self.mierz,self.skarpa,self.wal,self.woda,self.terden = zm[td[3]],zm[td[4]],zm[td[5]],zm[td[6]],zm[td[7]],zm[td[8],zm[td[9]]
-            self.ternad,self.terwyz,self.dnod,self.stokd,self.krawd,self.rown,self.fal = zm[td[10]],zm[td[11]],zm[td[12]],zm[td[13]],zm[td[14]],zm[td[15]],zm[td[16]]
-            self.pagor,self.gorz = zm[td[17]],zm[td[18]]"""
     def __init__(self,polo):
-        InfoTab.__init__(self,2,polo)
-        self.jedn_txt = self.dodaj_txt("Jednostka",polo.jedn,nazwa="jedn")
+        InfoTab.__init__(self,3,polo)
+        #self.jedn_txt = self.dodaj_txt("Jednostka",polo.jedn,nazwa="jedn")
+        self.nadm_cb = self.dodaj_combo("Strefa nadmorska",polo.nadm,nazwa="nadm")
         self.morze_cb = self.dodaj_combo("W morzu",polo.morze,nazwa="morze")
         self.plaza_cb = self.dodaj_combo("Plaża",polo.plaza,nazwa="plaza")
         self.mierze_cb = self.dodaj_combo("Mierzeja",polo.mierz,nazwa="mierz")
         self.skarpa_cb = self.dodaj_combo("Skarpa",polo.skarpa,nazwa="skarpa")
         self.wal_cb = self.dodaj_combo("Wał wydmowy",polo.wal,nazwa="wal")
+        self.sdd_cb = self.dodaj_combo("Duże doliny",polo.dd,nazwa="dd")
         self.woda_cb = self.dodaj_combo("W wodzie",polo.woda,nazwa="woda")
         self.terden_cb = self.dodaj_combo("Ter. denna",polo.terden,nazwa="terden")
         self.ternad_cb = self.dodaj_combo("Ter. nadzalewowa",polo.ternad,nazwa="ternad")
         self.terwyz_cb = self.dodaj_combo("Ter. wyższa",polo.terwyz,nazwa="terwyz")
+        self.brzeg_cb = self.dodaj_combo("Brzeg wysocz.",polo.brz,nazwa="brz")
+        self.smd_cb = self.dodaj_combo("Małe doliny",polo.md,nazwa="md")
         self.dnod_cb = self.dodaj_combo("Dno doliny",polo.dnod,nazwa="dnod")
         self.stokd_cb = self.dodaj_combo("Stok doliny",polo.stokd,nazwa="stokd")
         self.krawd_cb = self.dodaj_combo("Krawędź doliny",polo.krawd,nazwa="krawd")
+        self.spd_cb = self.dodaj_combo("Poza dolinami",polo.pd,nazwa="pd")
         self.rown_cb = self.dodaj_combo("Równina",polo.rown,nazwa="rown")
         self.fal_cb = self.dodaj_combo("Obsz. falisty",polo.fal,nazwa="fal")
         self.pagor_cb = self.dodaj_combo("Obsz. pagórkowaty",polo.pagor,nazwa="pagor")
