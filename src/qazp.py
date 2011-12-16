@@ -78,7 +78,7 @@ class OknoGlowne(QMainWindow,MainWindow):
         #setselectionbehavior i setselectionmode
         
         if con_info is None:
-            self.con = PolPg('database','user','passwd',hn='192.168.121.1')
+            self.con = PolPg('azp2','gis','gis',hn='192.168.121.1')
         else:
             self.con = PolPg(con_info['db'],con_info['user'],con_info['pswd'],hn=con_info['host'])
         self.dane = DaneAzp()
