@@ -37,15 +37,49 @@ class Polozenie:
         if hasattr(self,var) and getattr(self,var,None) != val:
             setattr(self,var,val)
             self.czy_zm = True
+            
+    def max_pid(self):
+        max_id = "select coalesce(max(pid),0)+1 as nast from polozenia"
+        mt = self.p.wykonaj(max_id)
+        return mt[0][0]
+            
+        
+    def moddb(self,sqlargs):
+        #(nast,stanowisko,obser,obpole,nasyc,gest,powierz,centrycz)
+        ins = """ insert into polozenia values(%(pid)s,%(sid)s,'%(nadm)s','%(morz)s','%(plaz)s','%(mierz)s','%(skarp)s','%(wal)s',
+                        '%(duzd)s','%(wod)s','%(terden)s','%(ternad)s','%(terwy)s','%(brzeg)s',
+                        '%(mald)s','%(dnod)s','%(stokd)s','%(krawd)s',
+                        '%(pozad)s','%(rown)s','%(fal)s','%(pagor)s','%(gorz)s');"""
+        #update obszary set obserwacja = obser, pole = obpole, nasycenie = nasyc, gestosc = gest,
+        #powierzchnia = powierz, centrycznosc = centrycz where oid = obsz_id;
+        updt = """UPDATE polozenia SET nadmorska='%(nadm)s', morze='%(morz)s', plaza='%(plaz)s', mierzeja='%(mierz)s',
+        skarpa='%(skarp)s', wal_wydma='%(wal)s',duza_dol='%(duzd)s',woda='%(wod)s',terasa_denna='%(terden)s', 
+        terasa_nadzalew='%(ternad)s',terasa_wyzsza='%(terwy)s',brzeg_wys='%(brzeg)s', mala_dol='%(mald)s',dno_doliny='%(dnod)s', 
+        stok_doliny='%(stokd)s', kraw_doliny='%(krawd)s', poza_dol='%(pozad)s',rownina='%(rown)s', 
+        obsz_falisty='%(fal)s', obsz_pagor='%(pagor)s',obszar_gorz='%(gorz)s'
+     WHERE pid=%(pid)s"""            
+        if self.pid < 0:
+            mp = self.max_pid() 
+            sqlargs['pid'] = str(mp)
+            sql = ins % sqlargs
+            print sql
+            self.p.wykonaj(sql,False)
+        else:
+            sql = updt % sqlargs
+            print sql
+            self.p.wykonaj(sql,False)
+        self.p.zatwierdz()
+    
+            
         
     def zapisz(self):
         if self.czy_zm:
             zm = {1:'T',0:'N'}
-            args = (self.stan.sid,zm[self.nadm],zm[self.morze], zm[self.plaza], zm[self.mierz], zm[self.skarpa], zm[self.wal], 
-                    zm[self.dd],zm[self.woda], zm[self.terden], zm[self.ternad], zm[self.terwyz], zm[self.brz],
-                    zm[self.md],zm[self.dnod],zm[self.stokd],zm[self.krawd],
-                    zm[self.pd],zm[self.rown],zm[self.fal],zm[self.pagor],zm[self.gorz], self.pid)
-            self.p.wykonaj(self.modstr % args)
-            self.p.zatwierdz()
+            sqlargs = {'sid':str(self.stan.sid),'nadm':zm[self.nadm],'morz':zm[self.morze],'plaz':zm[self.plaza],'mierz':zm[self.mierz],
+                       'skarp':zm[self.skarpa],'wal':zm[self.wal],'duzd':zm[self.dd],'wod':zm[self.woda],'terden':zm[self.terden],
+                       'ternad':zm[self.ternad],'terwy':zm[self.terwyz],'brzeg':zm[self.brz],'mald':zm[self.md],
+                       'dnod':zm[self.dnod],'stokd':zm[self.stokd],'krawd':zm[self.krawd],'pozad':zm[self.pd],'rown':zm[self.rown],
+                       'fal':zm[self.fal],'pagor':zm[self.pagor],'gorz':zm[self.gorz],'pid':str(self.pid)}
+            self.moddb(sqlargs)
         else:
             print 'POLOZENIE: brak zmian'

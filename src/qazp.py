@@ -5,11 +5,11 @@
 import sys
 
 from PyQt4.QtCore import QObject,SIGNAL, QSettings
-from PyQt4.QtGui import QAction,QMainWindow,QAbstractItemView,QTableWidgetItem,QApplication
-import logging
+from PyQt4.QtGui import QAction,QMainWindow,QAbstractItemView,QTableWidgetItem,QApplication,QHeaderView
 
 from lib.model import DaneAzp
 from lib.db.postgre import PolPg
+from lib.db.azpsqlite import SqliteDb
 from gui.widgety.main_win import MainWindow
 from gui.slownik import MiejscaSlownik,PowiatySlownik,WojewodSlownik,GminySlownik
 from gui.slownik import KulturySlownik,FunkcjeSlownik,EpokiSlownik
@@ -36,24 +36,8 @@ class QGisPlugin(object):
         self.iface.removePluginMenu("QAZP",self.akcja)
         self.iface.removeToolBarIcon(self.akcja)
     
-    def get_ustawienia(self):
-        logging.basicConfig(filename='log.txt',level=logging.INFO)
-        qgis_ust = QSettings()
-        logging.info(qgis_ust.applicationName())
-        qgis_ust.beginGroup("/PostgreSQL/connections")
-        nazwa = unicode(qgis_ust.value("selected").toString())
-        logging.info(nazwa)
-        host = unicode(qgis_ust.value("%s/host"%nazwa).toString())
-        port = unicode(qgis_ust.value("%s/port"%nazwa).toString())
-        db = unicode(qgis_ust.value("%s/database"%nazwa).toString())
-        usr = unicode(qgis_ust.value("%s/username"%nazwa).toString())
-        pswd = unicode(qgis_ust.value("%s/password"%nazwa).toString())
-        ud =  {'db':db, 'user':usr, 'pswd':pswd, 'host':host, 'port':port}
-        logging.info(str(ud))
-        return ud
-    
     def run(self):
-        okno = OknoGlowne(self.iface.mainWindow(),self.get_ustawienia())
+        okno = OknoGlowne(self.iface.mainWindow(),True)
         okno.show()
         
 
@@ -65,7 +49,7 @@ class OknoGlowne(QMainWindow,MainWindow):
     tb_nr = []
     tb_stan = []
     
-    def __init__(self,parent=None,con_info = None):
+    def __init__(self,parent=None,plugin=False):
         '''
         Inicjalizacja glownego okna aplikacji
         @param parent: widget-przodek tworzonego okna
@@ -75,21 +59,33 @@ class OknoGlowne(QMainWindow,MainWindow):
         self.tabela.setColumnCount(6)
         self.tabela.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tabela.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.tabela.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+        self.tabela.setHorizontalHeaderItem(0,self.__item("Arkusz"))
+        self.tabela.setHorizontalHeaderItem(1,self.__item("Numer na arkuszu"))
+        self.tabela.setHorizontalHeaderItem(2,self.__item("Miejscowość"))
+        self.tabela.setHorizontalHeaderItem(3,self.__item("Nr w miejscowości"))
+        self.tabela.setHorizontalHeaderItem(4,self.__item("Data"))
+        self.tabela.setHorizontalHeaderItem(5,self.__item("Autor badań"))
         #setselectionbehavior i setselectionmode
         
-        if con_info is None:
-            self.con = PolPg('azp2','gis','gis',hn='192.168.121.1')
-        else:
-            self.con = PolPg(con_info['db'],con_info['user'],con_info['pswd'],hn=con_info['host'])
-        self.dane = DaneAzp()
-        self.dane.set_polaczenie(self.con)
+        #if con_info is None:
+        #    self.con = PolPg('azp2','gis','gis',hn='192.168.121.1')
+        #else:
+        #    self.con = PolPg(con_info['db'],con_info['user'],con_info['pswd'],hn=con_info['host'])
+        con_info = None
+        if plugin:
+            con_info = self.get_ustawienia()
+        self.con = self.get_con(con_info)
+        self.set_dane(self.con)
+        #self.dane = DaneAzp()
+        #self.dane.set_polaczenie(self.con)
         
-        self.arkusz_cb.addItem("Wszystkie")
-        self.tb_ark = self.dane.lista_ark()
-        self.arkusz_cb.addItems(self.tb_ark)
+        #self.arkusz_cb.addItem("Wszystkie")
+        #self.tb_ark = self.dane.lista_ark()
+        #self.arkusz_cb.addItems(self.tb_ark)
         self.connect(self.arkusz_cb,SIGNAL('activated(int)'),self.ark_wybor)
         
-        self.nrark_cb.addItem("Wszystkie")
+        #self.nrark_cb.addItem("Wszystkie")
         self.connect(self.nrark_cb,SIGNAL('activated(int)'),self.nr_wybor)
         
         self.connect(self.filtr_btn,SIGNAL('clicked()'),self.filtruj)
@@ -102,6 +98,17 @@ class OknoGlowne(QMainWindow,MainWindow):
         self.connect(self.kultury_akcja,SIGNAL('triggered()'),self.kul_dialog)
         self.connect(self.funkcje_akcja,SIGNAL('triggered()'),self.fun_dialog)
         self.connect(self.epoki_akcja,SIGNAL('triggered()'),self.ep_dialog)
+        self.connect(self.typdb_pg,SIGNAL('toggled(bool)'),self.wybor_pg)
+        self.connect(self.typdb_spat,SIGNAL('toggled(bool)'),self.wybor_spat)
+        
+        self.typdb_pg.setCheckable(True)
+        self.typdb_spat.setCheckable(True)
+        if con_info and con_info['typdb'] == 'spatialite':
+            self.typdb_spat.setChecked(True)
+        elif con_info and con_info['typdb'] == 'postgis':
+            self.typdb_pg.setChecked(True)
+        else:
+            self.typdb_spat.setChecked(True)
         
         # zestawienia
         zest_zlicz_kult_akcja = QAction(self)
@@ -112,6 +119,54 @@ class OknoGlowne(QMainWindow,MainWindow):
         self.connect(uzyt_zest,SIGNAL('triggered()'),self.nowe_zestawienie)
         self.zest_menu.addAction(uzyt_zest)
         uzyt_zest.setText("Nowe zestawienie")
+    
+    def get_ustawienia(self):
+        qgis_ust = QSettings()
+        ud = {}
+        qgis_ust.beginGroup("/QAzp")
+        if qgis_ust.contains("typdb"):
+            ud['typdb'] = unicode(qgis_ust.value('typdb').toString())
+        else:
+            ud['typdb']='spatialite'
+            qgis_ust.setValue('typdb','spatialite')
+            qgis_ust.endGroup()
+        if ud['typdb'] == 'spatialite':
+            qgis_ust.beginGroup('/Spatialite/connections')
+            nazwa = unicode(qgis_ust.value("selected").toString())
+            if '@' in nazwa:
+                nazwa = nazwa.split('@')[0]
+                plik = unicode(qgis_ust.value("%s/sqlitepath"%nazwa).toString())
+                ud['plik'] = plik
+        elif ud['typdb'] == 'postgis':
+            qgis_ust.beginGroup("/PostgreSQL/connections")
+            ud['nazwa'] = unicode(qgis_ust.value("selected").toString())
+            ud['host'] = unicode(qgis_ust.value("%s/host"%nazwa).toString())
+            ud['port'] = unicode(qgis_ust.value("%s/port"%nazwa).toString())
+            ud['db'] = unicode(qgis_ust.value("%s/database"%nazwa).toString())
+            ud['user'] = unicode(qgis_ust.value("%s/username"%nazwa).toString())
+            ud['pswd'] = unicode(qgis_ust.value("%s/password"%nazwa).toString())
+            
+        return ud
+    
+    def get_con(self,con_info=None):
+        if not con_info:
+            return SqliteDb("/home/milosz/archeocs/azp2/azp2_1.db")
+        else:
+            if con_info['typdb'] == 'spatialite':
+                return SqliteDb(con_info['plik'])
+            elif con_info['typdb'] == 'postigs':
+                return PolPg(con_info['db'],con_info['user'],con_info['pswd'],hn=con_info['host'])
+        return None
+    
+    def set_dane(self,con):
+        self.dane = DaneAzp()
+        self.dane.set_polaczenie(con)
+        self.arkusz_cb.clear()
+        self.arkusz_cb.addItem("Wszystkie")
+        self.tb_ark = self.dane.lista_ark()
+        self.arkusz_cb.addItems(self.tb_ark)
+        self.nrark_cb.clear()
+        self.nrark_cb.addItem("Wszystkie")
         
     def nowe_zestawienie(self):    
         '''
@@ -140,6 +195,23 @@ class OknoGlowne(QMainWindow,MainWindow):
         widok.exec_()
         z.usun_cursor()
         
+    def set_typdb(self,typ):
+        qgis_ust = QSettings()
+        qgis_ust.beginGroup('/QAzp')
+        qgis_ust.setValue('typdb',typ)
+        qgis_ust.endGroup()   
+        #self.con = self.get_con(self.get_ustawienia())
+        #self.set_dane(self.con) 
+    
+    def wybor_pg(self,zazn):
+        if zazn:
+            self.set_typdb('postgis')
+            self.typdb_spat.setChecked(False)
+    
+    def wybor_spat(self,zazn):
+        if zazn:
+            self.set_typdb('spatialite')
+            self.typdb_pg.setChecked(False)  
         
     def info(self):
         '''

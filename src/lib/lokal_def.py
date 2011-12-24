@@ -37,6 +37,45 @@ class Lokalizacja:
                 self.woj_id = tab_dane[10]
         self.stan = stan
         self.con = con
+    
+    def max_lid(self):
+        max_id = "select coalesce(max(lid),0)+1 as nast from lokalizacje"
+        mt = self.con.wykonaj(max_id)
+        return mt[0][0]
+        
+    def moddb(self,sqlargs):
+        ins = """ insert into lokalizacje values(%(lid)s,'%(ark)s','%(nr_ark)s', %(miej_id)s, '%(nr_miej)s', %(gm)s, %(pow)s, %(woj)s)"""
+        stan_nowa_lok = """update stanowiska set arkusz = '%(ark)s', nr_arkusz = '%(nr_ark)s', lokalizacja = %(lid)s,
+                             miejscowosc = '%(naz_miej)s', nr_miejscowosc='%(nr_miej)s' where sid = %(sid)s """
+        stan_mod_lok = """ update stanowiska set arkusz = '%(ark)s', nr_arkusz = '%(nr_ark)s', miejscowosc = '%(naz_miej)s',
+                                 nr_miejscowosc='%(nr_miej)s' where lokalizacja = %(lid)s """
+        updt_lok = """update lokalizacje set arkusz = '%(ark)s', nr_arkusz = '%(nr_ark)s', miejscowosc = %(miej_id)s, 
+                            nr_miejscowosc = '%(nr_miej)s', gmina =%(gm)s, powiat =%(pow)s, wojewodztwo =%(woj)s where lid = %(lid)s """
+        if self.gm_id == -1:
+            sqlargs['gm'] = 'null'
+        if self.pow_id == -1:
+            sqlargs['pow'] = 'null'
+        if self.woj_id == -1:
+            sqlargs['woj'] = 'null'            
+        if self.czy_nowa:
+            ml = self.max_lid() 
+            sqlargs['lid'] = str(ml)
+            sql = ins % sqlargs
+            print sql
+            self.con.wykonaj(sql,False)
+            sql = stan_nowa_lok % sqlargs
+            print sql
+            self.con.wykonaj(sql,False)
+        elif self.czy_zm:
+            print sqlargs
+            sql = updt_lok % sqlargs
+            print sql
+            self.con.wykonaj(sql,False)
+            sql = stan_mod_lok % sqlargs
+            print sql
+            self.con.wykonaj(sql,False)
+            #self.con.wykonaj(sql,False)
+        self.con.zatwierdz()
                 
     def zmien(self):
         akt = -1
@@ -54,11 +93,15 @@ class Lokalizacja:
         self.con.zatwierdz()
                 
     def zapisz(self):
-        print self.czy_nowa
-        if self.czy_nowa:
-            self.dodaj()
-        else:
-            self.zmien()
+        print 'czy nowa',self.czy_nowa
+        sqlargs = {'lid':str(self.stan.lokalizacja), 'ark':self.arkusz, 'nr_ark':self.nr_ark, 'miej_id':str(self.miej_id), 
+                   'nr_miej':self.nr_miej, 'gm':str(self.gm_id), 'pow':str(self.pow_id), 'woj':str(self.woj_id),
+                   'naz_miej':self.miej_naz,'sid':self.stan.sid}
+        #if self.czy_nowa:
+        #    self.dodaj()
+        #else:
+        #    self.zmien()
+        self.moddb(sqlargs)
             
     def __str__(self):
         print "LOKALIZACJA INFO"

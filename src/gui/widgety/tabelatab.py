@@ -1,5 +1,5 @@
 from PyQt4.QtGui import QPlainTextEdit,QStyledItemDelegate,QComboBox,QSpinBox,QTableWidget
-from PyQt4.QtGui import QWidget, QVBoxLayout, QAbstractItemView, QTableWidgetItem,QApplication
+from PyQt4.QtGui import QWidget, QVBoxLayout, QAbstractItemView, QTableWidgetItem,QApplication,QHeaderView
 from PyQt4.QtCore import Qt,SIGNAL
 
 class FaktyEdytor(QStyledItemDelegate):
@@ -140,11 +140,20 @@ class MaterialyTab(QWidget):
         self.tabela = QTableWidget(parent)
         self.tabela.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tabela.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.tabela.horizontalHeader().setResizeMode(QHeaderView.Stretch)
         self.vbox.addWidget(self.tabela)    
         self.tabela.setSortingEnabled(False)
         self.tabela.setRowCount(1)
         self.tabela.setItem(0,0,self.__item('<Nowy>'))
         self.tabela.setColumnCount(8)
+        self.tabela.setHorizontalHeaderItem(0,self.__item("Epoka"))
+        self.tabela.setHorizontalHeaderItem(1,self.__item("Kultura"))
+        self.tabela.setHorizontalHeaderItem(2,self.__item("Funkcja"))
+        self.tabela.setHorizontalHeaderItem(3,self.__item("Masowe"))
+        self.tabela.setHorizontalHeaderItem(4,self.__item("Wydzielone"))
+        self.tabela.setHorizontalHeaderItem(5,self.__item("Ceramika"))
+        self.tabela.setHorizontalHeaderItem(6,self.__item("Kamienie"))
+        self.tabela.setHorizontalHeaderItem(7,self.__item("Metale"))
         
     def __item(self,var):
         #print var

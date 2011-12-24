@@ -32,14 +32,41 @@ class Teren:
             setattr(self,var,val)
             self.czy_zm = True
     
+    def max_tid(self):
+        max_id = "select coalesce(max(tid),0)+1 as nast from tereny"
+        mt = self.p.wykonaj(max_id)
+        return mt[0][0]
+            
+        
+    def moddb(self,sqlargs):
+        #(nast,stanowisko,obser,obpole,nasyc,gest,powierz,centrycz)
+        ins = """ insert into tereny values(%(tid)s,%(sid)s,'%(pole)s','%(sa)s','%(pryw)s','%(spol)s','%(par)s','%(lak)s',
+                        '%(przem)s','%(las)s','%(zab)s','%(niezab)s','%(srezab)s','%(blizsze)s')"""
+        #update obszary set obserwacja = obser, pole = obpole, nasycenie = nasyc, gestosc = gest,
+        #powierzchnia = powierz, centrycznosc = centrycz where oid = obsz_id;
+        updt = """update tereny set pole_orne='%(pole)s',sad='%(sa)s',prywatny='%(pryw)s',spoleczny='%(spol)s',
+                park='%(par)s',laka='%(lak)s',przemyslowy='%(przem)s',las='%(las)s',zabud='%(zab)s',niezabud='%(niezab)s',
+                srednio_zabud='%(srezab)s',okresl_blizsze='%(blizsze)s' where tid=%(tid)s"""            
+        if self.tid < 0:
+            mt = self.max_tid() 
+            sqlargs['tid'] = str(mt)
+            sql = ins % sqlargs
+            print sql
+            self.p.wykonaj(sql,False)
+        else:
+            sql = updt % sqlargs
+            print sql
+            self.p.wykonaj(sql,False)
+        self.p.zatwierdz()
+    
+    
+    
     def zapisz(self):
         if self.czy_zm:
             zm = {1:'T',0:'N'}
-            args = (self.stan.sid,zm[self.orne],zm[self.sad],zm[self.pryw],zm[self.spol],zm[self.park],
-                    zm[self.laka],zm[self.przem],zm[self.las],zm[self.zab],zm[self.niezab],zm[self.srezab],
-                    self.bliz,self.tid)
-            print self.modstr % args
-            self.p.wykonaj(self.modstr % args)
-            self.p.zatwierdz()
+            sqlargs = {'sid':str(self.stan.sid),'pole':zm[self.orne],'sa':zm[self.sad],'pryw':zm[self.pryw],'spol':zm[self.spol],
+                    'par':zm[self.park],'lak':zm[self.laka],'przem':zm[self.przem],'las':zm[self.las],'zab':zm[self.zab],
+                    'niezab':zm[self.niezab],'srezab':zm[self.srezab],'blizsze':self.bliz,'tid':str(self.tid)}
+            self.moddb(sqlargs)
         else:
             print "TEREN: brak zmian"

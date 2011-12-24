@@ -125,7 +125,7 @@ class InfoDialog(QDialog):
         self.obsz_tab = ObszarTab(self.dane.obszar(stan))
         self.tabs.addTab(self.obsz_tab,"Obszar")
         self.mater_tab = MaterialyTab(stan,self.dane)
-        self.tabs.addTab(self.mater_tab,QApplication.translate("MainWindow", "Materiały", None,QApplication.UnicodeUTF8))
+        self.tabs.addTab(self.mater_tab,QApplication.translate("MainWindow", "Fakty kulturowe", None,QApplication.UnicodeUTF8))
         self.wnioski_tab = WnioskiTab(self.dane.wnioski(stan))
         self.tabs.addTab(self.wnioski_tab,"Wnioski")
         self.zagroz_tab = ZagrozeniaTab(self.dane.zagrozenia(stan))

@@ -20,6 +20,7 @@ class LokalizacjaDialog(QDialog,lok_dial):
         self.nrmiej_ed.setText(self.lokal.nr_miej)
         self.set_slownik(self.m_slo,self.miasto_cb,self.m_slo.nazwa_ind(self.lokal.miej_naz)+1)
         self.set_slownik(self.g_slo,self.gmina_cb,self.g_slo.nazwa_ind(self.lokal.gm_naz)+1)
+        print 'pow naz',self.lokal.pow_naz,self.p_slo.nazwa_ind(self.lokal.pow_naz)
         self.set_slownik(self.p_slo,self.powiat_cb,self.p_slo.nazwa_ind(self.lokal.pow_naz)+1)
         self.set_slownik(self.w_slo,self.woj_cb,self.w_slo.nazwa_ind(self.lokal.woj_naz)+1)
         self.connect(self.buttonBox,SIGNAL('accepted()'),self.zapisz)
@@ -29,7 +30,7 @@ class LokalizacjaDialog(QDialog,lok_dial):
         self.dane = dane
         
     def set_slownik(self,slow,combo,sel=0):
-        combo.addItem("Brak")
+        combo.addItem(u"Nieokreślony")
         combo.addItems(slow.lista())
         combo.setCurrentIndex(sel)
         #print combo.objectName()
@@ -66,7 +67,7 @@ class LokalizacjaDialog(QDialog,lok_dial):
             return
         elif re.match(r'^[0-9]+\-[0-9]+$',ark_txt) is None:
             return
-        elif re.match(r'^[0-9]+$',nrark_txt) is None or re.match(r'^[0-9]+$',nrmiej_txt) is None:
+        elif re.match(r'^[0-9]+$',nrark_txt) is None:
             return
         if ark_txt != self.lokal.arkusz:
             self.lokal.arkusz = ark_txt
@@ -81,18 +82,29 @@ class LokalizacjaDialog(QDialog,lok_dial):
         if self.miasto_cb.currentIndex() > 0:
             if self.miasto_cb.currentIndex()-1 != self.indeksy["miasto_cb"]:
                 self.lokal.miej_id = self.m_slo.indeks_sid(self.miasto_cb.currentIndex()-1)
+                self.lokal.miej_naz = self.m_slo.indeks_naz(self.miasto_cb.currentIndex()-1)
                 self.lokal.czy_zm = True
         else:
             return
         if self.gmina_cb.currentIndex() > 0:
             if self.gmina_cb.currentIndex()-1 != self.indeksy["gmina_cb"]:
                 self.lokal.gm_id = self.g_slo.indeks_sid(self.gmina_cb.currentIndex()-1)
+                self.lokal.czy_zm=True
         else:
             return
-        if self.powiat_cb.currentIndex()-1 != self.indeksy["powiat_cb"]:
-            self.lokal.pow_id = self.p_slo.indeks_sid(self.powiat_cb.currentIndex()-1)
-        if self.woj_cb.currentIndex()-1 != self.indeksy["woj_cb"]:
-            self.lokal.woj_id = self.w_slo.indeks_sid(self.woj_cb.currentIndex()-1)    
+        pc = self.powiat_cb.currentIndex()-1
+        wc = self.woj_cb.currentIndex()-1
+        if pc != self.indeksy["powiat_cb"] and pc >= 0:
+            self.lokal.pow_id = self.p_slo.indeks_sid(pc)
+            
+            self.lokal.czy_zm=True
+        elif pc == 0:
+            print pc        
+        if wc != self.indeksy["woj_cb"] and wc >= 0:
+            self.lokal.woj_id = self.w_slo.indeks_sid(wc)
+            self.lokal.czy_zm=True
+        else:
+            print wc  
         self.lokal.zapisz()
         self.done(1)
         

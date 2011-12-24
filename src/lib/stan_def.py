@@ -25,7 +25,7 @@ class Stanowisko:
         self.nr_ark = tup[3].decode('utf-8')
         self.miejsce = tup[4].decode('utf-8')
         self.nr_miejsce = tup[5].decode('utf-8')
-        self.wspolrzedne = tup[6].decode('utf-8')
+        #self.wspolrzedne = tup[6].decode('utf-8')
         self.data = tup[7]
         self.autor = tup[8].decode('utf-8')
         self.lokalizacja = tup[9]

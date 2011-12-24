@@ -28,16 +28,42 @@ class Zagrozenie(object):
         if hasattr(self,var) and getattr(self,var,None) != val:
             setattr(self,var,val)
             self.czy_zm = True
+    
+    def max_zid(self):
+        max_id = "select coalesce(max(zid),0)+1 as nast from zagrozenia"
+        mt = self.p.wykonaj(max_id)
+        return mt[0][0]
+            
+        
+    def moddb(self,sqlargs):
+        #(nast,stanowisko,obser,obpole,nasyc,gest,powierz,centrycz)
+        ins = """ insert into zagrozenia values(%(zid)s,%(sid)s,'%(istn)s','%(stal)s','%(ludz)s','%(natu)s',
+                '%(pryw)s','%(spol)s','%(dodat)s')"""
+        #update obszary set obserwacja = obser, pole = obpole, nasycenie = nasyc, gestosc = gest,
+        #powierzchnia = powierz, centrycznosc = centrycz where oid = obsz_id;
+        updt = """update zagrozenia set istnieje = '%(istn)s', stale = '%(stal)s', ludzie='%(ludz)s', natura='%(natu)s',
+        prywatny='%(pryw)s', spoleczny='%(spol)s', dodatkowe = '%(dodat)s' where zid = %(zid)s"""            
+        if self.zid < 0:
+            mz = self.max_zid() 
+            sqlargs['zid'] = str(mz)
+            sql = ins % sqlargs
+            print sql
+            self.p.wykonaj(sql,False)
+        else:
+            sql = updt % sqlargs
+            print sql
+            self.p.wykonaj(sql,False)
+        self.p.zatwierdz()
+    
+    
         
     def zapisz(self):
         print 'zapisuje'
         if self.czy_zm:
             zm = {1:'T',0:'N'}
-            args = (self.stan.sid,zm[self.istn],zm[self.stal],zm[self.ludz],zm[self.nat],
-                    zm[self.pryw],zm[self.spol],self.dodat,self.zid)
-            print self.modstr % args
-            self.p.wykonaj(self.modstr % args)
-            self.p.zatwierdz()
+            sqlargs = {'sid':str(self.stan.sid),'istn':zm[self.istn],'stal':zm[self.stal],'ludz':zm[self.ludz],'natu':zm[self.nat],
+                    'pryw':zm[self.pryw],'spol':zm[self.spol],'dodat':self.dodat,'zid':str(self.zid)}
+            self.moddb(sqlargs)
         else:
             print 'ZAGROZENIE: brak zmian'
         

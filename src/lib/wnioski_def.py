@@ -27,13 +27,38 @@ class Wnioski:
         if hasattr(self,var) and getattr(self,var,None) != val:
             setattr(self,var,val)
             self.czy_mod = True
+            
+    def max_wid(self):
+        max_id = "select coalesce(max(wid),0)+1 as nast from wnioski"
+        mt = self.p.wykonaj(max_id)
+        return mt[0][0]
+            
+        
+    def moddb(self,sqlargs):
+        #(nast,stanowisko,obser,obpole,nasyc,gest,powierz,centrycz)
+        ins = """ insert into wnioski values(%(wid)s,%(sid)s,%(wart)s,'%(inwent)s','%(interw)s','%(wykopy)s','%(dodat)s')"""
+        updt = """update wnioski set wart_pozn = %(wart)s, inwentaryzacja = '%(inwent)s', interwencja = '%(interw)s',
+         wykopaliska = '%(wykopy)s',dodatkowe = '%(dodat)s' where wid = %(wid)s"""            
+        if self.wid < 0:
+            mw = self.max_wid() 
+            sqlargs['wid'] = str(mw)
+            sql = ins % sqlargs
+            print sql
+            self.p.wykonaj(sql,False)
+        else:
+            sql = updt % sqlargs
+            print sql
+            self.p.wykonaj(sql,False)
+        self.p.zatwierdz()
+    
+    
         
     def zapisz(self):
         if self.czy_mod:
             zm = {1:'T',0:'N'}
-            print self.modstr % (self.stan.sid,self.wartosc,zm[self.inwent],zm[self.interw],zm[self.wykopy],self.dodat,self.wid)
-            self.p.wykonaj(self.modstr % (self.stan.sid,self.wartosc,zm[self.inwent],zm[self.interw],zm[self.wykopy],self.dodat,self.wid))
-            self.p.zatwierdz()
+            sqlargs = {'sid':str(self.stan.sid),'wart':str(self.wartosc),'inwent':zm[self.inwent],'interw':zm[self.interw],
+                       'wykopy':zm[self.wykopy],'dodat':self.dodat,'wid':str(self.wid)}
+            self.moddb(sqlargs)
         else:
             print 'WNIOSKI brak zmian'
         

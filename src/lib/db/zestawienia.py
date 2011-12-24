@@ -22,7 +22,7 @@ class Zestawienie(object):
             for koldesc in self.cursor.description:
                 self.zestpola.append((koldesc[0],koldesc[1]))
             return None   
-        except Exception as e:
+        except Exception, e:
             self.pol.rollback()
             #print dir(e)
             return unicode(e)

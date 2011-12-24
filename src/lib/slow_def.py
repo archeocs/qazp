@@ -93,7 +93,8 @@ class Slow:
         return self.tb
         
     def zapisz(self):
-        ins = "select * from azp_%s('%s')"
+        #ins = "select * from azp_%s('%s')"
+        ins = "insert into %s values(%d,'%s')"
         updt = "update %s set nazwa = '%s' where sid = %s"
         if self.t == self.MIASTA:
             naz_u = 'miasta_slo'
@@ -118,10 +119,17 @@ class Slow:
             naz_i = 'nowa_epoka'
         for e in self.zmiany.values():
             if e.czy_new:
-                self.con.wykonaj(ins%(naz_i,e.n))
+                sql = ins%(naz_u,self.max_sid(naz_u),e.n)
+                print sql
+                self.con.wykonaj(sql,False)
             elif e.czy_mod:
                 self.con.wykonaj(updt%(naz_u,e.n,str(e.i)),False)
         self.con.zatwierdz()
+        
+    def max_sid(self,tab):
+        max_id = "select coalesce(max(sid),0)+1 as nast from %s" % tab
+        mt = self.con.wykonaj(max_id)
+        return mt[0][0]    
         
     def nazwa_sid(self,n):
         if isinstance(n,unicode):
