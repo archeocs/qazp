@@ -5,6 +5,13 @@
 class Slow:
     
     MIASTA, POWIATY, WOJEWODZ, GMINY, KULTURY,FUNKCJE,EPOKI = 1,2,3,4,5,6,7
+    var_slo = {MIASTA:('miasta_slo','miejscowosc'),
+               POWIATY:('powiaty_slo','powiat'),
+               WOJEWODZ:('wojewodztwa_slo','wojewodztwo'),
+               GMINY:('gminy_slo','gmina'),
+               KULTURY:('kultury_slo','kultura'),
+               FUNKCJE:('funkcje_slo','funkcja'),
+               EPOKI:('epoki_slo','epoka')}
     def __init__(self,lista,con,typ):
         self.slow = {}
         self.zmiany = {}
@@ -61,6 +68,8 @@ class Slow:
     
     def zmien(self,k,nv):
         e = self.slow[k]
+        if self.slow.has_key(nv.upper()):
+            return (False,u'Nazwa już istnieje')
         if self.zmiany.has_key(k) and self.zmiany[k].czy_new:
             e.n = nv.upper()
             e.czy_new = True
@@ -68,7 +77,7 @@ class Slow:
             self.zmiany.pop(k)
             self.slow[e.n] = e
             self.zmiany[e.n] = e
-            return True
+            return (True,'')
         elif not self.zmiany.has_key(k) or not self.zmiany[k].czy_del:
             e.n = nv.upper()
             e.czy_mod = True
@@ -80,9 +89,9 @@ class Slow:
                 self.zmiany[k] = e
             self.slow[e.n] = e
             self.zmiany[e.n] = e
-            return True
+            return (True,'')
         else:
-            return False # wskazany element zostal juz usuniety
+            return (False,u'Nazwa przeznaczona do usunięcia') # wskazany element zostal juz usuniety
             
     def lista(self,nowa=False):
         #tb = self.slow.values()
@@ -96,35 +105,64 @@ class Slow:
         #ins = "select * from azp_%s('%s')"
         ins = "insert into %s values(%d,'%s')"
         updt = "update %s set nazwa = '%s' where sid = %s"
-        if self.t == self.MIASTA:
-            naz_u = 'miasta_slo'
-            naz_i = 'nowe_miasto'
-        elif self.t == self.POWIATY:
-            naz_u = 'powiaty_slo'
-            naz_i = 'nowy_powiat'
-        elif self.t == self.WOJEWODZ:
-            naz_u = 'wojewodztwa_slo'
-            naz_i = 'nowe_wojewodztwo'
-        elif self.t == self.GMINY:
-            naz_u = 'gminy_slo'
-            naz_i = 'nowa_gmina'
-        elif self.t == self.KULTURY:
-            naz_u = 'kultury_slo'
-            naz_i = 'nowa_kultura'
-        elif self.t == self.FUNKCJE:
-            naz_u = 'funkcje_slo'
-            naz_i = 'nowa_funkcja'
-        elif self.t == self.EPOKI:
-            naz_u = 'epoki_slo'
-            naz_i = 'nowa_epoka'
+        delit = "delete from %s where sid=%s"
+        #=======================================================================
+        # if self.t == self.MIASTA:
+        #    naz_u = 'miasta_slo'
+        #    naz_join = 'miejscowosc'
+        # elif self.t == self.POWIATY:
+        #    naz_u = 'powiaty_slo'
+        #    naz_join = 'powiat'
+        # elif self.t == self.WOJEWODZ:
+        #    naz_u = 'wojewodztwa_slo'
+        #    naz_join = 'wojewodztwo'
+        # elif self.t == self.GMINY:
+        #    naz_u = 'gminy_slo'
+        #    naz_join = 'gmina'
+        # elif self.t == self.KULTURY:
+        #    naz_u = 'kultury_slo'
+        #    naz_join = 'kultura'
+        # elif self.t == self.FUNKCJE:
+        #    naz_u = 'funkcje_slo'
+        #    naz_join = 'funkcja'
+        # elif self.t == self.EPOKI:
+        #    naz_u = 'epoki_slo'
+        #    naz_join = 'epoka'
+        #=======================================================================
         for e in self.zmiany.values():
             if e.czy_new:
-                sql = ins%(naz_u,self.max_sid(naz_u),e.n)
-                print sql
+                sql = ins%(self.var_slo[self.t][0],self.max_sid(self.var_slo[self.t][0]),e.n)
                 self.con.wykonaj(sql,False)
+                return (True,'')
             elif e.czy_mod:
-                self.con.wykonaj(updt%(naz_u,e.n,str(e.i)),False)
+                self.con.wykonaj(updt%(self.var_slo[self.t][0],e.n,str(e.i)),False)
+                return (True,'')
+            elif e.czy_del:
+                self.con.wykonaj(delit(self.var_slo[self.t][0],str(e.i)),False)
+                return (True,'')
         self.con.zatwierdz()
+    
+    def spr_usun(self,klucz):
+        e = self.slow[klucz]
+        if e.czy_new:
+            return (True,'')
+        if self.t < self.KULTURY and self.spr_czy_lok(e,self.var_slo[self.t][1]):
+            return (False,u'Usuwana nazwa została już użyta')
+        elif self.t > self.GMINY and self.spr_czy_fakt(e, self.var_slo[self.t][1]):
+            return (False,u'Usuwana nazwa została już użyta')
+        else:
+            return (True,'')
+    
+    def spr_czy_lok(self,e,pn):
+        sql = "select count(*) from lokalizacje where %s = %d" %(pn,e.i)
+        print sql
+        ile = self.con.wykonaj(sql)
+        return ile[0][0] > 0 # istnieje lokalizacja do ktorej przypisana jest uswana nazwa 
+    
+    def spr_czy_fakt(self,e,pn):
+        sql = "select count(*) from materialy where %s = %d" %(pn,e.i)
+        ile = self.con.wykonaj(sql)
+        return ile[0][0] > 0 # istnieje lokalizacja do ktorej przypisana jest uswana nazwa     
         
     def max_sid(self,tab):
         max_id = "select coalesce(max(sid),0)+1 as nast from %s" % tab

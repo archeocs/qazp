@@ -64,21 +64,28 @@ class AdminSlownik(SlownikDialog):
             nowy = self.admin.nowy(unicode(ret[0]))
             if nowy[1]:
                 self.lista.addItem(unicode(nowy[0]))
-            
+            else:
+                QMessageBox.critical(self,u"Niedozwolone",'W słowniku istnieje już nazwa '+ret[0],"OK")
+                
     def zmien(self):
         ret = QInputDialog.getText(self,'Zmien',uzytki.to_unicode('Wprowadź nową wartość'),QLineEdit.Normal,uzytki.to_unicode(self.wyb_txt()))
         if ret[1]:
             zm = self.admin.zmien(self.wyb_txt(),unicode(ret[0]))
-            if zm:
+            if zm[0]:
                 self.lista.clear()
                 for m in self.admin.lista(nowa=True):
                     self.lista.addItem(unicode(m))
+            else:
+                QMessageBox.critical(self,u'Niedozwolone',zm[1],"OK")
                     
     def usun(self):
-        us = self.admin.usun(self.wyb_txt())
-        print us
-        if us:
-            self.lista.takeItem(self.lista.currentRow())
+        test = self.admin.spr_usun(self.wyb_txt())
+        if test[0]:
+            us = self.admin.usun(self.wyb_txt())
+            if us:
+                self.lista.takeItem(self.lista.currentRow())
+        else:
+            QMessageBox.critical(self,u"Niedozwolone",test[1],"OK")
             
     def zapisz(self):
         self.admin.zapisz()

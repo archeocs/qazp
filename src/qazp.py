@@ -5,7 +5,8 @@
 import sys
 
 from PyQt4.QtCore import QObject,SIGNAL, QSettings
-from PyQt4.QtGui import QAction,QMainWindow,QAbstractItemView,QTableWidgetItem,QApplication,QHeaderView
+from PyQt4.QtGui import QAction,QMainWindow,QAbstractItemView,QTableWidgetItem,QApplication,QHeaderView,QMessageBox
+from PyQt4.QtGui import QInputDialog
 
 from lib.model import DaneAzp
 from lib.db.postgre import PolPg
@@ -76,15 +77,8 @@ class OknoGlowne(QMainWindow,MainWindow):
         if plugin:
             con_info = self.get_ustawienia()
         self.con = self.get_con(con_info)
-        self.set_dane(self.con)
-        #self.dane = DaneAzp()
-        #self.dane.set_polaczenie(self.con)
-        
-        #self.arkusz_cb.addItem("Wszystkie")
-        #self.tb_ark = self.dane.lista_ark()
-        #self.arkusz_cb.addItems(self.tb_ark)
         self.connect(self.arkusz_cb,SIGNAL('activated(int)'),self.ark_wybor)
-        
+        self.set_dane(self.con)
         #self.nrark_cb.addItem("Wszystkie")
         self.connect(self.nrark_cb,SIGNAL('activated(int)'),self.nr_wybor)
         
@@ -115,10 +109,44 @@ class OknoGlowne(QMainWindow,MainWindow):
         self.zest_menu.addAction(zest_zlicz_kult_akcja)
         self.connect(zest_zlicz_kult_akcja, SIGNAL('triggered()'),self.zest_zlicz_kult)
         zest_zlicz_kult_akcja.setText("Zliczaj kultury")
+        
+        zest_stan_gmina_akcja = QAction(self)
+        self.zest_menu.addAction(zest_stan_gmina_akcja)
+        self.connect(zest_stan_gmina_akcja, SIGNAL('triggered()'),self.zest_stan_gmina)
+        zest_stan_gmina_akcja.setText("Stanowiska w gminie ...")
+        
+        zest_stan_miej_akcja = QAction(self)
+        self.zest_menu.addAction(zest_stan_miej_akcja)
+        self.connect(zest_stan_miej_akcja, SIGNAL('triggered()'),self.zest_stan_miej)
+        zest_stan_miej_akcja.setText(u"Stanowiska w miejscowości ...")
+        
+        zest_stan_ark_akcja = QAction(self)
+        self.zest_menu.addAction(zest_stan_ark_akcja)
+        self.connect(zest_stan_ark_akcja, SIGNAL('triggered()'),self.zest_stan_ark)
+        zest_stan_ark_akcja.setText(u"Stanowiska na arkuszu ...")
+        
         uzyt_zest = QAction(self)
         self.connect(uzyt_zest,SIGNAL('triggered()'),self.nowe_zestawienie)
         self.zest_menu.addAction(uzyt_zest)
         uzyt_zest.setText("Nowe zestawienie")
+        
+        # pomoc
+        lic_akcja = QAction(self)
+        self.pomoc_menu.addAction(lic_akcja)
+        self.connect(lic_akcja, SIGNAL('triggered()'),self._licencja)
+        lic_akcja.setText('Licencja')
+        
+        baza_info_akcja = QAction(self)
+        self.pomoc_menu.addAction(baza_info_akcja)
+        self.connect(baza_info_akcja, SIGNAL('triggered()'),self._baza_info)
+        baza_info_akcja.setText('Informacje o bazie')
+    
+    def _baza_info(self):
+        info = 'Baza: %(src)s\n Liczba lokalizacji w bazie: %(lok)s\nLiczba stanowisk w bazie: %(stan)s' % self.con.statystyka() 
+        QMessageBox.information(self,'Informacje o bazie',info)   
+        
+    def _licencja(self):
+        QMessageBox.information(self, 'Licencja', u'(c) Miłosz Pigłas 2011-2012. Wszystkie prawa zastrzeżone\nDystrybucja na warunkach licencji BSD')
     
     def get_ustawienia(self):
         qgis_ust = QSettings()
@@ -129,14 +157,14 @@ class OknoGlowne(QMainWindow,MainWindow):
         else:
             ud['typdb']='spatialite'
             qgis_ust.setValue('typdb','spatialite')
-            qgis_ust.endGroup()
+        qgis_ust.endGroup()
         if ud['typdb'] == 'spatialite':
             qgis_ust.beginGroup('/Spatialite/connections')
             nazwa = unicode(qgis_ust.value("selected").toString())
             if '@' in nazwa:
                 nazwa = nazwa.split('@')[0]
-                plik = unicode(qgis_ust.value("%s/sqlitepath"%nazwa).toString())
-                ud['plik'] = plik
+            plik = unicode(qgis_ust.value("%s/sqlitepath"%nazwa).toString())
+            ud['plik'] = plik
         elif ud['typdb'] == 'postgis':
             qgis_ust.beginGroup("/PostgreSQL/connections")
             ud['nazwa'] = unicode(qgis_ust.value("selected").toString())
@@ -150,11 +178,15 @@ class OknoGlowne(QMainWindow,MainWindow):
     
     def get_con(self,con_info=None):
         if not con_info:
-            return SqliteDb("/home/milosz/archeocs/azp2/azp2_1.db")
+            plik_db = QInputDialog.getText(self,"Baza danych","Podaj lokalizacje bazy danych",
+                                           text="/home/milosz/archeocs/azp2/azp2_2.db")
+            if plik_db[1]:
+                return SqliteDb(str(plik_db[0]))
+            return SqliteDb("/home/milosz/archeocs/azp2/azp2_2.db")
         else:
             if con_info['typdb'] == 'spatialite':
                 return SqliteDb(con_info['plik'])
-            elif con_info['typdb'] == 'postigs':
+            elif con_info['typdb'] == 'postgis':
                 return PolPg(con_info['db'],con_info['user'],con_info['pswd'],hn=con_info['host'])
         return None
     
@@ -163,10 +195,15 @@ class OknoGlowne(QMainWindow,MainWindow):
         self.dane.set_polaczenie(con)
         self.arkusz_cb.clear()
         self.arkusz_cb.addItem("Wszystkie")
-        self.tb_ark = self.dane.lista_ark()
-        self.arkusz_cb.addItems(self.tb_ark)
-        self.nrark_cb.clear()
-        self.nrark_cb.addItem("Wszystkie")
+        dark = self.dane.lista_ark()
+        if dark[0]:
+            self.tb_ark = dark[1]
+            self.arkusz_cb.addItems(self.tb_ark)
+            self.nrark_cb.clear()
+            self.nrark_cb.addItem("Wszystkie")
+        else:
+            QMessageBox.critical(self,u"Błąd",u"Wystąpił błąd. Sprawdź czy baza danych jest prawidłowa\nInformacja o błędzie: "+
+                             dark[2],"OK")
         
     def nowe_zestawienie(self):    
         '''
@@ -188,13 +225,54 @@ class OknoGlowne(QMainWindow,MainWindow):
                     widokerr.exec_()
     
     def zest_zlicz_kult(self):
-        sql = "select k.nazwa,count(*) as ile_kul from kultury_slo k right outer join materialy m on m.kultura = k.sid group by k.nazwa"    
+        sql = "select k.nazwa,count(*) as ile_kul from  materialy m join kultury_slo k on m.kultura = k.sid where m.kultura > 0 group by k.nazwa"    
         z = self.con.utworz_zestawienie(sql)
         z.wykonaj()
         widok = zest_widok.ZestWidok(z,self)
         widok.exec_()
         z.usun_cursor()
         
+    def zest_stan_gmina(self):
+        slow = self.dane.gminy()
+        ret = QInputDialog.getItem(self, u"Wybierz gminę", u"Wybierz gminę z listy i kliknij OK", slow.lista(), editable=False)
+        if ret[1]:
+            sql = """select m.nazwa, l.nr_miejscowosc, l.arkusz||'/'||l.nr_arkusz as AZP, s.data, s.autor 
+                    from stanowiska s join lokalizacje l on s.lokalizacja = l.lid join
+                    miasta_slo m on l.miejscowosc = m.sid where l.gmina=%d"""%slow.nazwa_sid(str(ret[0]))
+            z = self.con.utworz_zestawienie(sql)
+            z.wykonaj()
+            widok = zest_widok.ZestWidok(z,self)
+            widok.setWindowTitle(u'Stanowiska w gminie')
+            widok.exec_()
+            z.usun_cursor()
+    
+    def zest_stan_miej(self):
+        slow = self.dane.miasta()
+        ret = QInputDialog.getItem(self, u"Wybierz miejscowość", u"Wybierz miejscowość z listy i kliknij OK", slow.lista(), editable=False)
+        if ret[1]:
+            sql = """select m.nazwa, l.nr_miejscowosc, l.arkusz||'/'||l.nr_arkusz as AZP, s.data, s.autor 
+                    from stanowiska s join lokalizacje l on s.lokalizacja = l.lid join
+                    miasta_slo m on l.miejscowosc = m.sid where l.miejscowosc=%d"""%slow.nazwa_sid(str(ret[0]))
+            z = self.con.utworz_zestawienie(sql)
+            z.wykonaj()
+            widok = zest_widok.ZestWidok(z,self)
+            widok.setWindowTitle(u'Stanowiska w miejscowości')
+            widok.exec_()
+            z.usun_cursor()
+    
+    def zest_stan_ark(self):
+        ret = QInputDialog.getText(self, u'Arkusz AZP', u'Podaj numer arkusza i kliknij OK')
+        if ret[1]:
+            sql = """select m.nazwa, l.nr_miejscowosc, l.arkusz||'/'||l.nr_arkusz as AZP, s.data, s.autor 
+                    from stanowiska s join lokalizacje l on s.lokalizacja = l.lid join
+                    miasta_slo m on l.miejscowosc = m.sid where l.arkusz='%s'"""%str(ret[0])
+            z = self.con.utworz_zestawienie(sql)
+            z.wykonaj()
+            widok = zest_widok.ZestWidok(z,self)
+            widok.setWindowTitle(u'Stanowiska na arkuszu')
+            widok.exec_()
+            z.usun_cursor()
+                
     def set_typdb(self,typ):
         qgis_ust = QSettings()
         qgis_ust.beginGroup('/QAzp')
@@ -283,10 +361,15 @@ class OknoGlowne(QMainWindow,MainWindow):
     def ark_wybor(self,x):
         if x > 0 and x != self.ark_ind:
             self.ark_ind = x
-            self.tb_nr = self.dane.lista_nrark(self.tb_ark[x-1])
-            self.nrark_cb.clear()
-            self.nrark_cb.addItem("Wszystkie")
-            self.nrark_cb.addItems(self.tb_nr)
+            dnr = self.dane.lista_nrark(self.tb_ark[x-1])
+            if dnr[0]:
+                self.tb_nr = dnr[1]
+                self.nrark_cb.clear()
+                self.nrark_cb.addItem("Wszystkie")
+                self.nrark_cb.addItems(self.tb_nr)
+            else:
+                QMessageBox.critical(self,u"Błąd",u"Wystąpił błąd. Sprawdź czy baza danych jest prawidłowa\nInformacja o błędzie: "+
+                             dnr[2],"OK")
         elif x == 0:
             self.ark_ind = -1
             

@@ -27,24 +27,30 @@ class Polaczenie:
         return sts
         
     def get_arkusze(self):
-        arklista = []
-        c = self.p.cursor()
-        c.execute('select distinct arkusz from stanowiska order by arkusz')
-        arks = c.fetchall()
-        for a in arks:
-            arklista.append(a[0])
-        c.close()
-        return arklista
+        try :
+            arklista = []
+            c = self.p.cursor()
+            c.execute('select distinct arkusz from stanowiska order by arkusz')
+            arks = c.fetchall()
+            for a in arks:
+                arklista.append(a[0])
+            c.close()
+            return (True,arklista,"")
+        except Exception, e:
+            return (False,None,str(e))
         
     def get_nrark(self,a):
-        nrlista = []
-        c = self.p.cursor()
-        c.execute("select distinct nr_arkusz from stanowiska where arkusz = '%s' order by nr_arkusz asc"%a)
-        nrs = c.fetchall()
-        for n in nrs:
-            nrlista.append(n[0])
-        c.close()
-        return nrlista
+        try:
+            nrlista = []
+            c = self.p.cursor()
+            c.execute("select distinct nr_arkusz from stanowiska where arkusz = '%s' order by nr_arkusz asc"%a)
+            nrs = c.fetchall()
+            for n in nrs:
+                nrlista.append(n[0])
+            c.close()
+            return (True,nrlista,'')
+        except Exception, e:
+            return (False,None,str(e))
         
     def get_kryteria(self):
         c = self.p.cursor()
@@ -55,6 +61,22 @@ class Polaczenie:
         c.close()
         return krs
         #return klista
+        
+    def statystyka(self):
+        c = self.p.cursor()
+        stats = {}
+        ile_lok = "select count(*) from lokalizacje"
+        ile_stan = "select count(*) from stanowiska"
+        c.execute(ile_lok)
+        stats['lok'] = c.fetchone()[0]
+        c.execute(ile_stan)
+        stats['stan'] = c.fetchone()[0]
+        c.close()
+        stats['src'] = self.get_con_info()
+        return stats
+    
+    def get_con_info(self):
+        return ''    
         
     def wykonaj(self,sql,sel=True):
         c = self.p.cursor()

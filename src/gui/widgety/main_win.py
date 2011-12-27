@@ -60,6 +60,7 @@ class MainWindow(object):
         self.klas_menu = QtGui.QMenu(self.menubar)
         self.zest_menu = QtGui.QMenu(self.menubar)
         self.ust_menu = QtGui.QMenu(self.menubar)
+        self.pomoc_menu = QtGui.QMenu(self.menubar)
         MainWindow.setStatusBar(self.statusbar)
         self.miasta_akcja = QtGui.QAction(MainWindow)
         self.lok_menu.addAction(self.miasta_akcja)
@@ -85,12 +86,12 @@ class MainWindow(object):
         self.typdb_ust_menu.addAction(self.typdb_pg)
         self.typdb_spat = QtGui.QAction(MainWindow)
         self.typdb_ust_menu.addAction(self.typdb_spat)
-        
     
         self.menubar.addAction(self.lok_menu.menuAction())
         self.menubar.addAction(self.klas_menu.menuAction())
         self.menubar.addAction(self.zest_menu.menuAction())
         self.menubar.addAction(self.ust_menu.menuAction())
+        self.menubar.addAction(self.pomoc_menu.menuAction())
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -117,4 +118,5 @@ class MainWindow(object):
         self.ust_submenu.setText(QtGui.QApplication.translate("MainWindow", "Typ bazy", None, QtGui.QApplication.UnicodeUTF8))
         self.typdb_pg.setText(QtGui.QApplication.translate("MainWindow", "Postgis", None, QtGui.QApplication.UnicodeUTF8))
         self.typdb_spat.setText(QtGui.QApplication.translate("MainWindow", "Spatialite", None, QtGui.QApplication.UnicodeUTF8))
+        self.pomoc_menu.setTitle(u'Pomoc')
         #self.actionCcc.setText(QtGui.QApplication.translate("MainWindow", "ccc", None, QtGui.QApplication.UnicodeUTF8))

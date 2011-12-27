@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 '''
 Created on Jul 29, 2011
 
@@ -8,16 +10,16 @@ def name():
     return "QAZP"
 
 def description():
-    return "Archeologiczne Zdjecie Polski"
+    return u"Archeologiczne Zdjęcie Polski"
 
 def version():
-    return "Version 0.99"
+    return "Version 0.11"
 
 def qgisMinimumVersion():
     return "1.5"
 
 def authorName():
-    return "Milosz Piglas"
+    return "Miłosz Pigłas"
 
 def classFactory(iface):
     import qazp

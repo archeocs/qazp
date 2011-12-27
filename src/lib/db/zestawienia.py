@@ -17,14 +17,16 @@ class Zestawienie(object):
     def wykonaj(self,params = {}):
         self.cursor = self.pol.cursor()
         try: 
+           
             self.cursor.execute(self.sql)
             self.zestpola = []
             for koldesc in self.cursor.description:
                 self.zestpola.append((koldesc[0],koldesc[1]))
+            print self.sql, len(self.zestpola)
             return None   
         except Exception, e:
             self.pol.rollback()
-            #print dir(e)
+            print e
             return unicode(e)
     
     def nazwy_pol(self):

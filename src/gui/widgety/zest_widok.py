@@ -5,7 +5,7 @@ Created on Jul 24, 2011
 '''
 
 from PyQt4.QtGui import QDialog, QVBoxLayout,QTableWidget, QAbstractItemView
-from PyQt4.QtGui import QDialogButtonBox,QTableWidgetItem,QApplication
+from PyQt4.QtGui import QDialogButtonBox,QTableWidgetItem,QApplication,QStatusBar
 from PyQt4.QtCore import SIGNAL
 
 class ZestWidok(QDialog):
@@ -28,6 +28,8 @@ class ZestWidok(QDialog):
         self.btns = QDialogButtonBox(self)
         self.btns.setStandardButtons(QDialogButtonBox.Close)
         self.vbox.addWidget(self.btns)
+        self.status = QStatusBar(self)
+        self.vbox.addWidget(self.status)
         self.connect(self.btns,SIGNAL('rejected()'),self.zamknij)
         self.connect(self, SIGNAL('close()'),self.zamknij)
         
@@ -52,7 +54,8 @@ class ZestWidok(QDialog):
                 self.tabela.setItem(wiersze_count,pi,self.__item(pole))
             wiersze_count += 1
         self.tabela.setSortingEnabled(True)
-        self.tabela.resizeColumnsToContents()    
+        self.tabela.resizeColumnsToContents()   
+        self.status.showMessage('Znaleziono: %s'%str(wiersze_count)) 
             
     def zamknij(self):
         self.done(0)        
