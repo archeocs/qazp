@@ -55,7 +55,8 @@ class LokalizacjaDialog(QDialog,lok_dial):
                 self.set_slownik(self.g_slo,self.gmina_cb,self.g_slo.nazwa_ind(self.lokal.gm_naz)+1)
                 self.set_slownik(self.p_slo,self.powiat_cb,self.p_slo.nazwa_ind(self.lokal.pow_naz)+1)
                 self.set_slownik(self.w_slo,self.woj_cb,self.w_slo.nazwa_ind(self.lokal.woj_naz)+1)    
-                self.lokal.czy_nowa=True
+                self.lokal.czy_nowa=False
+                self.lokal.czy_przyp = True
         else:
             return None
         

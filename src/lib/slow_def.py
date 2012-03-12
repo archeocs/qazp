@@ -24,20 +24,7 @@ class Slow:
             self.tb.append(n)
             
     def nazwa(self):
-        if self.t == self.MIASTA:
-            return u'Miasta'
-        elif self.t == self.POWIATY:
-            return u'Powiaty'
-        elif self.t == self.WOJEWODZ:
-            return u'Województwa'
-        elif self.t == self.GMINY:
-            return u'Gminy'
-        elif self.t == self.KULTURY:
-            return u'Kultury'
-        elif self.t == self.FUNKCJE:
-            return u'Funkcje'
-        elif self.t == self.EPOKI:
-            return u'Epoki'
+        return self.var_slo[self.t]
             
     def nowy(self,nv):
         unv = nv.upper()
@@ -106,41 +93,20 @@ class Slow:
         ins = "insert into %s values(%d,'%s')"
         updt = "update %s set nazwa = '%s' where sid = %s"
         delit = "delete from %s where sid=%s"
-        #=======================================================================
-        # if self.t == self.MIASTA:
-        #    naz_u = 'miasta_slo'
-        #    naz_join = 'miejscowosc'
-        # elif self.t == self.POWIATY:
-        #    naz_u = 'powiaty_slo'
-        #    naz_join = 'powiat'
-        # elif self.t == self.WOJEWODZ:
-        #    naz_u = 'wojewodztwa_slo'
-        #    naz_join = 'wojewodztwo'
-        # elif self.t == self.GMINY:
-        #    naz_u = 'gminy_slo'
-        #    naz_join = 'gmina'
-        # elif self.t == self.KULTURY:
-        #    naz_u = 'kultury_slo'
-        #    naz_join = 'kultura'
-        # elif self.t == self.FUNKCJE:
-        #    naz_u = 'funkcje_slo'
-        #    naz_join = 'funkcja'
-        # elif self.t == self.EPOKI:
-        #    naz_u = 'epoki_slo'
-        #    naz_join = 'epoka'
-        #=======================================================================
+
         for e in self.zmiany.values():
             if e.czy_new:
                 sql = ins%(self.var_slo[self.t][0],self.max_sid(self.var_slo[self.t][0]),e.n)
                 self.con.wykonaj(sql,False)
-                return (True,'')
+                #return (True,'')
             elif e.czy_mod:
                 self.con.wykonaj(updt%(self.var_slo[self.t][0],e.n,str(e.i)),False)
-                return (True,'')
+                #return (True,'')
             elif e.czy_del:
-                self.con.wykonaj(delit(self.var_slo[self.t][0],str(e.i)),False)
-                return (True,'')
+                self.con.wykonaj(delit%(self.var_slo[self.t][0],str(e.i)),False)
+                #return (True,'')
         self.con.zatwierdz()
+        return (True,'')
     
     def spr_usun(self,klucz):
         e = self.slow[klucz]
@@ -206,9 +172,6 @@ class E:
             self.n = nazwa.decode('utf-8')
         self.i = sid
         self.ti = tab_ind
-        
-    #def __unicode__(self):
-    #    return unicode(uzytki.to_unicode(self.n))
     
     def __unicode__(self):
         return self.n

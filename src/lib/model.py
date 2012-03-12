@@ -88,6 +88,7 @@ class DaneAzp:
     def znajdz_lokal(self,stan,ark,nr):
         lid = self.p.lokal_lid(ark,nr)
         if lid is not None:
+            stan.lokalizacja = lid
             return Lokalizacja(stan,self.p,self.p.lokal_info(lid))
         else:
             return None        

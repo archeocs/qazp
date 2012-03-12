@@ -6,7 +6,7 @@ import sys
 
 from PyQt4.QtCore import QObject,SIGNAL, QSettings
 from PyQt4.QtGui import QAction,QMainWindow,QAbstractItemView,QTableWidgetItem,QApplication,QHeaderView,QMessageBox
-from PyQt4.QtGui import QInputDialog
+from PyQt4.QtGui import QInputDialog, QPrintDialog,QFileDialog
 
 from lib.model import DaneAzp
 from lib.db.postgre import PolPg
@@ -18,6 +18,7 @@ from gui.lokalizacja import LokalizacjaDialog
 from gui.informacje import InfoDialog
 from gui.widgety import zest_widok
 from gui.widgety.edytor_sql import EdytorSql,BladSql
+from lib.dokument import Dokument
 
 class QGisPlugin(object):
     
@@ -114,16 +115,55 @@ class OknoGlowne(QMainWindow,MainWindow):
         self.zest_menu.addAction(zest_stan_gmina_akcja)
         self.connect(zest_stan_gmina_akcja, SIGNAL('triggered()'),self.zest_stan_gmina)
         zest_stan_gmina_akcja.setText("Stanowiska w gminie ...")
+        zest_stan_gmina_akcja.setToolTip(u'Wyświetla stanowiska w wybranej gminie')
         
         zest_stan_miej_akcja = QAction(self)
         self.zest_menu.addAction(zest_stan_miej_akcja)
         self.connect(zest_stan_miej_akcja, SIGNAL('triggered()'),self.zest_stan_miej)
         zest_stan_miej_akcja.setText(u"Stanowiska w miejscowości ...")
+        zest_stan_miej_akcja.setToolTip(u'Wyświetla stanowiska w wybranej miejscowości')
         
         zest_stan_ark_akcja = QAction(self)
         self.zest_menu.addAction(zest_stan_ark_akcja)
         self.connect(zest_stan_ark_akcja, SIGNAL('triggered()'),self.zest_stan_ark)
         zest_stan_ark_akcja.setText(u"Stanowiska na arkuszu ...")
+        zest_stan_ark_akcja.setToolTip(u'Wyświetla stanowiska na wybranym arkuszu')
+        
+        zest_stan_kultura_akcja = QAction(self)
+        self.zest_menu.addAction(zest_stan_kultura_akcja)
+        self.connect(zest_stan_kultura_akcja, SIGNAL('triggered()'),self.zest_stan_kul)
+        zest_stan_kultura_akcja.setText(u"Stanowiska z kulturą ...")
+        zest_stan_kultura_akcja.setToolTip(u'Wyświetla stanowiska z wybraną kulturą')
+        
+        zest_stan_epoka_akcja = QAction(self)
+        self.zest_menu.addAction(zest_stan_epoka_akcja)
+        self.connect(zest_stan_epoka_akcja, SIGNAL('triggered()'),self.zest_stan_epoka)
+        zest_stan_epoka_akcja.setText(u"Stanowiska z epoką ...")
+        zest_stan_epoka_akcja.setToolTip(u'Wyświetla stanowiska z wybraną epoką')
+        
+        zest_stan_fun_akcja = QAction(self)
+        self.zest_menu.addAction(zest_stan_fun_akcja)
+        self.connect(zest_stan_fun_akcja, SIGNAL('triggered()'),self.zest_stan_fun)
+        zest_stan_fun_akcja.setText(u"Stanowiska z funkcją ...")
+        zest_stan_fun_akcja.setToolTip(u'Wyświetla stanowiska z wybraną funkcją')
+        
+        self.zest_menu.addSeparator()
+        zest_ark_grupy_akcja = QAction(self)
+        self.zest_menu.addAction(zest_ark_grupy_akcja)
+        self.connect(zest_ark_grupy_akcja, SIGNAL('triggered()'),self.zest_ark_grupy)
+        zest_ark_grupy_akcja.setText(u"Zliczaj wg arkusza")
+        zest_ark_grupy_akcja.setToolTip(u'Wyświetla liczbę stanowisk na arkuszach')
+        
+        zest_miej_grupy_akcja = QAction(self)
+        self.zest_menu.addAction(zest_miej_grupy_akcja)
+        self.connect(zest_miej_grupy_akcja, SIGNAL('triggered()'),self.zest_miej_grupy)
+        zest_miej_grupy_akcja.setText(u"Zliczaj wg miejscowości ...")
+        zest_miej_grupy_akcja.setToolTip(u'Wyświetla liczbę stanowisk w miejscowościach')
+        
+        zest_stan_bezlok_akcja = QAction(self)
+        self.zest_menu.addAction(zest_stan_bezlok_akcja)
+        self.connect(zest_stan_bezlok_akcja, SIGNAL('triggered()'),self.zest_stan_bezlok)
+        zest_stan_bezlok_akcja.setText(u"Stanowiska bez lokalizacji ...")
         
         uzyt_zest = QAction(self)
         self.connect(uzyt_zest,SIGNAL('triggered()'),self.nowe_zestawienie)
@@ -139,8 +179,29 @@ class OknoGlowne(QMainWindow,MainWindow):
         baza_info_akcja = QAction(self)
         self.pomoc_menu.addAction(baza_info_akcja)
         self.connect(baza_info_akcja, SIGNAL('triggered()'),self._baza_info)
-        baza_info_akcja.setText('Informacje o bazie')
+        baza_info_akcja.setText('Informacje o bazie')    
+        if not self.con.geom:
+            QMessageBox.information(self, 'Wersja', u'Uwaga! Z braku wszystkich wymaganych modułów dodawanie nowych lokalizacji jest niemożliwe')    
     
+        druk_akcja = QAction(self)
+        self.pomoc_menu.addAction(druk_akcja)
+        self.connect(druk_akcja, SIGNAL('triggered()'),self._test_druk)
+        druk_akcja.setText("Test druku")
+    
+    def _test_druk(self):
+        nazwa = QFileDialog.getSaveFileName(self)
+        dok = Dokument()
+        dok.dodaj_akapit(u"Przykładowy akapit")
+        dok.dodaj_tabele([['abc','de','efgh','ixxx','jklm','nop'],['abc','dexxx','efgh','i','jklm','nop'],['abc','dexx','efgh','ix','jklm','xxnop']])
+        dok.zapisz_pdf(nazwa)
+        #self.wydruk = Wydruk()
+        #pd = QPrintDialog(self)
+        #pd.connect(pd, SIGNAL('accepted(QPrinter *)'),self._druk_fun)
+        #pd.exec_()
+    
+    def _druk_fun(self, printer):
+        self.wydruk.drukuj(printer)    
+        
     def _baza_info(self):
         info = 'Baza: %(src)s\n Liczba lokalizacji w bazie: %(lok)s\nLiczba stanowisk w bazie: %(stan)s' % self.con.statystyka() 
         QMessageBox.information(self,'Informacje o bazie',info)   
@@ -182,11 +243,11 @@ class OknoGlowne(QMainWindow,MainWindow):
                                            text="/home/milosz/archeocs/azp2/azp2_2.db")
             if plik_db[1]:
                 return SqliteDb(str(plik_db[0]))
-            return SqliteDb("/home/milosz/archeocs/azp2/azp2_2.db")
+            return SqliteDb("/home/milosz/archeocs/azp2/azp3.db")
         else:
-            if con_info['typdb'] == 'spatialite':
+            if con_info['typdb'] == 'spatialite' and con_info.has_key('plik'):
                 return SqliteDb(con_info['plik'])
-            elif con_info['typdb'] == 'postgis':
+            elif con_info['typdb'] == 'postgis' and con_info.has_key('db'):
                 return PolPg(con_info['db'],con_info['user'],con_info['pswd'],hn=con_info['host'])
         return None
     
@@ -225,7 +286,8 @@ class OknoGlowne(QMainWindow,MainWindow):
                     widokerr.exec_()
     
     def zest_zlicz_kult(self):
-        sql = "select k.nazwa,count(*) as ile_kul from  materialy m join kultury_slo k on m.kultura = k.sid where m.kultura > 0 group by k.nazwa"    
+        sql = """select k.nazwa,count(*) as ile_kul from  materialy m join kultury_slo k on 
+                    m.kultura = k.sid where m.kultura > 0 group by k.nazwa"""   
         z = self.con.utworz_zestawienie(sql)
         z.wykonaj()
         widok = zest_widok.ZestWidok(z,self)
@@ -272,6 +334,83 @@ class OknoGlowne(QMainWindow,MainWindow):
             widok.setWindowTitle(u'Stanowiska na arkuszu')
             widok.exec_()
             z.usun_cursor()
+            
+    def zest_stan_kul(self):
+        slow = self.dane.kultury()
+        ret = QInputDialog.getItem(self, u"Wybierz kulturę", u"Wybierz kulturę z listy i kliknij OK", slow.lista(), editable=False)
+        if ret[1]:
+            sql = """select k.nazwa as KULTURA, c.nazwa as MIEJSCOWOŚĆ , l.nr_miejscowosc, l.arkusz||'/'||l.nr_arkusz as AZP, s.data, s.autor 
+                    from stanowiska s join lokalizacje l on s.lokalizacja = l.lid join materialy m on s.sid = m.stanowisko
+                    join kultury_slo k on k.sid = m.kultura join miasta_slo c on l.miejscowosc = 
+                    c.sid where m.kultura=%d"""%slow.nazwa_sid(str(ret[0]))
+            z = self.con.utworz_zestawienie(sql)
+            z.wykonaj()
+            widok = zest_widok.ZestWidok(z,self)
+            widok.setWindowTitle(u'Stanowiska z kulturą')
+            widok.exec_()
+            z.usun_cursor()
+            
+    def zest_stan_epoka(self):
+        slow = self.dane.epoki()
+        ret = QInputDialog.getItem(self, u"Wybierz epokę", u"Wybierz epokę z listy i kliknij OK", slow.lista(), editable=False)
+        if ret[1]:
+            sql = """select e.nazwa as EPOKA, c.nazwa as MIEJSCOWOŚĆ , l.nr_miejscowosc, l.arkusz||'/'||l.nr_arkusz as AZP, s.data,
+                     s.autor 
+                    from stanowiska s join lokalizacje l on s.lokalizacja = l.lid join materialy m on s.sid = m.stanowisko
+                    join epoki_slo e on e.sid = m.epoka join miasta_slo c on l.miejscowosc = 
+                    c.sid where m.epoka=%d"""%slow.nazwa_sid(str(ret[0]))
+            z = self.con.utworz_zestawienie(sql)
+            z.wykonaj()
+            widok = zest_widok.ZestWidok(z,self)
+            widok.setWindowTitle(u'Stanowiska z epoką')
+            widok.exec_()
+            z.usun_cursor()
+            
+    def zest_stan_fun(self):
+        slow = self.dane.funkcje()
+        ret = QInputDialog.getItem(self, u"Wybierz funkcję", u"Wybierz funkcję z listy i kliknij OK", slow.lista(), editable=False)
+        if ret[1]:
+            sql = """select f.nazwa as FUNKCJA, c.nazwa as MIEJSCOWOŚĆ , l.nr_miejscowosc, l.arkusz||'/'||l.nr_arkusz as AZP, s.data,
+                     s.autor 
+                    from stanowiska s join lokalizacje l on s.lokalizacja = l.lid join materialy m on s.sid = m.stanowisko
+                    join funkcje_slo f on f.sid = m.funkcja join miasta_slo c on l.miejscowosc = 
+                    c.sid where m.funkcja=%d"""%slow.nazwa_sid(str(ret[0]))
+            z = self.con.utworz_zestawienie(sql)
+            z.wykonaj()
+            widok = zest_widok.ZestWidok(z,self)
+            widok.setWindowTitle(u'Stanowiska z funkcją')
+            widok.exec_()
+            z.usun_cursor()
+            
+    def zest_ark_grupy(self):
+        sql = """select count(*) as 'LICZBA STANOWISK', l.arkusz as ARKUSZ from stanowiska s join lokalizacje l on s.lokalizacja = l.lid
+                    group by l.arkusz order by l.arkusz """
+        z = self.con.utworz_zestawienie(sql)
+        z.wykonaj()
+        widok = zest_widok.ZestWidok(z,self)
+        widok.setWindowTitle(u'LICZBA STANOWISK WG ARKUSZA')
+        widok.exec_()
+        z.usun_cursor()
+        
+    def zest_miej_grupy(self):
+        sql = u"""select count(*) as 'LICZBA STANOWISK', m.nazwa as MIEJSCOWOŚĆ from stanowiska s join lokalizacje l on 
+                    s.lokalizacja = l.lid join miasta_slo m on l.miejscowosc = m.sid group by m.nazwa order by m.nazwa """
+        z = self.con.utworz_zestawienie(sql)
+        z.wykonaj()
+        widok = zest_widok.ZestWidok(z,self)
+        widok.setWindowTitle(u'LICZBA STANOWISK WG MIEJSCOWOŚCI')
+        widok.exec_()
+        z.usun_cursor()
+        
+    def zest_stan_bezlok(self):
+        sql = u""" select miejscowosc as MIEJSCOWOŚĆ, nr_miejscowosc AS NUMER, arkusz||'/'||nr_arkusz as 
+                AZP, data from stanowiska where lokalizacja is NULL """
+        z = self.con.utworz_zestawienie(sql)
+        z.wykonaj()
+        widok = zest_widok.ZestWidok(z,self)
+        widok.setWindowTitle(u'STANOWISKA BEZ LOKALIZACJI')
+        widok.exec_()
+        z.usun_cursor()
                 
     def set_typdb(self,typ):
         qgis_ust = QSettings()
@@ -296,8 +435,12 @@ class OknoGlowne(QMainWindow,MainWindow):
         Wyswietla okno dialogowe z informacjami o zaznaczonym badaniu
         '''
         tr = self.tabela.currentRow()
-        dial = InfoDialog(self.dane,self.tb_stan[tr])
-        dial.exec_()    
+        stanowisko = self.tb_stan[tr]
+        if stanowisko.lokalizacja:
+            dial = InfoDialog(self.dane,stanowisko)
+            dial.exec_()  
+        else:
+            QMessageBox.critical(self,u"Nie mogę wyświetlić danych",u"Stanowisko nie ma określonej lokalizacji.","OK")  
         
     def lokalizacja(self):
         '''

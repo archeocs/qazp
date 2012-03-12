@@ -13,10 +13,10 @@ def description():
     return u"Archeologiczne Zdjęcie Polski"
 
 def version():
-    return "Version 0.11"
+    return "Version 0.13"
 
 def qgisMinimumVersion():
-    return "1.5"
+    return "1.6"
 
 def authorName():
     return "Miłosz Pigłas"

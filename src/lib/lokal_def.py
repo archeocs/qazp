@@ -11,6 +11,7 @@ class Lokalizacja:
     arkusz,nr_ark,nr_miej,miej_naz,gm_naz,pow_naz,woj_naz = None,None,u"",None,None,None,None
     czy_nowa = False
     czy_zm = False
+    czy_przyp = False
     instr = "select * from azp_nowa_lokalizacja('%s','%s',%d,'%s',%d,%d,%d,%d)"
     # instr ark, nr_ark, miej, nr_miej, gmina, powiat,wojew,do_stan [przy ktorym stan byla utworzona
     updtstr = "select * from azp_zmien_lokalizacja(%d,'%s','%s',%d,'%s',%d,%d,%d,%d)"
@@ -74,6 +75,10 @@ class Lokalizacja:
             sql = stan_mod_lok % sqlargs
             print sql
             self.con.wykonaj(sql,False)
+        elif self.czy_przyp:
+            sql = stan_nowa_lok % sqlargs
+            print sql
+            self.con.wykonaj(sql,False)
             #self.con.wykonaj(sql,False)
         self.con.zatwierdz()
                 
@@ -93,7 +98,7 @@ class Lokalizacja:
         self.con.zatwierdz()
                 
     def zapisz(self):
-        print 'czy nowa',self.czy_nowa
+        print 'czy nowa',self.czy_nowa,self.czy_przyp,self.czy_zm
         sqlargs = {'lid':str(self.stan.lokalizacja), 'ark':self.arkusz, 'nr_ark':self.nr_ark, 'miej_id':str(self.miej_id), 
                    'nr_miej':self.nr_miej, 'gm':str(self.gm_id), 'pow':str(self.pow_id), 'woj':str(self.woj_id),
                    'naz_miej':self.miej_naz,'sid':self.stan.sid}

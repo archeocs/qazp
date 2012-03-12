@@ -4,9 +4,10 @@ Created on Jul 24, 2011
 @author: milosz
 '''
 
-from PyQt4.QtGui import QDialog, QVBoxLayout,QTableWidget, QAbstractItemView
-from PyQt4.QtGui import QDialogButtonBox,QTableWidgetItem,QApplication,QStatusBar
+from PyQt4.QtGui import QDialog, QVBoxLayout,QTableWidget, QAbstractItemView,QFileDialog
+from PyQt4.QtGui import QDialogButtonBox,QTableWidgetItem,QApplication,QStatusBar,QPrinter
 from PyQt4.QtCore import SIGNAL
+from lib.dokument import Dokument
 
 class ZestWidok(QDialog):
 
@@ -26,11 +27,12 @@ class ZestWidok(QDialog):
         self.tabela.setSortingEnabled(False)
         self.vbox.addWidget(self.tabela)
         self.btns = QDialogButtonBox(self)
-        self.btns.setStandardButtons(QDialogButtonBox.Close)
+        self.btns.setStandardButtons(QDialogButtonBox.Close | QDialogButtonBox.Save)
         self.vbox.addWidget(self.btns)
         self.status = QStatusBar(self)
         self.vbox.addWidget(self.status)
         self.connect(self.btns,SIGNAL('rejected()'),self.zamknij)
+        self.connect(self.btns,SIGNAL('accepted()'),self.zapisz_pdf)
         self.connect(self, SIGNAL('close()'),self.zamknij)
         
     def __item(self,var):
@@ -43,10 +45,11 @@ class ZestWidok(QDialog):
         #zest.wykonaj()
         zestpola = zest.nazwy_pol()
         self.tabela.setColumnCount(len(zestpola))
-        print zestpola
         #self.tabela.setVerticalHeaderLabels(zestpola)
+        self.heads = []
         for (zi,z) in enumerate(zestpola):
-            print self.tabela.setHorizontalHeaderItem(zi,self.__item(z.upper()))
+            self.tabela.setHorizontalHeaderItem(zi,self.__item(z.upper()))
+            self.heads.append(unicode(self.tabela.horizontalHeaderItem(zi).text()))
         wiersze_count = 0
         for wiersz in zest.wiersze():
             self.tabela.insertRow(wiersze_count)
@@ -55,7 +58,26 @@ class ZestWidok(QDialog):
             wiersze_count += 1
         self.tabela.setSortingEnabled(True)
         self.tabela.resizeColumnsToContents()   
-        self.status.showMessage('Znaleziono: %s'%str(wiersze_count)) 
-            
+        #self.status.showMessage('Znaleziono: %s'%str(wiersze_count)) 
+        
+    def zapisz_pdf(self):
+        rc = self.tabela.rowCount()
+        cc = self.tabela.columnCount()
+        #head = []
+        #for c in range(0,cc):
+        #    print self.tabela.horizontalHeaderItem(cc)
+        #    head.append(unicode(self.tabela.horizontalHeaderItem(cc).text()))
+        wiersze = []
+        for r in range(0,rc):
+            w = []
+            for c in range(0,cc):
+                w.append(unicode(self.tabela.item(r,c).text()))
+            wiersze.append(w)
+        nazwa = QFileDialog.getSaveFileName(self)
+        dok = Dokument()
+        dok.dodaj_tabele(self.heads, wiersze)
+        dok.zapisz_pdf(nazwa)
+        print 'zapis ok'
+    
     def zamknij(self):
         self.done(0)        
