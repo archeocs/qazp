@@ -7,7 +7,7 @@ Created on Mar 23, 2012
 '''
 from PyQt4.QtCore import QObject, SIGNAL,QSize,Qt
 from PyQt4.QtGui import QAction, QMessageBox, QDialog,QVBoxLayout,QDialogButtonBox,QApplication
-from PyQt4.QtGui import QTableWidget,QTableWidgetItem
+from PyQt4.QtGui import QTableWidget,QTableWidgetItem,QFileDialog
 from libazp.qgs import Layer
 #import logging
 from libazp.gpx import TrackList
@@ -19,27 +19,28 @@ class Plugin(object):
         #logging.basicConfig(filename='/home/milosz/gpsazp.log',level=logging.INFO)
     
     def initGui(self):
-        self.akcja = QAction("GpsAzp", self.iface.mainWindow())
+        self.akcja = QAction("Importuj plik GPX", self.iface.mainWindow())
         self.akcja.setWhatsThis("Dane GPS")
         self.akcja.setStatusTip("GPS")
         QObject.connect(self.akcja, SIGNAL("triggered()"), self.run)
 
         self.iface.addToolBarIcon(self.akcja)
-        self.iface.addPluginToMenu("GpsAzp",self.akcja)
+        self.iface.addPluginToMenu("AZP2-GPS",self.akcja)
     
     def unload(self):
-        self.iface.removePluginMenu("QpsAzp",self.akcja)
+        self.iface.removePluginMenu("GpsAzp",self.akcja)
         self.iface.removeToolBarIcon(self.akcja)
     
     def run(self):
         lay = Layer('podroze')
         if lay.layer: # udalo sie wyszukac
-            td = TracksDialog('/home/milosz/archeocs/gpx/test.gpx',layer=lay,parent=self.iface.mainWindow())
+            file_gpx = QFileDialog.getOpenFileName(self.iface.mainWindow(), filter='Pliki GPX (*.gpx)')
+            td = TracksDialog(file_gpx,layer=lay,parent=self.iface.mainWindow())
             td.exec_()
 
         else:
             QMessageBox.information(self.iface.mainWindow(), 'Info',u"Nie udało się znaleźć warstwy 'podroze'."+
-                                                                " Sprawdź, czy zostało nawiązane połączenie z bazą danych" )   
+                                                                u" Sprawdź, czy zostało nawiązane połączenie z bazą danych" )   
         
 class TracksTable(QTableWidget):
     
@@ -80,6 +81,7 @@ class TracksDialog(QDialog):
     
     def __init__(self,gpx,layer=None,parent=None):
         QDialog.__init__(self,parent)
+	self.setWindowTitle('AZP2-GPS')
         self.layer = layer
         self.tracks = self.tracks_list(gpx)
         self.init_dialog()
@@ -123,7 +125,7 @@ class TracksDialog(QDialog):
                 auth = row[1]
                 stime = self.tracks[i][1]
                 etime = self.tracks[i][2]
-#                print desc,auth,stime,etime
+                print desc,auth,stime,etime
         self.done(0)
 
 def main():

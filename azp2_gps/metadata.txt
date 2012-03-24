@@ -1,0 +1,8 @@
+[general]
+name=AZP2-GPS
+qgisMinimumVersion=1.6
+description=Import danych GPS do przestrzennej bazy danych
+version=version 0.2
+
+homepage=http://code.google.com/p/qazp
+repository=http://code.google.com/p/qazp/ 

@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 
 '''
-Created on Mar 23, 2012
-
-@author: milosz
+Licencja BSD
+Milosz Piglas
 '''
 
 def name():
-    return "GPS-Azp"
+    return "AZP2-GPS"
 
 def description():
     return u"Import danych GPS do przestrzennej bazy danych"
 
 def version():
-    return "Version 0.1"
+    return "Version 0.2"
 
 def qgisMinimumVersion():
     return "1.6"
