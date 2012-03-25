@@ -38,7 +38,7 @@ class Layer(object):
             lf = QgsFeature()
             lf.setGeometry(geom)
             lf.setAttributeMap(map_atr)
-            return self.layer.addFeature(lf)
+            return (self.layer.addFeature(lf),lf)
         
     def edit(self):
         self.layer.startEditing()

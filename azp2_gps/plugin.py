@@ -16,7 +16,7 @@ class Plugin(object):
     
     def __init__(self,iface):
         self.iface = iface
-        #logging.basicConfig(filename='/home/milosz/gpsazp.log',level=logging.INFO)
+        #logging.basicConfig(filename='',level=logging.INFO)
     
     def initGui(self):
         self.akcja = QAction("Importuj plik GPX", self.iface.mainWindow())
@@ -37,7 +37,10 @@ class Plugin(object):
             file_gpx = QFileDialog.getOpenFileName(self.iface.mainWindow(), filter='Pliki GPX (*.gpx)')
             td = TracksDialog(file_gpx,layer=lay,parent=self.iface.mainWindow())
             td.exec_()
-
+            if td.features:
+                QMessageBox.information(self.iface.mainWindow(), 'Info',u"Dodano "+str(len(td.features))+u" obiektów " )
+                lay.layer.setSelectedFeatures([f.id()*-1 for f in td.features])
+                self.iface.mapCanvas().zoomToSelected()
         else:
             QMessageBox.information(self.iface.mainWindow(), 'Info',u"Nie udało się znaleźć warstwy 'podroze'."+
                                                                 u" Sprawdź, czy zostało nawiązane połączenie z bazą danych" )   
@@ -81,9 +84,10 @@ class TracksDialog(QDialog):
     
     def __init__(self,gpx,layer=None,parent=None):
         QDialog.__init__(self,parent)
-	self.setWindowTitle('AZP2-GPS')
+        self.setWindowTitle('AZP2-GPS')
         self.layer = layer
         self.tracks = self.tracks_list(gpx)
+        self.features = []
         self.init_dialog()
         
     def init_dialog(self,tracks=[]):
@@ -112,20 +116,13 @@ class TracksDialog(QDialog):
                     auth = row[1]
                     stime = self.tracks[i][1]
                     etime = self.tracks[i][2]
-                   # logging.debug(str(nid)+" "+str(desc)+" "+str(auth)+" "+str(stime)+" "+str(etime))
-                    self.layer.add_feature(line,atr=[nid,desc,auth,stime,etime])
+                    af = self.layer.add_feature(line,atr=[nid,desc,auth,stime,etime])
+                    if af[0]:
+                        self.features.append(af[1])
             self.layer.save()
         self.zakoncz()
     
     def zakoncz(self):
-        for i in range(self.view.rowCount()):
-            row = self.view.get_row(i)
-            if row[0][0] == Qt.Checked:
-                desc = row[2]
-                auth = row[1]
-                stime = self.tracks[i][1]
-                etime = self.tracks[i][2]
-                print desc,auth,stime,etime
         self.done(0)
 
 def main():
