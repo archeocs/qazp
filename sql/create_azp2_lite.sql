@@ -128,14 +128,17 @@ CREATE TABLE powiaty_slo
   CONSTRAINT pk_powiat PRIMARY KEY (sid)
 );
 
-CREATE TABLE podroze(
-    id integer not null,
-    opis varchar(255),
-    autor varchar(255),
-    rozpoczecie varchar(24) not null,
-    zakonczenie varchar(24) not null,
-    wspolrzedne LINESTRING,
-    CONSTRAINT pk_podroze PRIMARY KEY (id)
+CREATE TABLE trasy(
+  id integer NOT NULL,
+  rodzaj_badan varchar(2) not null, -- L - lot, P - powierzchniowe, W - weryfikacje
+  data varchar(10) not null,
+  autor varchar(100) not null,
+  rozpoczecie varchar(25) not null,
+  zakonczenie varchar(25) not null,
+  czestotliwosc integer not null, -- czestotliwosc odczytow w sekundach
+  uwagi varchar(255),
+  wspolrzedne LINESTRING,
+  CONSTRAINT pk_trasy PRIMARY KEY (id)
 );
 
 CREATE TABLE stanowiska
@@ -208,7 +211,7 @@ CREATE TABLE zagrozenia
 );
 
 INSERT INTO geometry_columns VALUES('stanowiska','wspolrzedne','POLYGON','XY',2180,0);
-INSERT INTO geometry_columns VALUES('podroze','wspolrzedne','LINESTRING','XY',2180,0);
+INSERT INTO geometry_columns VALUES('trasy','wspolrzedne','LINESTRING','XY',2180,0);
 
 CREATE TRIGGER "ggi_stanowiska_wspolrzedne" BEFORE INSERT ON stanowiska
 FOR EACH ROW BEGIN
@@ -225,18 +228,18 @@ WHERE f_table_name = 'stanowiska' AND f_geometry_column = 'wspolrzedne'
 AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1) IS NULL;
 END;
 
-CREATE TRIGGER "ggi_podroze_wspolrzedne" BEFORE INSERT ON podroze
+CREATE TRIGGER "ggi_trasy_wspolrzedne" BEFORE INSERT ON trasy
 FOR EACH ROW BEGIN
-SELECT RAISE(ROLLBACK, 'podroze.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
+SELECT RAISE(ROLLBACK, 'trasy.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
 WHERE (SELECT type FROM geometry_columns
-WHERE f_table_name = 'podroze' AND f_geometry_column = 'wspolrzedne'
+WHERE f_table_name = 'trasy' AND f_geometry_column = 'wspolrzedne'
 AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1) IS NULL;
 END;
-CREATE TRIGGER "ggu_podroze_wspolrzedne" BEFORE UPDATE ON podroze
+CREATE TRIGGER "ggu_trasy_wspolrzedne" BEFORE UPDATE ON trasy
 FOR EACH ROW BEGIN
-SELECT RAISE(ROLLBACK, 'podroze.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
+SELECT RAISE(ROLLBACK, 'trasy.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
 WHERE (SELECT type FROM geometry_columns
-WHERE f_table_name = 'podroze' AND f_geometry_column = 'wspolrzedne'
+WHERE f_table_name = 'trasy' AND f_geometry_column = 'wspolrzedne'
 AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1) IS NULL;
 END;
 
