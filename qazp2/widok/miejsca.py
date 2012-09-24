@@ -1,0 +1,166 @@
+'''
+Created on Sep 9, 2012
+
+@author: milosz
+'''
+
+from geom import GTabModel, GFrame
+from PyQt4.QtGui import QMessageBox, QAction, QDialog, QFormLayout, QVBoxLayout, QWidget, QDialogButtonBox, QLineEdit  
+from PyQt4.QtGui import QInputDialog, QFileDialog
+from PyQt4.QtCore import QObject,SIGNAL,QVariant
+from lib.miejfun import wybrane,pobierz,zamien,dodaj,usun
+from lib.gps import WayPoints
+from dane.zrodla import rejestr_map, get_warstwa
+from qgis.core import QgsDataSourceURI
+
+
+def tab_model(obiekty,parent=None):
+    return GTabModel(['Ident','Nazwa','Rodzaj','Data','Autor','Uwagi'],obiekty,parent)
+
+def txt(v,trim=False,mx=-1):
+    if isinstance(v, QVariant):
+        u = unicode(v.toString())
+    else:
+        u = unicode(v)
+    if trim:
+        u = u.strip()
+    if mx > 0:
+        u = u[:mx]
+    return u
+
+class MiejscaDialog(QDialog):
+    
+    def __init__(self,dane=None,parent=None):
+        QDialog.__init__(self,parent)
+        self.dane = dane
+        self.init_dialog(dane)
+        
+    def init_dialog(self,dane):
+        vbox = QVBoxLayout(self)
+        self.setLayout(vbox)
+        wgt = QWidget(self)
+        form = QFormLayout(wgt)
+        self.nazwa_txt, self.rodz_txt, self.dt_txt = QLineEdit(parent=self),QLineEdit(parent=self),QLineEdit(parent=self)
+        self.autor_txt, self.uwagi_txt = QLineEdit(parent=self),QLineEdit(parent=self)
+        wgt.setLayout(form)
+        form.addRow('Nazwa', self.nazwa_txt)
+        form.addRow('Rodzaj', self.rodz_txt)
+        form.addRow('Data', self.dt_txt)
+        form.addRow('Autor', self.autor_txt)
+        form.addRow('Uwagi', self.uwagi_txt)
+        vbox.addWidget(wgt)
+        bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.connect(bb,SIGNAL('accepted()'), self.accept);
+        self.connect(bb,SIGNAL('rejected()'), self.reject);
+        vbox.addWidget(bb)
+        self.setWindowTitle('id: '+txt(dane['id'])+" "+str(dane.feature().id()))
+        if dane is not None:
+            self.nazwa_txt.setText(txt(dane['nazwa'],True))
+            self.rodz_txt.setText(txt(dane['rodzaj_badan'],True))
+            self.dt_txt.setText(txt(dane['data'],mx=10))
+            self.autor_txt.setText(txt(dane['autor'],True))
+            self.uwagi_txt.setText(txt(dane['uwagi'],True))
+        self.setModal(True)
+    
+    def get_dane(self):
+        return {'nazwa':self.nazwa_txt.text(),'rodzaj_badan':self.rodz_txt.text(),'data':self.dt_txt.text(),
+                'autor':self.autor_txt.text(),'uwagi':self.uwagi_txt.text()}
+
+class MiejscaFrame(GFrame):
+    
+    warstwa = None
+    def __init__(self,warstwa,iface,parent=None):
+        GFrame.__init__(self,pobierz(warstwa),parent)
+        self.warstwa = warstwa
+        self._if = iface
+        self._win = parent
+        self._win.statusBar().showMessage("Wyszukano %s obiektow %s"%(str(self.warstwa.featureCount()),
+                                                                      self.warstwa.dataProvider().dataSourceUri()))
+        
+    def utworz_model(self, gobs):
+        return tab_model(gobs, self)
+    
+    def akcja_ok(self):
+        QMessageBox.information(self, 'akcja_ok', 'OK')
+        self.setVisible(False)
+        
+    def akcja_anul(self):
+        self.setVisible(False)
+        
+    def akcja_wyswietl(self):
+        if self.warstwa is not None:
+            rejestr_map().addMapLayer(self.warstwa)
+            QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+self.warstwa.name())
+        
+    def akcja_zmien(self):
+        dialog = MiejscaDialog(dane=self.wybrany_wiersz()[1])
+        r = dialog.exec_()
+        if r == QDialog.Accepted:
+            ww = self.wybrany_wiersz()[1]
+            ww.zmien(dialog.get_dane())
+            ww.zatwierdz()
+            z = zamien(self.warstwa,ww)
+            if z[0]:
+                QMessageBox.information(self, 'info', 'Zmienione')
+                
+    def akcja_usun(self):
+        ww = self.wybrany_wiersz()[1]
+        u = usun(self.warstwa,ww)
+        if u:
+            QMessageBox.information(self, 'info', u'Usuniete miejsce %s'%unicode(ww['nazwa'].toString()))
+
+class WyszukajAkcja(QAction):
+    
+    def __init__(self,iface,window):
+        QAction.__init__(self,'Wyszukaj',window)
+        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self._win = window
+        self._iface = iface
+        
+    def wykonaj(self):
+        warunek = QInputDialog.getText(self._win, 'Miejsca', 'Wprowadz warunek', text='id > 0')
+        if warunek[1]:
+            mf = MiejscaFrame(wybrane(unicode(warunek[0])),self._iface,self._win)
+            self._win.setCentralWidget(mf)
+
+class ImportGpsAkcja(QAction):
+    
+    def __init__(self,iface,window):
+        QAction.__init__(self,'Importuj z GPS',window)
+        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self._win = window
+        self._iface = iface
+        
+    def wykonaj(self):
+        if self._iface:
+            fn = QFileDialog.getOpenFileName(self._win, filter='Pliki GPX (*.gpx)')
+        else:
+            fn = '/home/milosz/archeocs/gpx/miejsca_test.gpx'
+        wp = WayPoints()
+        wp.create(fn)
+        if self._iface is None:
+            QMessageBox.information(self._win, 'Import GPS', 'Odczytano %d punktow'%len(wp.pts_list))
+        miejsca = get_warstwa("miejsca")
+        miejsca.startEditing()
+        for (pi,p) in enumerate(wp.pts_list):
+            m = p.mapa()
+            m[1] = 'punkt %d'%pi
+            dodaj(miejsca, m, p.geom())
+        if miejsca.commitChanges():
+            QMessageBox.information(self._win, 'Import GPS', 'Zapisano %d punktow'%len(wp.pts_list))
+
+class TestUri(QAction):
+    
+    def __init__(self,iface,window):
+        QAction.__init__(self,'Test uri',window)
+        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self._win = window
+        self._iface = iface  
+        
+    def wykonaj(self):
+        mw = get_warstwa("miejsca")
+        QMessageBox.information(self._win, 'test', QgsDataSourceURI(mw.dataProvider().dataSourceUri()).sql())
+        
+    
+        
+    
