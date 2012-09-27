@@ -4,8 +4,8 @@ Created on Sep 22, 2012
 @author: milosz
 '''
 
-from datetime import time
-from dane.gtypy import Punkt
+import time
+from dane.gtypy import Punkt,Linia
 from xml.parsers.expat import ParserCreate
 
 def _czas_pl(st):
@@ -70,6 +70,52 @@ class GpxPunkt(object):
     def timestamp(self):
         return time.mktime(time.strptime(self.time.replace('Z',''),self._strp_fmt))
     
+class GpxPunktyLista(object):
+    
+    def __init__(self,lista_pt=[]):
+        self.punkty = []
+        self.punkty.extend(lista_pt)
+        
+    def dodaj_punkt(self,gpt):
+        self.punkty.append(gpt)
+    
+    def zlicz(self):
+        return len(self.punkty)
+    
+    def pt_list(self):
+        return Linia([Punkt(p.lon,p.lat) for p in self.punkty])
+    
+    def geom(self):
+        return self.pt_list().geom()
+    
+    def pierw(self):
+        return self.punkty[0]
+    
+    def ost(self):
+        return self.punkty[-1]
+    
+    def min_czas(self):
+        return min(self.punkty,key=lambda x: x.time).time
+    
+    def max_czas(self):
+        return max(self.punkty,key=lambda x: x.time).time
+    
+    def czas_delty(self):
+        t = self.punkty[0].timestamp()
+        delty = []
+        for p in self.punkty[1:]:
+            delty.append(abs(t-p.timestamp()))
+            t = p.timestamp()
+        return delty
+    
+    def __add__(self,pts):
+        if isinstance(pts, GpxPunktyLista):
+            return GpxPunktyLista(self.punkty+pts.punkty)
+
+def distr(values):
+    m = sum(values) / len(values)
+    s = pow(sum([pow(v-m, 2) for v in values]) / len(values), 0.5)
+    return (m,s)
 
 class WayPoints(object):
      
@@ -107,4 +153,68 @@ class WayPoints(object):
         parser.StartElementHandler = self.elem_start
         parser.EndElementHandler = self.elem_end
         parser.CharacterDataHandler = self.tekst
+        parser.ParseFile(open(fn,'r'))
+        
+class TrackPoints(object):
+    
+    def  __init__(self):
+        self.segments = []
+        self.chname,self.chval = None,''
+        self.track = False
+        self.cur_seg, self.cur_pt = None,None
+    
+    def elem_start(self,name,atrs):
+        if name == 'trk':
+            self.track = True
+        elif name == 'trkseg' and self.track and not self.cur_seg:
+            self.cur_seg = GpxPunktyLista()
+        elif name == 'trkpt' and self.cur_seg and not self.cur_pt:
+            self.cur_pt = GpxPunkt(lon=atrs['lon'],lat=atrs['lat'])
+        elif not self.chname and not self.chval and self.cur_pt:
+            self.chname = name
+            self.chval = ''
+
+    def chdata(self,txt):
+        if self.chname and self.cur_pt:
+            self.chval += txt
+            #self.chval = txt
+                
+    def count(self):
+        return len(self.segments)
+            
+    def elem_end(self,name):
+        if name == 'trkpt' and self.cur_seg and self.cur_pt:
+            self.cur_seg.dodaj_punkt(self.cur_pt)
+            self.cur_pt = None
+            self.chname = None
+            self.chval = None
+        elif name == 'trkseg' and self.cur_seg and not self.cur_pt:
+            if self.cur_seg.zlicz() > 1:
+                self.segments.append(self.cur_seg)
+            self.cur_seg = None
+        elif name == 'trk' and not self.cur_seg and not self.cur_pt:
+            self.track = False
+        elif self.chname and self.chval != '' and self.cur_pt:
+            setattr(self.cur_pt, self.chname, self.chval)
+            self.chname = None
+            self.chval = None
+            
+    def concat(self,ind=[]):
+        new_list = []
+        if ind:
+            for i in ind:
+                new_list.extend(self.segments[i].punkty)
+        else:
+            for s in self.segments:
+                new_list.extend(s.punkty)
+        return GpxPunktyLista(new_list)
+    
+    def get_segments(self):
+        return self.segments
+            
+    def create(self,fn):
+        parser = ParserCreate()
+        parser.StartElementHandler = self.elem_start
+        parser.EndElementHandler = self.elem_end
+        parser.CharacterDataHandler = self.chdata
         parser.ParseFile(open(fn,'r'))

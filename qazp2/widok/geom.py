@@ -22,12 +22,15 @@ class GTabModel(QAbstractTableModel):
         return len(self._nag)
     
     def data(self, indeks, rola = Qt.DisplayRole):
-        r,c = indeks.row(), indeks.column()
-        v = self._dane[r].wartosc(c)
-        if not isinstance(v, QVariant):
-            return 'a' #unicode(QVariant(self._dane[r].wartosc(c)).toString())
+        if rola == Qt.DisplayRole:
+            r,c = indeks.row(), indeks.column()
+            v = self._dane[r].wartosc(c)
+            if not isinstance(v, QVariant):
+                return QVariant(self._dane[r].wartosc(c)).toString()
+            else:
+                return v.toString()
         else:
-            return 'b' #unicode(v.toString())
+            return QVariant()
     
     def headerData(self, sekcja, orientacja, rola = Qt.DisplayRole):
         if orientacja == Qt.Vertical:
@@ -47,7 +50,7 @@ class GFrame(QFrame):
         
     def init_frame(self):
         vbox = QVBoxLayout(self)
-        self._tab = QTableWidget(self)
+        self._tab = QTableView(self)
         self._tab.setModel(self.utworz_model(self._gobs))
         self._tab.setItemDelegate(QStyledItemDelegate())
         vbox.addWidget(self._tab)

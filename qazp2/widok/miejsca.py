@@ -6,7 +6,7 @@ Created on Sep 9, 2012
 
 from geom import GTabModel, GFrame
 from PyQt4.QtGui import QMessageBox, QAction, QDialog, QFormLayout, QVBoxLayout, QWidget, QDialogButtonBox, QLineEdit  
-from PyQt4.QtGui import QInputDialog, QFileDialog
+from PyQt4.QtGui import QInputDialog, QFileDialog,QComboBox
 from PyQt4.QtCore import QObject,SIGNAL,QVariant
 from lib.miejfun import wybrane,pobierz,zamien,dodaj,usun
 from lib.gps import WayPoints
@@ -108,6 +108,10 @@ class MiejscaFrame(GFrame):
         u = usun(self.warstwa,ww)
         if u:
             QMessageBox.information(self, 'info', u'Usuniete miejsce %s'%unicode(ww['nazwa'].toString()))
+            
+def formularz(dialog,fid,feature):
+    txtNaz = dialog.findChild(QLineEdit,"nazwa")
+    txtNaz.setText(u'Nowa')
 
 class WyszukajAkcja(QAction):
     
