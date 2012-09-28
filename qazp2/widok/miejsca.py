@@ -6,18 +6,23 @@ Created on Sep 9, 2012
 
 from geom import GTabModel, GFrame
 from PyQt4.QtGui import QMessageBox, QAction, QDialog, QFormLayout, QVBoxLayout, QWidget, QDialogButtonBox, QLineEdit  
-from PyQt4.QtGui import QInputDialog, QFileDialog,QComboBox
+from PyQt4.QtGui import QInputDialog, QFileDialog,QComboBox,QPlainTextEdit
 from PyQt4.QtCore import QObject,SIGNAL,QVariant
-from lib.miejfun import wybrane,pobierz,zamien,dodaj,usun
+from PyQt4.uic import loadUi
+from lib.miejfun import wybrane,pobierz,zamien,dodaj,usun,zmien2
 from lib.gps import WayPoints
 from dane.zrodla import rejestr_map, get_warstwa
 from qgis.core import QgsDataSourceURI
+from functools import partial
+from os.path import abspath
 
 
 def tab_model(obiekty,parent=None):
     return GTabModel(['Ident','Nazwa','Rodzaj','Data','Autor','Uwagi'],obiekty,parent)
 
 def txt(v,trim=False,mx=-1):
+    if not v:
+        return ""
     if isinstance(v, QVariant):
         u = unicode(v.toString())
     else:
@@ -65,6 +70,47 @@ class MiejscaDialog(QDialog):
     def get_dane(self):
         return {'nazwa':self.nazwa_txt.text(),'rodzaj_badan':self.rodz_txt.text(),'data':self.dt_txt.text(),
                 'autor':self.autor_txt.text(),'uwagi':self.uwagi_txt.text()}
+        
+def eddial(dane):
+    dial = loadUi(abspath(__file__+'/../../forms/miejsca.ui'))
+    txt_naz = dial.findChild(QLineEdit,'nazwa')
+    txt_naz.setText(txt(dane['nazwa']))
+    
+    cb_rodz = dial.findChild(QComboBox,'rodzaj_badan')
+    rb = dane['rodzaj_badan']
+    mpi = {'?':0,'P':1,'L':2}
+    if rb is None:
+        cb_rodz.setCurrentIndex(0)
+    else:
+        cb_rodz.setCurrentIndex(mpi[str(rb.toString())])
+    
+    txt_dt = dial.findChild(QLineEdit,'data')
+    txt_dt.setText('2012-01-01')
+    txt_autor = dial.findChild(QLineEdit,'autor')
+    txt_autor.setText(txt(dane['autor']))
+    txt_uwagi = dial.findChild(QPlainTextEdit,'uwagi')
+    txt_uwagi.setPlainText(txt(dane['uwagi']))
+    zatw_part = partial(zatwierdzone,dial=dial,fid=dane.feature().id(),feature=dane.feature())
+    bb = dial.findChild(QDialogButtonBox,'buttonBox')
+    QObject.connect(bb, SIGNAL('accepted()'),zatw_part)
+    dial.setModal(True)
+    return dial
+    
+def zatwierdzone(dial,fid,feature,ed=False):
+    if dial is None:
+        return
+    txt_naz = dial.findChild(QLineEdit,'nazwa') 
+    cb_rodz = dial.findChild(QComboBox,'rodzaj_badan')
+    txt_dt = dial.findChild(QLineEdit,'data')
+    txt_autor = dial.findChild(QLineEdit,'autor')
+    txt_uwagi = dial.findChild(QPlainTextEdit,'uwagi')
+    ma = feature.attributeMap()
+    nv = {0:ma[0],1:txt_naz.text(),3:txt_dt.text(),
+                4:txt_autor.text(),5:txt_uwagi.toPlainText()}
+    mpi = {0:'?',1:'P',2:'L'}
+    nv[2] = QVariant(mpi[cb_rodz.currentIndex()]).toString()
+    feature.setAttributeMap(nv)
+    
 
 class MiejscaFrame(GFrame):
     
@@ -93,15 +139,22 @@ class MiejscaFrame(GFrame):
             QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+self.warstwa.name())
         
     def akcja_zmien(self):
-        dialog = MiejscaDialog(dane=self.wybrany_wiersz()[1])
+        #dialog = MiejscaDialog(dane=self.wybrany_wiersz()[1])
+        ww = self.wybrany_wiersz()[1]
+        dialog = eddial(ww)
         r = dialog.exec_()
-        if r == QDialog.Accepted:
-            ww = self.wybrany_wiersz()[1]
-            ww.zmien(dialog.get_dane())
-            ww.zatwierdz()
-            z = zamien(self.warstwa,ww)
-            if z[0]:
+        if r != QDialog.Rejected:
+            z = zmien2(self.warstwa,ww.feature())
+            if z:
+                ww.aktualizuj()
                 QMessageBox.information(self, 'info', 'Zmienione')
+        #if r == QDialog.Accepted:
+        #    ww = self.wybrany_wiersz()[1]
+        #    ww.zmien(dialog.get_dane())
+        #    ww.zatwierdz()
+        #    z = zamien(self.warstwa,ww)
+        #    if z[0]:
+        #        QMessageBox.information(self, 'info', 'Zmienione')
                 
     def akcja_usun(self):
         ww = self.wybrany_wiersz()[1]

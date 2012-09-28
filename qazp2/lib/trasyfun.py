@@ -1,8 +1,9 @@
 '''
-Created on Sep 11, 2012
+Created on Sep 25, 2012
 
 @author: milosz
 '''
+
 from PyQt4.QtCore import QVariant
 from dane.zrodla import Warstwa
 from qgis.core import QgsFeature
@@ -10,31 +11,33 @@ from dane.model import GModel
 from qgis.core import QgsCoordinateTransform, QgsCoordinateReferenceSystem
 
 
-def lista_miejsc(sql):
-    #return []
-    wm = Warstwa("miejsca").szukaj(sql)
-    wm.select([0,1,2,3,4,5])
-    mt = []
-    f = QgsFeature()
-    ident = 0
-    while True:
-        if wm.nextFeature(f):
-            f.setFeatureId(ident)
-            ident += 1
-            mt.append(GModel(['id','nazwa','rodzaj_badan','data','autor','uwagi'],f))
-        else:
-            return mt
+#===============================================================================
+# def lista_miejsc(sql):
+#    #return []
+#    wm = Warstwa("trasy").szukaj(sql)
+#    wm.select([0,1,2,3,4,5,7])
+#    mt = []
+#    f = QgsFeature()
+#    ident = 0
+#    while True:
+#        if wm.nextFeature(f):
+#            f.setFeatureId(ident)
+#            ident += 1
+#            mt.append(GModel(['id','rodzaj_badan','data','autor','rozpoczecie','zakonczenie','uwagi'],f))
+#        else:
+#            return mt
+#===============================================================================
 
 def wybrane(sql):
-    return Warstwa("miejsca").szukaj(sql)
+    return Warstwa("trasy").szukaj(sql)
 
 def pobierz(warstwa):
-    warstwa.select([0,1,2,3,4,5])
+    warstwa.select([0,1,2,3,4,5,6,7])
     mt = []
     while True:
         f = QgsFeature()
         if warstwa.nextFeature(f):
-            mt.append(GModel(['id','nazwa','rodzaj_badan','data','autor','uwagi'],f))
+            mt.append(GModel(['id','rodzaj_badan','data','autor','rozpoczecie','zakonczenie','czestotliwosc','uwagi'],f))
         else:
             return mt
         
@@ -42,17 +45,11 @@ def zamien(war,ob):
     f = ob.feature()
     cf = QgsFeature()
     if not war.featureAtId(f.id(),cf):
-        raise Exception("Nie ma miejsca o podanym id "+f.id())
+        raise Exception("Nie ma trasy o podanym id "+f.id())
     war.startEditing()
     for (k, v) in f.attributeMap().iteritems():
         war.changeAttributeValue(f.id(), k,v)
     return (war.commitChanges(),[unicode(a.toString()) for a in cf.attributeMap().itervalues()],f.id(),cf.id())
-
-def zmien2(war,f):
-    war.startEditing()
-    for (k,v) in f.attributeMap().iteritems():
-        war.changeAttributeValue(f.id(),k,v)
-    return war.commitChanges()
 
 def dodaj(war,atr,geom,orig_srid=4326):
     f = QgsFeature()
@@ -72,4 +69,3 @@ def usun(war,ob):
     war.startEditing()
     war.deleteFeature(f.id())
     return war.commitChanges()
-    

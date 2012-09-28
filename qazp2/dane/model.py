@@ -87,6 +87,11 @@ class GModel(AModel):
     
     def zatwierdz(self):
         self._feature.setAttributeMap(dict([(ki,self[k]) for (ki,k) in enumerate(self.kolejnosc())]))
+        
+    def aktualizuj(self):
+        ma = self._feature.attributeMap()
+        for (ki, k) in enumerate(self._kolejnosc):
+            self[k] = ma[ki]
     
     def feature(self):
         return self._feature
