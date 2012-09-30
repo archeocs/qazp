@@ -1,17 +1,19 @@
+# -*- coding: utf-8 -*-
+
 '''
 Created on Sep 9, 2012
 
 @author: milosz
 '''
 
-from geom import GTabModel, GFrame
+from lista import GTabModel, GFrame
 from PyQt4.QtGui import QMessageBox, QAction, QDialog, QFormLayout, QVBoxLayout, QWidget, QDialogButtonBox, QLineEdit  
 from PyQt4.QtGui import QInputDialog, QFileDialog,QComboBox,QPlainTextEdit
 from PyQt4.QtCore import QObject,SIGNAL,QVariant
 from PyQt4.uic import loadUi
-from lib.miejfun import wybrane,pobierz,zamien,dodaj,usun,zmien2
+from lib.qgsop import set_mapa, zmien, usun, dodaj
 from lib.gps import WayPoints
-from dane.zrodla import rejestr_map, get_warstwa
+from dane.zrodla import rejestr_map, get_warstwa, gmiejsca, szukaj_miejsca
 from qgis.core import QgsDataSourceURI
 from functools import partial
 from os.path import abspath
@@ -85,7 +87,8 @@ def eddial(dane):
         cb_rodz.setCurrentIndex(mpi[str(rb.toString())])
     
     txt_dt = dial.findChild(QLineEdit,'data')
-    txt_dt.setText('2012-01-01')
+    txt_dt.setInputMask('    -  -  ')
+    txt_dt.setText(txt(dane['data']))
     txt_autor = dial.findChild(QLineEdit,'autor')
     txt_autor.setText(txt(dane['autor']))
     txt_uwagi = dial.findChild(QPlainTextEdit,'uwagi')
@@ -105,18 +108,20 @@ def zatwierdzone(dial,fid,feature,ed=False):
     txt_autor = dial.findChild(QLineEdit,'autor')
     txt_uwagi = dial.findChild(QPlainTextEdit,'uwagi')
     ma = feature.attributeMap()
-    nv = {0:ma[0],1:txt_naz.text(),3:txt_dt.text(),
-                4:txt_autor.text(),5:txt_uwagi.toPlainText()}
+    nv = {'nazwa':txt_naz.text(),'data':txt_dt.text(),
+                'autor':txt_autor.text(),'uwagi':txt_uwagi.toPlainText()}
     mpi = {0:'?',1:'P',2:'L'}
-    nv[2] = QVariant(mpi[cb_rodz.currentIndex()]).toString()
-    feature.setAttributeMap(nv)
+    nv['rodzaj_badan'] = QVariant(mpi[cb_rodz.currentIndex()]).toString()
+    set_mapa(feature,nv)
+    #feature.setAttributeMap(nv)
+    
     
 
 class MiejscaFrame(GFrame):
     
     warstwa = None
     def __init__(self,warstwa,iface,parent=None):
-        GFrame.__init__(self,pobierz(warstwa),parent)
+        GFrame.__init__(self,gmiejsca(warstwa),parent)
         self.warstwa = warstwa
         self._if = iface
         self._win = parent
@@ -139,26 +144,18 @@ class MiejscaFrame(GFrame):
             QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+self.warstwa.name())
         
     def akcja_zmien(self):
-        #dialog = MiejscaDialog(dane=self.wybrany_wiersz()[1])
         ww = self.wybrany_wiersz()[1]
         dialog = eddial(ww)
         r = dialog.exec_()
         if r != QDialog.Rejected:
-            z = zmien2(self.warstwa,ww.feature())
+            z = zmien(self.warstwa,ww.feature())
             if z:
                 ww.aktualizuj()
                 QMessageBox.information(self, 'info', 'Zmienione')
-        #if r == QDialog.Accepted:
-        #    ww = self.wybrany_wiersz()[1]
-        #    ww.zmien(dialog.get_dane())
-        #    ww.zatwierdz()
-        #    z = zamien(self.warstwa,ww)
-        #    if z[0]:
-        #        QMessageBox.information(self, 'info', 'Zmienione')
                 
     def akcja_usun(self):
         ww = self.wybrany_wiersz()[1]
-        u = usun(self.warstwa,ww)
+        u = usun(self.warstwa,ww.feature())
         if u:
             QMessageBox.information(self, 'info', u'Usuniete miejsce %s'%unicode(ww['nazwa'].toString()))
             
@@ -175,9 +172,13 @@ class WyszukajAkcja(QAction):
         self._iface = iface
         
     def wykonaj(self):
+        trasy = get_warstwa('miejsca')
+        if trasy is None:
+            QMessageBox.warning(self._win,u'Wyszukaj',u'Przed wyszukiwaniem należy otworzyć warstwę "miejsca"')
+            return 
         warunek = QInputDialog.getText(self._win, 'Miejsca', 'Wprowadz warunek', text='id > 0')
         if warunek[1]:
-            mf = MiejscaFrame(wybrane(unicode(warunek[0])),self._iface,self._win)
+            mf = MiejscaFrame(szukaj_miejsca(unicode(warunek[0])),self._iface,self._win)
             self._win.setCentralWidget(mf)
 
 class ImportGpsAkcja(QAction):
@@ -189,6 +190,10 @@ class ImportGpsAkcja(QAction):
         self._iface = iface
         
     def wykonaj(self):
+        trasy = get_warstwa('miejsca')
+        if trasy is None:
+            QMessageBox.warning(self._win,u'Import z GPS',u'Przed importem należy otworzyć warstwę "miejsca"')
+            return 
         if self._iface:
             fn = QFileDialog.getOpenFileName(self._win, filter='Pliki GPX (*.gpx)')
         else:
@@ -197,6 +202,7 @@ class ImportGpsAkcja(QAction):
         wp.create(fn)
         if self._iface is None:
             QMessageBox.information(self._win, 'Import GPS', 'Odczytano %d punktow'%len(wp.pts_list))
+            return
         miejsca = get_warstwa("miejsca")
         miejsca.startEditing()
         for (pi,p) in enumerate(wp.pts_list):

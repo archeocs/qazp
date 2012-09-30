@@ -9,10 +9,10 @@ Created on Sep 23, 2012
 from PyQt4.QtCore import QVariant,SIGNAL,QObject, Qt,QSize
 from PyQt4.QtGui import QDialog, QVBoxLayout,QWidget,QFormLayout,QLineEdit,QDialogButtonBox,QMessageBox
 from PyQt4.QtGui import QAction,QFileDialog,QInputDialog, QTableWidget, QTableWidgetItem,QComboBox,QLabel
-from geom import GTabModel,GFrame
-from dane.zrodla import rejestr_map, get_warstwa
-from lib.trasyfun import pobierz,dodaj,usun,zamien,wybrane
+from lista import GTabModel,GFrame
+from dane.zrodla import rejestr_map, get_warstwa, gtrasy, szukaj_trasy
 from lib.gps import GpxPunktyLista,distr, TrackPoints
+from lib.qgsop import usun, zmien,dodaj
 
 
 def tab_model(obiekty,parent=None):
@@ -69,7 +69,7 @@ class TrasyFrame(GFrame):
     
     warstwa = None
     def __init__(self,warstwa,iface,parent=None):
-        GFrame.__init__(self,pobierz(warstwa),parent)
+        GFrame.__init__(self,gtrasy(warstwa),parent)
         self.warstwa = warstwa
         self._if = iface
         self._win = parent
@@ -98,13 +98,13 @@ class TrasyFrame(GFrame):
             ww = self.wybrany_wiersz()[1]
             ww.zmien(dialog.get_dane())
             ww.zatwierdz()
-            z = zamien(self.warstwa,ww)
+            z = zmien(self.warstwa,ww)
             if z[0]:
                 QMessageBox.information(self, 'info', 'Zmienione')
                 
     def akcja_usun(self):
         ww = self.wybrany_wiersz()[1]
-        u = usun(self.warstwa,ww)
+        u = usun(self.warstwa,ww.feature())
         if u:
             QMessageBox.information(self, 'info', u'Usunieta trasa %s'%unicode(ww['nazwa'].toString()))
 
@@ -334,9 +334,13 @@ class WyszukajAkcja(QAction):
         self._iface = iface
         
     def wykonaj(self):
+        trasy = get_warstwa('trasy')
+        if trasy is None:
+            QMessageBox.warning(self._win,u'Wyszukiwanie',u'Przed wyszukiwaniem należy otworzyć warstwę "trasy"')
+            return 
         warunek = QInputDialog.getText(self._win, 'Trasy', 'Wprowadz warunek', text='id > 0')
         if warunek[1]:
-            mf = TrasyFrame(wybrane(unicode(warunek[0])),self._iface,self._win)
+            mf = TrasyFrame(szukaj_trasy(unicode(warunek[0])),self._iface,self._win)
             self._win.setCentralWidget(mf)
 
 class ImportGpsAkcja(QAction):
@@ -348,6 +352,10 @@ class ImportGpsAkcja(QAction):
         self._iface = iface
         
     def wykonaj(self):
+        trasy = get_warstwa('trasy')
+        if trasy is None:
+            QMessageBox.warning(self._win,u'Import GPS',u'Przed importem należy otworzyć warstwę "trasy"')
+            return 
         if self._iface:
             fn = QFileDialog.getOpenFileName(self._win, filter='Pliki GPX (*.gpx)')
         else:
@@ -358,12 +366,9 @@ class ImportGpsAkcja(QAction):
         add_dial.exec_()
         nt = add_dial.get_track()
         nf, ni = nt[0], nt[1]
-        # atrs = [tracks_layer.max_id()+1, ti['rodzaj'], ti['data'], ti['autor'],
-        #            contr.min_time(), contr.max_time(), ti['czest'], ti['uwagi']]
-        trasy = get_warstwa('trasy')
         trasy.startEditing()
         atrs = {1:ni['rodzaj'],2:ni['data'],3:ni['autor'],4:nf.min_czas(),5:nf.max_czas(),
                 6:ni['czest'],7:ni['uwagi']}
         dodaj(trasy, atrs, nf.geom())
         if trasy.commitChanges():
-            QMessageBox.information(self._win, "Import GPS", 'Nowa trasa zostala zapisana')
+            QMessageBox.information(self._win, "Import GPS", u'Nowa trasa została zapisana')

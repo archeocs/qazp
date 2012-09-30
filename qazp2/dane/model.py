@@ -115,3 +115,7 @@ def zmien_srid(g, osr=4326, dsr=2180):
     if osr != dsr and g.transform(QgsCoordinateTransform(crs(osr),crs(dsr))) != 0:
         raise Exception("Nieudana transformacja")
     return g
+
+MIEJSCA_ATR = ['id','nazwa','rodzaj_badan','data','autor','uwagi']
+
+TRASY_ATR = ['id','rodzaj_badan','data','autor','rozpoczecie','zakonczenie','czestotliwosc','uwagi']

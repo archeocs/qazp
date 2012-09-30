@@ -4,31 +4,9 @@ Created on Sep 7, 2012
 @author: milosz
 '''
 
-from qgis.core import QgsMapLayerRegistry, QgsMapLayer
+from qgis.core import QgsMapLayerRegistry, QgsMapLayer,QgsFeature
 from qgis.core import QgsVectorLayer, QgsDataSourceURI
-
-class Warstwa(object):
-    
-    def __init__(self,nazwa):
-        reg = QgsMapLayerRegistry.instance()
-        self._nazwa = nazwa
-        self.szuk_id = 0
-        for v in reg.mapLayers().itervalues():
-            if v.isValid() and v.type() == QgsMapLayer.VectorLayer and v.name() == nazwa:
-                self._war = v
-                break
-            
-    def szukaj(self,sql):
-        nuri = QgsDataSourceURI(self._war.dataProvider().dataSourceUri())
-        nuri.setSql(sql)
-        #ndp = QgsVectorDataProvider(self._war.dataProvider().dataSourceUri())
-        #ndp.setSubsetString(sql)
-        nwar = QgsVectorLayer(nuri.uri(),"szukaj "+str(self.szuk_id+1),self._war.dataProvider().name())
-        self.szuk_id += 1
-        return nwar
-    
-    def max_id(self):
-        return self._war.maximumValue(0)
+from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR
     
 def rejestr_map():
     return QgsMapLayerRegistry.instance()
@@ -39,7 +17,36 @@ def get_warstwa(nazwa):
         if v.isValid() and v.type() == QgsMapLayer.VectorLayer and v.name() == nazwa:
             return v
 
-class Wfs(object):
-    
-    def __init__(self,uri):
-        self._war = QgsVectorLayer(uri,"wfs")
+def _gwarstwa(qgs_warstwa,atrybuty):
+    kt = range(len(atrybuty))
+    qgs_warstwa.select(kt)
+    mt = []
+    while True:
+        f = QgsFeature()
+        if qgs_warstwa.nextFeature(f):
+            mt.append(GModel(atrybuty,f))
+        else:
+            return mt
+
+def gmiejsca(qgs_warstwa):
+    return _gwarstwa(qgs_warstwa, MIEJSCA_ATR)
+
+def gtrasy(qgs_warstwa):
+    return _gwarstwa(qgs_warstwa, TRASY_ATR)
+
+_SZUKAJ_IDS = {}
+
+def _szukaj_warstwa(sql,nazwa_warstwy):
+    qv = get_warstwa(nazwa_warstwy)
+    nuri = QgsDataSourceURI(qv.dataProvider().dataSourceUri())
+    nuri.setSql(sql)
+    mid = _SZUKAJ_IDS.get(nazwa_warstwy,0)+1
+    nwar = QgsVectorLayer(nuri.uri(),nazwa_warstwy+'_szukaj_'+str(mid),qv.dataProvider().name())
+    _SZUKAJ_IDS[nazwa_warstwy] = mid
+    return nwar
+
+def szukaj_miejsca(sql):
+    return _szukaj_warstwa(sql, 'miejsca')
+
+def szukaj_trasy(sql):
+    return _szukaj_warstwa(sql,'trasy')
