@@ -6,7 +6,7 @@ Created on Sep 9, 2012
 
 from PyQt4.QtGui import QAction, QApplication,QMainWindow
 from PyQt4.QtCore import QObject, SIGNAL
-from widok.miejsca import WyszukajAkcja, ImportGpsAkcja,TestUri
+from widok import trasy,miejsca
 
 class Okno(QMainWindow):
     
@@ -19,9 +19,12 @@ class Okno(QMainWindow):
         
     def menu(self):
         miej_menu = self.menuBar().addMenu('Miejsca')
-        miej_menu.addAction(WyszukajAkcja(self._iface,self))
-        miej_menu.addAction(ImportGpsAkcja(self._iface,self))
-        miej_menu.addAction(TestUri(self._iface,self))
+        miej_menu.addAction(miejsca.WyszukajAkcja(self._iface,self))
+        miej_menu.addAction(miejsca.ImportGpsAkcja(self._iface,self))
+        miej_menu.addAction(miejsca.TestUri(self._iface,self))
+        trasy_menu = self.menuBar().addMenu('Trasy')
+        trasy_menu.addAction(trasy.WyszukajAkcja(self._iface,self))
+        trasy_menu.addAction(trasy.ImportGpsAkcja(self._iface,self))
 
 class QazpPlugin(object):
     
