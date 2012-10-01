@@ -29,16 +29,16 @@ class QazpPlugin(object):
         self.iface = iface
     
     def initGui(self):
-        self.akcja = QAction("Test QAZP2", self.iface.mainWindow())
-        self.akcja.setWhatsThis("Test QAZP2")
+        self.akcja = QAction("QAZP2", self.iface.mainWindow())
+        self.akcja.setWhatsThis("QAZP2")
         self.akcja.setStatusTip("qazp2")
         QObject.connect(self.akcja, SIGNAL("triggered()"), self.run)
 
         self.iface.addToolBarIcon(self.akcja)
-        self.iface.addPluginToMenu("TEST QZP2",self.akcja)
+        self.iface.addPluginToMenu("QZP2",self.akcja)
     
     def unload(self):
-        self.iface.removePluginMenu("TEST QAZP2",self.akcja)
+        self.iface.removePluginMenu("QAZP2",self.akcja)
         self.iface.removeToolBarIcon(self.akcja)
         
     def run(self):

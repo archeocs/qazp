@@ -8,10 +8,10 @@ import sys
 sys.path.extend(__path__)
 
 def name():
-    return "TEST QAZP2"
+    return "QAZP2"
 
 def description():
-    return "test qazp2"
+    return "QGIS AZP2"
 
 def version():
     return "Version 0.3"
