@@ -87,7 +87,7 @@ def eddial(dane):
         cb_rodz.setCurrentIndex(mpi[str(rb.toString())])
     
     txt_dt = dial.findChild(QLineEdit,'data')
-    txt_dt.setInputMask('    -  -  ')
+    #txt_dt.setInputMask('    -  -  ')
     txt_dt.setText(txt(dane['data']))
     txt_autor = dial.findChild(QLineEdit,'autor')
     txt_autor.setText(txt(dane['autor']))
@@ -207,7 +207,6 @@ class ImportGpsAkcja(QAction):
         miejsca.startEditing()
         for (pi,p) in enumerate(wp.pts_list):
             m = p.mapa()
-            m[1] = 'punkt %d'%pi
             dodaj(miejsca, m, p.geom())
         if miejsca.commitChanges():
             QMessageBox.information(self._win, 'Import GPS', 'Zapisano %d punktow'%len(wp.pts_list))

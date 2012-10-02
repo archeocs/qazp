@@ -1,20 +1,6 @@
 <?xml version = '1.0' encoding = 'ISO-8859-1'?>
 <?xml-stylesheet type='text/xsl' href='plugins.xsl' ?>
 <plugins>
-<pyqgis_plugin name='QAZP' version='0.14'>
-    <description>Archeologiczne Zdjęcie Polski</description>
-    <version>0.14</version>
-    <qgis_minimum_version>1.6</qgis_minimum_version>
-    <homepage>http://code.google.com/p/QAZP</homepage>
-
-    <file_name>qazp.zip</file_name>
-    <author_name>Milosz Piglas</author_name>
-    <download_url>http://qazp.googlecode.com/files/qazp.zip</download_url>
-    <uploaded_by>Milosz Piglas</uploaded_by>
-    <create_date>2012-13-12</create_date>
-    <update_date>2012-13-12</update_date>
-
-  </pyqgis_plugin> 
 <pyqgis_plugin name='AZP2-GPS' version='0.2'>
     <description>Import danych GPS do przestrzennej bazy danych</description>
     <version>0.2</version>
@@ -30,9 +16,9 @@
 
 </pyqgis_plugin>
 
-<pyqgis_plugin name='QAZP2' version='0.3'>
+<pyqgis_plugin name='QAZP2' version='0.4'>
     <description>Przestrzenne dane archeologiczne</description>
-    <version>0.3</version>
+    <version>0.4</version>
     <qgis_minimum_version>1.6</qgis_minimum_version>
     <homepage>http://code.google.com/p/QAZP</homepage>
 
