@@ -14,7 +14,7 @@ def description():
     return "QGIS AZP2"
 
 def version():
-    return "Version 0.3"
+    return "Version 0.4"
 
 def qgisMinimumVersion():
     return "1.6"

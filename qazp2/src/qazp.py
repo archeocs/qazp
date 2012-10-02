@@ -13,6 +13,7 @@ class Okno(QMainWindow):
     def __init__(self,parent=None,iface=None):
         QMainWindow.__init__(self,parent)
         self._iface = iface
+	self.setWindowTitle("QAZP2 0.4")
         self.menu()
         self.statusBar().showMessage("ok")
         self.setFixedSize(700,500)
