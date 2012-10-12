@@ -40,13 +40,48 @@ class GTabModel(QAbstractTableModel):
         if rola == Qt.DisplayRole:
             #print self._nag[sekcja], sekcja
             return QVariant(self._nag[sekcja])
+        
+class GTabModel2(QAbstractTableModel):
+    
+    def __init__(self,nag,dane=[],parent=None): # nag = [(Naglowek,klucz),...]
+        QAbstractTableModel.__init__(self,parent)
+        self._nag = nag
+        self._dane = dane
+        
+    def rowCount(self, *args, **kwargs):
+        return len(self._dane)
+    
+    def columnCount(self, *args, **kwargs):
+        return len(self._nag)
+    
+    def data(self, indeks, rola = Qt.DisplayRole):
+        if rola == Qt.DisplayRole:
+            r,c = indeks.row(), indeks.column()
+            v = self._dane[r][self._nag[c][1]]
+            #v = self._dane[r].wartosc(c)
+            if not isinstance(v, QVariant):
+                return QVariant(v).toString()
+            else:
+                return v.toString()
+        else:
+            return QVariant()
+    
+    def headerData(self, sekcja, orientacja, rola = Qt.DisplayRole):
+        if orientacja == Qt.Vertical:
+            return None
+        if sekcja < 0 or sekcja >= len(self._nag):
+            raise Exception("headerData: indeks %d poza zakresem [0,%d]"%(sekcja,len(self._nag)-1))
+        if rola == Qt.DisplayRole:
+            #print self._nag[sekcja], sekcja
+            return QVariant(self._nag[sekcja][0])
 
 class GFrame(QFrame):
     
-    def __init__(self,gobs=[],parent=None):
+    def __init__(self,win,gobs=[],parent=None):
         QFrame.__init__(self,parent)
         self._gobs = gobs
         self.init_frame()
+        self._win = win
         
     def init_frame(self):
         vbox = QVBoxLayout(self)
@@ -92,9 +127,9 @@ class GFrame(QFrame):
         
     def btn_klik(self,id):
         if id == 1:
-            self.akcja_ok()
+            self._akcjaOk()
         elif id == 2:
-            self.akcja_anul()
+            self._akcjaAnul()
         elif id == 3:
             self.akcja_zmien()
         elif id == 4:
@@ -106,11 +141,11 @@ class GFrame(QFrame):
     
     # domyslne implementacje akcji (np ok, anuluj ...)
     
-    def akcja_ok(self):
-        print 'akcja_ok: brak implementacji'
+    def _akcjaOk(self):
+        self._win.usun(self)
         
-    def akcja_anul(self):
-        print 'akcja_anul: brak implementacji'
+    def _akcjaAnul(self):
+        self._win.usun(self)
         
     def akcja_zmien(self):
         print 'akcja_zmien: brak implementacji'

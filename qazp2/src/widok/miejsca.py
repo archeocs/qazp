@@ -87,7 +87,7 @@ def eddial(dane):
         cb_rodz.setCurrentIndex(mpi[str(rb.toString())])
     
     txt_dt = dial.findChild(QLineEdit,'data')
-    #txt_dt.setInputMask('    -  -  ')
+    txt_dt.setInputMask('    -  -  ')
     txt_dt.setText(txt(dane['data']))
     txt_autor = dial.findChild(QLineEdit,'autor')
     txt_autor.setText(txt(dane['autor']))
@@ -98,6 +98,30 @@ def eddial(dane):
     QObject.connect(bb, SIGNAL('accepted()'),zatw_part)
     dial.setModal(True)
     return dial
+    
+def ftest(dial):
+    dial.findChild(QLineEdit,'autor').setText('autor-form')   
+     
+    
+def qgs_ed(dialog,wid,fid): #id warstwy, id feat
+    dialog.setWindowTitle('Formularz Miejsc')
+    wgt = dialog.findChild('formularz')
+    form = wgt.layout()
+    nazwa_txt, rodz_txt, dt_txt = QLineEdit(parent=dialog),QLineEdit(parent=dialog),QLineEdit(parent=dialog)
+    autor_txt, uwagi_txt = QLineEdit(parent=dialog),QLineEdit(parent=dialog)
+    form.addRow('Nazwa', nazwa_txt)
+    nazwa_txt.setObjectName('nazwa')
+    form.addRow('Rodzaj', rodz_txt)
+    rodz_txt.setObjectName('rodzaj_badan')
+    form.addRow('Data', dt_txt)
+    dt_txt.setObjectName('data')
+    form.addRow('Autor', autor_txt)
+    autor_txt.setObjectName('autor')
+    form.addRow('Uwagi', uwagi_txt)
+    uwagi_txt.setObjectName('uwagi')
+    bb = dialog.findChild(QDialogButtonBox,'buttonBox')
+    QObject.connect(bb,SIGNAL('accepted()'),partial(ftest,dial=dialog))
+        
     
 def zatwierdzone(dial,fid,feature,ed=False):
     if dial is None:
@@ -120,11 +144,12 @@ def zatwierdzone(dial,fid,feature,ed=False):
 class MiejscaFrame(GFrame):
     
     warstwa = None
-    def __init__(self,warstwa,iface,parent=None):
-        GFrame.__init__(self,gmiejsca(warstwa),parent)
+    def __init__(self,warstwa,iface,win,parent=None):
+        GFrame.__init__(self,win,gmiejsca(warstwa))
+        self.setObjectName('miejsca')
         self.warstwa = warstwa
         self._if = iface
-        self._win = parent
+        self._win = win
         self._win.statusBar().showMessage("Wyszukano %s obiektow %s"%(str(self.warstwa.featureCount()),
                                                                       self.warstwa.dataProvider().dataSourceUri()))
         
@@ -179,7 +204,7 @@ class WyszukajAkcja(QAction):
         warunek = QInputDialog.getText(self._win, 'Miejsca', 'Wprowadz warunek', text='id > 0')
         if warunek[1]:
             mf = MiejscaFrame(szukaj_miejsca(unicode(warunek[0])),self._iface,self._win)
-            self._win.setCentralWidget(mf)
+            self._win.dodaj(mf)
 
 class ImportGpsAkcja(QAction):
     
@@ -207,6 +232,7 @@ class ImportGpsAkcja(QAction):
         miejsca.startEditing()
         for (pi,p) in enumerate(wp.pts_list):
             m = p.mapa()
+            m[1] = 'punkt %d'%pi
             dodaj(miejsca, m, p.geom())
         if miejsca.commitChanges():
             QMessageBox.information(self._win, 'Import GPS', 'Zapisano %d punktow'%len(wp.pts_list))

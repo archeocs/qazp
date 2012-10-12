@@ -6,8 +6,8 @@ Created on Sep 7, 2012
 
 from qgis.core import QgsMapLayerRegistry, QgsMapLayer,QgsFeature
 from qgis.core import QgsVectorLayer, QgsDataSourceURI
-from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR
-    
+from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR,STANOWISKA_ATR
+import sqlite3, psycopg2    
 def rejestr_map():
     return QgsMapLayerRegistry.instance()
 
@@ -27,6 +27,9 @@ def _gwarstwa(qgs_warstwa,atrybuty):
             mt.append(GModel(atrybuty,f))
         else:
             return mt
+        
+def gstanowiska(qgs_warstwa):
+    return _gwarstwa(qgs_warstwa,STANOWISKA_ATR)
 
 def gmiejsca(qgs_warstwa):
     return _gwarstwa(qgs_warstwa, MIEJSCA_ATR)
@@ -45,8 +48,25 @@ def _szukaj_warstwa(sql,nazwa_warstwy):
     _SZUKAJ_IDS[nazwa_warstwy] = mid
     return nwar
 
+def szukaj_stanowiska(sql):
+    return _szukaj_warstwa(sql,'stanowiska')
+
 def szukaj_miejsca(sql):
     return _szukaj_warstwa(sql, 'miejsca')
 
 def szukaj_trasy(sql):
     return _szukaj_warstwa(sql,'trasy')
+
+def getPolaczenie(qgsWarstwa):
+    ndp = str(qgsWarstwa.dataProvider().name())
+    uri = QgsDataSourceURI(qgsWarstwa.dataProvider().dataSourceUri())
+    if ndp.upper() == 'SPATIALITE':
+        return sqlite3.connect(str(uri.database()))
+        #drv = 'QSQLITE'
+    elif ndp.upper == 'POSTGRES':
+        #drv = 'QPSQL'
+        return psycopg2.connect(database=str(uri.database),host=str(uri.host()),port=int(str(uri.port())),
+                                user=str(uri.username()), password=str(uri.password()))
+    else:
+        raise Exception('Nieobslugiwany typ bazy danych '+ndp)
+    

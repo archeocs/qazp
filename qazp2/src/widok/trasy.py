@@ -68,8 +68,8 @@ class TrasyDialog(QDialog):
 class TrasyFrame(GFrame):
     
     warstwa = None
-    def __init__(self,warstwa,iface,parent=None):
-        GFrame.__init__(self,gtrasy(warstwa),parent)
+    def __init__(self,warstwa,iface,win,parent=None):
+        GFrame.__init__(self,win,gtrasy(warstwa))
         self.warstwa = warstwa
         self._if = iface
         self._win = parent
