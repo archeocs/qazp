@@ -6,15 +6,18 @@ Created on Sep 6, 2012
 
 from qgis.core import QgsFeature, QgsCoordinateReferenceSystem
 from qgis.core import QgsCoordinateTransform
-
+from PyQt4.QtCore import *
 class AModel(dict):
     
-    def __init__(self,dane):
+    def __init__(self,dane,domyslne={}):
         dict.__init__(self)
         self.zmiany = {}
+        self._dom = domyslne
         for (k,v) in dane.iteritems():
-            self[k] = v
-            #self.zmiany[k] = False
+            if v is None:
+                self[k] = QVariant(domyslne.get(k))
+            else:
+                self[k] = QVariant(v)
             
     def __setitem__(self, k,v):
         if not self.zmiany.has_key(k):
@@ -98,6 +101,7 @@ class GModel(AModel):
     
     def __unicode__(self):
         return unicode(self)
+
     
 def utworz_feature(atrs,g=None):
     qf = QgsFeature()
@@ -122,3 +126,20 @@ TRASY_ATR = ['id','rodzaj_badan','data','autor','rozpoczecie','zakonczenie','cze
 
 STANOWISKA_ATR = ['id','obszar','nr_obszar','miejscowosc','nr_miejscowosc','gmina','powiat','wojewodztwo',
                   'rodzaj_badan','data','autor','uwagi']
+
+JEDFIZG_ATR = ['id','nadmorska','w_morzu','plaza','mierzeja','skarpa','wal_wydmowy','duze_doliny',
+            'w_wodzie','ter_denna','ter_nadzalewowa','ter_wyzsze','brzeg_wysoczyzny','male_doliny',
+            'dno_doliny','stok_doliny','krawedz_doliny','poza_dolinami','rownina',
+            'obsz_falisty','obsz_pagorkowaty','obsz_gorzysty']
+
+EKSPOZYCJA_ATR = ['id','eksponowany','kraw_stoki','sfaldowania_cyple','cyple_wybitne','waly_garby','wyniesienia_okrezne', 
+                'osloniety','podst_stoku','doliny_niecki', 'kotlinki_zagleb','jaskinie','stopien','rozmiar',
+                'kierunek','uwagi']
+TEREN_ATR=['id','zabudowany','sred_zabud','rolniczy','spoleczny','przemyslowy',
+                'las','sad','park','pole_orne','laka','uwagi']
+
+OBSZAR_ATR = ['id','obserwacja','pole','nasyc_rozklad','nasyc_typ','gestosc_znal','powierzchnia']
+
+ZAGROZENIA_ATR=['id','wystepowanie','przyczyna','uzytkownik','uwagi']
+
+WNIOSKI_ATR=['id','wartosc','inwentaryzacja','wykopaliska','interwencja','uwagi']

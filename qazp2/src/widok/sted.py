@@ -5,11 +5,19 @@ from PyQt4.QtCore import *
 from functools import *
 import sqlite3
 from lib.qgsop import *
-from dane.zrodla import getPolaczenie
+from dane.zrodla import getPolaczenie, daneFizg, updtFizg, daneEksp, updtEkspo,\
+    daneTeren, updtTeren, updtObszar, daneObszar, updtZagr, daneZagr, updtWnio,\
+    daneWnio
+from dane.model import STANOWISKA_ATR
+import logging
 
 def conw(w,slow):
-    if slow.has_key(w.upper()):
-        return slow[w.upper()]
+    if isinstance(w, QVariant):
+        klucz = str(w.toString()).upper()
+    else:
+        klucz = str(w).upper()
+    if slow.has_key(klucz):
+        return slow[klucz]
     return None
 
 class Widok(QTableView):
@@ -48,9 +56,32 @@ class Widok(QTableView):
         _mod = PropLista(opcje,self._dane,parent=self)
         self.setModel(_mod)
         self.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+    
+    def konwert(self, dane):
+        rd = {}
+        for (k,v) in dane.iteritems():
+            if isinstance(v, QVariant):
+                if v.isNull():
+                    rd[k] = None
+                    continue
+                t = v.type()
+                if t == QVariant.Int:
+                    rd[k] = v.toInt()[0]
+                elif t == QVariant.Double:
+                    rd[k] = v.toDouble()[0]
+                elif t == QVariant.DateTime:
+                    rd[k] = v.toDateTime().toString(Qt.ISODate)
+                elif t == QVariant.DateTime:
+                    rd[k] = v.toDate().toString(Qt.ISODate)
+                else:
+                    rd[k] = unicode(v.toString())
+            else:
+                rd[k] = unicode(v)
+        logging.info('rd '+str(rd))
+        return rd
         
     def wartosci(self):
-        return self._dane
+        return self.konwert(self._dane)
     
     wb = partial(conw,slow=dict(vb))
     wr = partial(conw,slow=dict(vr))
@@ -62,6 +93,7 @@ class Widok(QTableView):
 class Edytor(QFrame):
     def __init__(self,qgsWarstwa,model,win,parent=None):
         QFrame.__init__(self,parent)
+        logging.basicConfig(filename='/home/milosz/logqazp.txt', level=logging.INFO)
         self._win = win
         self._model = model
         self._war = qgsWarstwa
@@ -78,11 +110,12 @@ class Edytor(QFrame):
         self.grid.addWidget(pbb,0,1)
         bb = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Close, parent=self)
         self.grid.addWidget(bb,1,0)
+        self.on = 'stanowisko'
         self.grid.addWidget(StanowiskoWidok(self._war,model),0,0) # zamiast informacje o stanowisku
         self.grid.setRowMinimumHeight(0,150)
         self.grid.setColumnMinimumWidth(0,150)
         pbb.clicked.connect(self.klik_pbtn)
-        bb.accepted.connect(self.klik_zapisz)
+        bb.accepted.connect(self.klikZapisz)
         bb.rejected.connect(self.klikZamknij)
         
     def klik_pbtn(self,btn):
@@ -92,24 +125,69 @@ class Edytor(QFrame):
         del biez
         self.on = str(btn.objectName())
         if self.on == 'fizgeo':
-            self.grid.addWidget(FizgWidok(),0,0) 
+            self.grid.addWidget(FizgWidok(daneFizg(str(self._model['id'].toString()),self._war)),0,0) 
         elif self.on == 'teren':
-            self.grid.addWidget(TerenWidok(),0,0)
+            self.grid.addWidget(TerenWidok(daneTeren(str(self._model['id'].toString()),self._war)),0,0)
         elif self.on == 'ekspozycja':
-            self.grid.addWidget(EkspozycjaWidok(),0,0)
+            self.grid.addWidget(EkspozycjaWidok(daneEksp(str(self._model['id'].toString()),self._war)),0,0)
         elif self.on == 'obszar':
-            self.grid.addWidget(ObszarWidok(),0,0) 
+            self.grid.addWidget(ObszarWidok(daneObszar(str(self._model['id'].toString()),self._war)),0,0) 
         elif self.on == 'zagrozenia':
-            self.grid.addWidget(ZagrozenieWidok(),0,0)
+            self.grid.addWidget(ZagrozenieWidok(daneZagr(str(self._model['id'].toString()),self._war)),0,0)
         elif self.on == 'wnioski':
-            self.grid.addWidget(WnioskiWidok(),0,0) 
-        else:   
-            self.grid.addWidget(QLabel(btn.objectName()),0,0)
+            self.grid.addWidget(WnioskiWidok(daneWnio(str(self._model['id'].toString()),self._war)),0,0) 
+        elif self.on == 'stanowisko':   
+            self.grid.addWidget(StanowiskoWidok(self._war,self._model),0,0)
             
-    def klik_zapisz(self):
+    def klikZapisz(self):
         panel = self.grid.itemAtPosition(0,0).widget()
-        print panel.wartosci()
-        
+        #print panel.wartosci()
+        if self.on == 'stanowisko':
+            obj = self._model.feature()
+            setMapa(obj, panel.wartosci(), STANOWISKA_ATR)
+            if zmien(self._war,obj):
+                self._win.statusBar().showMessage('Zapisano zmiany')
+            else:
+                self._win.statusBar().showMessage('Blad zapisu')
+        elif self.on == 'fizgeo':
+            logging.info('fizgeo')
+            dane = panel.wartosci()
+            logging.info(str(dane))
+            u = updtFizg(str(self._model['id'].toString()),self._war,[dane])
+            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+        elif self.on == 'ekspozycja':
+            logging.info('ekspozycja')
+            dane = panel.wartosci()
+            logging.info(str(dane))
+            u = updtEkspo(str(self._model['id'].toString()),self._war,[dane])
+            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+        elif self.on == 'teren':
+            logging.info('teren')
+            dane = panel.wartosci()
+            logging.info(str(dane))
+            u = updtTeren(str(self._model['id'].toString()),self._war,[dane])
+            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+        elif self.on == 'obszar':
+            logging.info('obszar')
+            dane = panel.wartosci()
+            logging.info(str(dane))
+            u = updtObszar(str(self._model['id'].toString()),self._war,[dane])
+            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+        elif self.on == 'zagrozenia':
+            logging.info('zagrozenia')
+            dane = panel.wartosci()
+            logging.info(str(dane))
+            u = updtZagr(str(self._model['id'].toString()),self._war,[dane])
+            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+        elif self.on == 'wnioski':
+            logging.info('wnioski')
+            dane = panel.wartosci()
+            logging.info(str(dane))
+            u = updtWnio(str(self._model['id'].toString()),self._war,[dane])
+            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+        else:
+            self._win.statusBar().showMessage(self.on)
+
     def klikZamknij(self):
         self._win.usun(self)
         
@@ -133,20 +211,26 @@ def fdb(ident,war,tab):
             return ret[0]
     except:
         return 'select nazwa from '+tab+' where id='+sid
-
-# STANOWISKA_ATR = ['id','obszar','nr_obszar','miejscowosc','nr_miejscowosc','gmina','powiat','wojewodztwo',
-                  #'rodzaj_badan','data','autor','uwagi']        
+      
 class StanowiskoWidok(Widok):
-    #mdb = partial(fdb,war=tab='miejscowosci')
+    vrd = [('P',u'Powierzchniowe'),('W',u'Weryfikacja'),('L',u'Lotnicze')]
+    wrd = partial(conw,slow=dict(vrd))
     def __init__(self,qgsWarstwa,dane=None,parent=None):
         Widok.__init__(self,parent)
         mdb = partial(fdb,war=qgsWarstwa,tab='miejscowosci')
+        gdb = partial(fdb,war=qgsWarstwa,tab='gminy')
+        pdb = partial(fdb,war=qgsWarstwa,tab='powiaty')
+        wdb = partial(fdb,war=qgsWarstwa,tab='wojewodztwa')
         opt=[(u'Obszar','obszar',self.nic),(u'Nr na obszarze','nr_obszar',self.nic),(u'Miejscowość','miejscowosc',mdb),
-             (u'Nr w miejscowości','nr_miejscowosc',self.nic),(u'Gmina','gmina',self.nic),(u'Powiat','powiat',self.nic),
-             (u'Województwo','wojewodztwo',self.nic),(u'Rodzaj','rodzaj_badan',self.nic),('Data','data',self.nic),
+             (u'Nr w miejscowości','nr_miejscowosc',self.nic),(u'Gmina','gmina',gdb),(u'Powiat','powiat',pdb),
+             (u'Województwo','wojewodztwo',wdb),(u'Rodzaj','rodzaj_badan',self.wrd),('Data','data',self.nic),
              (u'Autor','autor',self.nic),(u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
-        self.dodajDb(2,(qgsWarstwa,'miejscowosci'))
+        self.dodajOpt(7, self.vrd)
+        self.dodajDb(2,(qgsWarstwa,'miejscowosci')).dodajDb(4,(qgsWarstwa,'gminy')).dodajDb(5,(qgsWarstwa,'powiaty')).dodajDb(6,(qgsWarstwa,'wojewodztwa'))
+    
+    mk = {'miejscowosc':int, 'gmina':int, 'powiat':int, 'wojewodztwo':int}
+    
 
 class WyborDelegate(QStyledItemDelegate):
 
@@ -226,19 +310,19 @@ class PropLista(QAbstractTableModel):
             if c == 0:
                 return self._opt[r][0]
             elif c == 1 and self._dane.has_key(self._opt[r][1]):
-                if not self._wid.has_key(self._dane[self._opt[r][1]]):
-                    self._wid[self._dane[self._opt[r][1]]] = self._opt[r][2](self._dane[self._opt[r][1]]) 
-                return self._wid[self._dane[self._opt[r][1]]]
+                if not self._wid.has_key(self._opt[r][1]):
+                    self._wid[self._opt[r][1]] = self._opt[r][2](self._dane[self._opt[r][1]]) 
+                return self._wid[self._opt[r][1]]
         elif rola == Qt.EditRole and c == 1 and self._dane.has_key(self._opt[r][1]):
-            if not self._wid.has_key(self._dane[self._opt[r][1]]):
-                self._wid[self._dane[self._opt[r][1]]] = self._opt[r][2](self._dane[self._opt[r][1]]) 
-            return self._wid[self._dane[self._opt[r][1]]]
+            if not self._wid.has_key(self._opt[r][1]):
+                self._wid[self._opt[r][1]] = self._opt[r][2](self._dane[self._opt[r][1]]) 
+            return self._wid[self._opt[r][1]]
         return QVariant()
     
     def setData(self,indeks, wartosc, rola=Qt.EditRole):
         r,c = indeks.row(), indeks.column()
         if rola == Qt.EditRole and c == 1:
-            self._dane[self._opt[r][1]] = unicode(wartosc.toString())
+            self._dane[self._opt[r][1]] = wartosc
             self._wid.pop(self._opt[r][1],'')
             return True
         return False
@@ -310,7 +394,7 @@ class EkspozycjaWidok(Widok):
                 (u'Kotlinki, zagłębienia','kotlinki_zagleb',self.wb), ('Jaskinie','jaskinie',self.wb),(u'Stopień ekspozycji','stopien',self.nic),(u'Rozmiar ekspozycji','rozmiar',self.nic),
                 (u'Kierunek ekspozycji','kierunek',self.nic),(u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
-        for x in range(len(opt)-1):
+        for x in range(len(opt)-4):
             self.dodTn(x)
             
 class ZagrozenieWidok(Widok):

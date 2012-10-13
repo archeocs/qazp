@@ -16,6 +16,17 @@ def set_atr(qgs_obiekt,atr,v):
     qgs_obiekt.changeAttribute(ai,QVariant(v))
     return True
 
+def setAtr(qgsObiekt, atr, v, lista):
+    if atr not in lista:
+        return False
+    ai = lista.index(atr)
+    qgsObiekt.changeAttribute(ai,QVariant(v))
+    return True
+
+def setMapa(qgsObiekt,mapa,lista):
+    for (k,v) in mapa.iteritems():
+        setAtr(qgsObiekt,k,v,lista)
+
 def set_mapa(qgs_obiekt,mapa):
     for (k,v) in mapa.iteritems():
         set_atr(qgs_obiekt,k,v)
