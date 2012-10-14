@@ -35,16 +35,15 @@ Created on Sep 9, 2012
 '''
 
 from lista import GTabModel, GFrame
-from PyQt4.QtGui import QMessageBox, QAction, QVBoxLayout QDialogButtonBox, QLineEdit
+from PyQt4.QtGui import QMessageBox, QAction, QVBoxLayout, QDialogButtonBox, QLineEdit
 from PyQt4.QtGui import QInputDialog, QFileDialog ,QFrame
-from PyQt4.QtCore import QObject,SIGNAL,
+from PyQt4.QtCore import QObject,SIGNAL
 from lib.qgsop import zmien, usun, dodaj, setMapa
 from lib.gps import WayPoints
 from dane.zrodla import rejestr_map, get_warstwa, gmiejsca, szukaj_miejsca
 from qgis.core import QgsDataSourceURI
 from functools import partial
-from os.path import abspath
-from widok.proped import PropWidok, conw
+from widok.proped import PropWidok, conw, PropFrame
 from dane.model import MIEJSCA_ATR
 
 
@@ -111,7 +110,7 @@ class MiejscaFrame(GFrame):
         
     def akcja_zmien(self):
         ww = self.wybrany_wiersz()[1]
-        self._win.dodaj(MiejscaEdytor(self.warstwa,ww,self._win))
+        self._win.dodaj(PropFrame(self.warstwa,ww,self._win,MIEJSCA_ATR,MiejscaWidokEd))
                 
     def akcja_usun(self):
         ww = self.wybrany_wiersz()[1]

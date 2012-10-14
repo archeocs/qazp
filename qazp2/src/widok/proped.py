@@ -28,10 +28,11 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QStyledItemDelegate, QComboBox, QTableView, QAbstractItemView, QHeaderView
+from PyQt4.QtGui import QStyledItemDelegate, QComboBox, QTableView, QAbstractItemView, QHeaderView,QFrame,QDialogButtonBox,QVBoxLayout,QHBoxLayout
 from PyQt4.QtCore import QVariant, QAbstractTableModel, Qt
 from functools import partial
 from dane.zrodla import getPolaczenie
+from lib.qgsop import setMapa, zmien
 
 def conw(w,slow):
     if isinstance(w, QVariant):
@@ -220,3 +221,29 @@ class PropWidok(QTableView):
     
     def nic(self,w):
         return w
+    
+class PropFrame(QFrame):
+    def __init__(self, warstwa, dane, win, atrybuty, widokCls, parent=None):
+        QFrame.__init__(self,parent)
+        self._dane = dane
+        self._win = win
+        self._war = warstwa
+        vbox = QVBoxLayout()
+        self.setLayout(vbox)
+        self._widok = widokCls(self._dane,self)
+        vbox.addWidget(self._widok)
+        bb = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Close)
+        bb.accepted.connect(partial(self._zapisz, atr=atrybuty))
+        bb.rejected.connect(self._zamknij)
+        vbox.addWidget(bb)
+        
+    def _zapisz(self, atr):
+        obj = self._dane.feature()
+        setMapa(obj, self._widok.wartosci(), atr)
+        if zmien(self._war,obj):
+            self._win.statusBar().showMessage('Zapisano zmiany')
+        else:
+            self._win.statusBar().showMessage('Blad zapisu')
+    
+    def _zamknij(self):
+        self._win.usun(self)

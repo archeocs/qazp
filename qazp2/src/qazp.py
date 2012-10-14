@@ -41,7 +41,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp 14')
+        self.setWindowTitle('qazp2')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         
@@ -79,16 +79,16 @@ class QazpPlugin(object):
         self.iface = iface
     
     def initGui(self):
-        self.akcja = QAction("Test QAZP2", self.iface.mainWindow())
-        self.akcja.setWhatsThis("Test QAZP2")
+        self.akcja = QAction("QAZP2", self.iface.mainWindow())
+        self.akcja.setWhatsThis("QAZP2")
         self.akcja.setStatusTip("qazp2")
         QObject.connect(self.akcja, SIGNAL("triggered()"), self.run)
 
         self.iface.addToolBarIcon(self.akcja)
-        self.iface.addPluginToMenu("TQ",self.akcja)
+        self.iface.addPluginToMenu("QAZP2",self.akcja)
     
     def unload(self):
-        self.iface.removePluginMenu("TQ",self.akcja)
+        self.iface.removePluginMenu("QAZP2",self.akcja)
         self.iface.removeToolBarIcon(self.akcja)
         
     def run(self):

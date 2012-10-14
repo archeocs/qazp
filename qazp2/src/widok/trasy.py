@@ -35,6 +35,9 @@ from lista import GTabModel,GFrame
 from dane.zrodla import rejestr_map, get_warstwa, gtrasy, szukaj_trasy
 from lib.gps import GpxPunktyLista,distr, TrackPoints
 from lib.qgsop import usun, zmien,dodaj
+from widok.proped import PropWidok, conw, PropFrame
+from decorator import partial
+from dane.model import TRASY_ATR
 
 
 def tab_model(obiekty,parent=None):
@@ -51,41 +54,16 @@ def txt(v,trim=False,mx=-1):
         u = u[:mx]
     return u
 
-class TrasyDialog(QDialog):
+class TrasyWidokEd(PropWidok):
     
-    def __init__(self,dane=None,parent=None):
-        QDialog.__init__(self,parent)
-        self.dane = dane
-        self.init_dialog(dane)
-        
-    def init_dialog(self,dane):
-        vbox = QVBoxLayout(self)
-        self.setLayout(vbox)
-        wgt = QWidget(self)
-        form = QFormLayout(wgt)
-        self.rodz_txt, self.dt_txt = QLineEdit(parent=self),QLineEdit(parent=self)
-        self.autor_txt, self.uwagi_txt = QLineEdit(parent=self),QLineEdit(parent=self)
-        wgt.setLayout(form)
-        form.addRow('Rodzaj', self.rodz_txt)
-        form.addRow('Data', self.dt_txt)
-        form.addRow('Autor', self.autor_txt)
-        form.addRow('Uwagi', self.uwagi_txt)
-        vbox.addWidget(wgt)
-        bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.connect(bb,SIGNAL('accepted()'), self.accept);
-        self.connect(bb,SIGNAL('rejected()'), self.reject);
-        vbox.addWidget(bb)
-        self.setWindowTitle('id: '+txt(dane['id'])+" "+str(dane.feature().id()))
-        if dane is not None:
-            self.rodz_txt.setText(txt(dane['rodzaj_badan'],True))
-            self.dt_txt.setText(txt(dane['data'],mx=10))
-            self.autor_txt.setText(txt(dane['autor'],True))
-            self.uwagi_txt.setText(txt(dane['uwagi'],True))
-        self.setModal(True)
-    
-    def get_dane(self):
-        return {'rodzaj_badan':self.rodz_txt.text(),'data':self.dt_txt.text(),
-                'autor':self.autor_txt.text(),'uwagi':self.uwagi_txt.text()}
+    vrd = [('P',u'Powierzchniowe'),('W',u'Weryfikacja'),('L',u'Lotnicze')]
+    wrd = partial(conw,slow=dict(vrd))
+    def __init__(self,dane,parent=None):
+        PropWidok.__init__(self,parent)
+        opt=[(u'Rodzaj','rodzaj_badan',self.wrd),('Data','data',self.nic),
+             (u'Autor','autor',self.nic),(u'Uwagi','uwagi',self.nic)]
+        self.ustawModel(dane,opt)
+        self.dodajOpt(0, self.vrd)
 
 class TrasyFrame(GFrame):
     
@@ -94,7 +72,7 @@ class TrasyFrame(GFrame):
         GFrame.__init__(self,win,gtrasy(warstwa))
         self.warstwa = warstwa
         self._if = iface
-        self._win = parent
+        self._win = win
         self._win.statusBar().showMessage("Wyszukano %s obiektow %s"%(str(self.warstwa.featureCount()),
                                                                       self.warstwa.dataProvider().dataSourceUri()))
         
@@ -114,15 +92,8 @@ class TrasyFrame(GFrame):
             QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+self.warstwa.name())
         
     def akcja_zmien(self):
-        dialog = TrasyDialog(dane=self.wybrany_wiersz()[1])
-        r = dialog.exec_()
-        if r == QDialog.Accepted:
-            ww = self.wybrany_wiersz()[1]
-            ww.zmien(dialog.get_dane())
-            ww.zatwierdz()
-            z = zmien(self.warstwa,ww)
-            if z[0]:
-                QMessageBox.information(self, 'info', 'Zmienione')
+        ww = self.wybrany_wiersz()[1]
+        self._win.dodaj(PropFrame(self.warstwa,ww,self._win,TRASY_ATR,TrasyWidokEd))
                 
     def akcja_usun(self):
         ww = self.wybrany_wiersz()[1]
@@ -363,7 +334,7 @@ class WyszukajAkcja(QAction):
         warunek = QInputDialog.getText(self._win, 'Trasy', 'Wprowadz warunek', text='id > 0')
         if warunek[1]:
             mf = TrasyFrame(szukaj_trasy(unicode(warunek[0])),self._iface,self._win)
-            self._win.setCentralWidget(mf)
+            self._win.dodaj(mf)
 
 class ImportGpsAkcja(QAction):
     
