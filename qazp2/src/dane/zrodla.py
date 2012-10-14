@@ -1,16 +1,40 @@
-'''
-Created on Sep 7, 2012
+# -*- coding: utf-8 -*-
 
-@author: milosz
-'''
+# (c) Milosz Piglas 2012 Wszystkie prawa zastrzezone
 
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are
+#  met:
+# 
+#      * Redistributions of source code must retain the above copyright
+#  notice, this list of conditions and the following disclaimer.
+#      * Redistributions in binary form must reproduce the above
+#  copyright notice, this list of conditions and the following disclaimer
+#  in the documentation and/or other materials provided with the
+#  distribution.
+#      * Neither the name of Milosz Piglas nor the names of its
+#  contributors may be used to endorse or promote products derived from
+#  this software without specific prior written permission.
+# 
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+#  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+#  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+#  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+#  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+#  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+#  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+#  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+#  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+from PyQt4.QtCore import QVariant
 from qgis.core import QgsMapLayerRegistry, QgsMapLayer,QgsFeature
 from qgis.core import QgsVectorLayer, QgsDataSourceURI
 from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR,STANOWISKA_ATR, AModel,\
     JEDFIZG_ATR,  EKSPOZYCJA_ATR, TEREN_ATR, OBSZAR_ATR, ZAGROZENIA_ATR,\
     WNIOSKI_ATR
 import sqlite3, psycopg2    
-import logging
 def rejestr_map():
     return QgsMapLayerRegistry.instance()
 
@@ -60,6 +84,84 @@ def szukaj_miejsca(sql):
 def szukaj_trasy(sql):
     return _szukaj_warstwa(sql,'trasy')
 
+class Wykaz(object):
+
+    def __init__(self, con, wykNazwa):
+        self._con = con
+        self._stLista = "select id, nazwa from "+wykNazwa+" where start='%s' order by nazwa"
+        self._stLicz = "select count(*) from "+wykNazwa+" where nazwa='%s'"
+        self._stMax = "select coalesce(max(id),0) from "+wykNazwa
+        self._stZm = "update "+wykNazwa+" set nazwa='%s', start='%s' where id=%d"
+        self._stDod = "insert into "+wykNazwa+" values(%d, '%s', '%s')"
+        self._stUsu = "delete from "+wykNazwa+" where id=%d"
+        self._wykaz = []
+        self._start = None
+        
+    def wypelnij(self, start=None):
+        if start is not None:
+            self._start = start
+        if self._start is None:
+            return
+        cur = self._con.cursor()
+        cur.execute(self._stLista%self._start)
+        self._wykaz = []
+        for r in cur.fetchall():
+            self._wykaz.append((QVariant(r[0]), QVariant(r[1])))
+        cur.close()
+        return len(self._wykaz)
+    
+    def dodaj(self,nazwa):
+        cur = self._con.cursor()
+        un = nazwa.upper()
+        cur.execute(self._stLicz%un)
+        r = cur.fetchone()[0]
+        cur.close()
+        if r > 0:
+            return False
+        cur = self._con.cursor()
+        cur.execute(self._stMax)
+        n = cur.fetchone()[0]
+        cur.close()
+        cur = self._con.cursor()
+        cur.execute(self._stDod%(n+1,un[:2],un))
+        cur.close()
+        self._con.commit()
+        return True
+        
+    def usun(self, ident):
+        cur = self._con.cursor()
+        cur.execute(self._stUsu%ident)
+        cur.close()
+        self._con.commit()
+        
+        
+    def zmien(self,ident,nazwa):
+        un = nazwa.upper()
+        cur = self._con.cursor()
+        cur.execute(self._stLicz%un)
+        r = cur.fetchone()[0]
+        cur.close()
+        if r > 0:
+            return False
+        cur = self._con.cursor()
+        cur.execute(self._stZm%(un,un[:2],ident))
+        cur.close()
+        self._con.commit()
+        return True
+    
+    def __len__(self):
+        return len(self._wykaz)
+    
+    def __getitem__(self, ind):
+        return self.nazwa(ind)
+        
+    def nazwa(self, ind, pystr=False):
+        if 0 <= ind < len(self._wykaz):
+            if pystr:
+                return unicode(self._wykaz[ind].toString())
+            return self._wykaz[ind]
+        raise Exception('indeks %d poza zakresem %d'%(ind,len(self._wykaz)))
+
 def getPolaczenie(qgsWarstwa):
     ndp = str(qgsWarstwa.dataProvider().name())
     uri = QgsDataSourceURI(qgsWarstwa.dataProvider().dataSourceUri())
@@ -82,7 +184,6 @@ def wyszukajSql(ident, qgsWarstwa, atr, tab):
     cur = p.cursor()
     cur.execute(_selstmt(atr,tab,ident))
     ret = cur.fetchone()
-    logging.info('wyszukaj '+str(ret))
     if ret is None:
         return {'id':-1}
     cur.close()
@@ -143,11 +244,8 @@ def updtSql(stid, qgsWarstwa, atr, tab,tdane=[]):
     us = _updtstmt(atr,tab,stid)
     ins = _instmt(atr,tab,stid)
     uzyty = -1
-    logging.info(us)
-    logging.info(ins)
     for d in tdane:
         pr = _genParam(atr,d)
-        logging.info('pr '+str(pr))
         pr['id'] = int(pr['id'])
         if pr['id'] > 0:
             cur.execute(us,pr)

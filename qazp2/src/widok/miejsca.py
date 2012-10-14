@@ -1,5 +1,33 @@
 # -*- coding: utf-8 -*-
 
+# (c) Milosz Piglas 2012 Wszystkie prawa zastrzezone
+
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions are
+#  met:
+# 
+#      * Redistributions of source code must retain the above copyright
+#  notice, this list of conditions and the following disclaimer.
+#      * Redistributions in binary form must reproduce the above
+#  copyright notice, this list of conditions and the following disclaimer
+#  in the documentation and/or other materials provided with the
+#  distribution.
+#      * Neither the name of Milosz Piglas nor the names of its
+#  contributors may be used to endorse or promote products derived from
+#  this software without specific prior written permission.
+# 
+#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+#  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+#  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+#  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+#  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+#  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+#  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+#  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+#  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 '''
 Created on Sep 9, 2012
 
@@ -7,144 +35,64 @@ Created on Sep 9, 2012
 '''
 
 from lista import GTabModel, GFrame
-from PyQt4.QtGui import QMessageBox, QAction, QDialog, QFormLayout, QVBoxLayout, QWidget, QDialogButtonBox, QLineEdit  
-from PyQt4.QtGui import QInputDialog, QFileDialog,QComboBox,QPlainTextEdit
-from PyQt4.QtCore import QObject,SIGNAL,QVariant
-from PyQt4.uic import loadUi
-from lib.qgsop import set_mapa, zmien, usun, dodaj
+from PyQt4.QtGui import QMessageBox, QAction, QVBoxLayout QDialogButtonBox, QLineEdit
+from PyQt4.QtGui import QInputDialog, QFileDialog ,QFrame
+from PyQt4.QtCore import QObject,SIGNAL,
+from lib.qgsop import zmien, usun, dodaj, setMapa
 from lib.gps import WayPoints
 from dane.zrodla import rejestr_map, get_warstwa, gmiejsca, szukaj_miejsca
 from qgis.core import QgsDataSourceURI
 from functools import partial
 from os.path import abspath
+from widok.proped import PropWidok, conw
+from dane.model import MIEJSCA_ATR
 
 
 def tab_model(obiekty,parent=None):
     return GTabModel(['Ident','Nazwa','Rodzaj','Data','Autor','Uwagi'],obiekty,parent)
-
-def txt(v,trim=False,mx=-1):
-    if not v:
-        return ""
-    if isinstance(v, QVariant):
-        u = unicode(v.toString())
-    else:
-        u = unicode(v)
-    if trim:
-        u = u.strip()
-    if mx > 0:
-        u = u[:mx]
-    return u
-
-class MiejscaDialog(QDialog):
     
-    def __init__(self,dane=None,parent=None):
-        QDialog.__init__(self,parent)
-        self.dane = dane
-        self.init_dialog(dane)
-        
-    def init_dialog(self,dane):
-        vbox = QVBoxLayout(self)
+class MiejscaWidokEd(PropWidok):
+    
+    vrd = [('P',u'Powierzchniowe'),('W',u'Weryfikacja'),('L',u'Lotnicze')]
+    wrd = partial(conw,slow=dict(vrd))
+    def __init__(self,dane,parent=None):
+        PropWidok.__init__(self,parent)
+        opt=[(u'Nazwa','nazwa',self.nic),(u'Rodzaj','rodzaj_badan',self.wrd),('Data','data',self.nic),
+             (u'Autor','autor',self.nic),(u'Uwagi','uwagi',self.nic)]
+        self.ustawModel(dane,opt)
+        self.dodajOpt(1, self.vrd)
+
+class MiejscaEdytor(QFrame):
+    
+    def __init__(self, warstwa, dane, win, parent=None):
+        QFrame.__init__(self,parent)
+        self._dane = dane
+        self._win = win
+        self._war = warstwa
+        vbox = QVBoxLayout()
         self.setLayout(vbox)
-        wgt = QWidget(self)
-        form = QFormLayout(wgt)
-        self.nazwa_txt, self.rodz_txt, self.dt_txt = QLineEdit(parent=self),QLineEdit(parent=self),QLineEdit(parent=self)
-        self.autor_txt, self.uwagi_txt = QLineEdit(parent=self),QLineEdit(parent=self)
-        wgt.setLayout(form)
-        form.addRow('Nazwa', self.nazwa_txt)
-        form.addRow('Rodzaj', self.rodz_txt)
-        form.addRow('Data', self.dt_txt)
-        form.addRow('Autor', self.autor_txt)
-        form.addRow('Uwagi', self.uwagi_txt)
-        vbox.addWidget(wgt)
-        bb = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.connect(bb,SIGNAL('accepted()'), self.accept);
-        self.connect(bb,SIGNAL('rejected()'), self.reject);
+        self._widok = MiejscaWidokEd(self._dane,self)
+        vbox.addWidget(self._widok)
+        bb = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Close)
+        bb.accepted.connect(self._zapisz)
+        bb.rejected.connect(self._zamknij)
         vbox.addWidget(bb)
-        self.setWindowTitle('id: '+txt(dane['id'])+" "+str(dane.feature().id()))
-        if dane is not None:
-            self.nazwa_txt.setText(txt(dane['nazwa'],True))
-            self.rodz_txt.setText(txt(dane['rodzaj_badan'],True))
-            self.dt_txt.setText(txt(dane['data'],mx=10))
-            self.autor_txt.setText(txt(dane['autor'],True))
-            self.uwagi_txt.setText(txt(dane['uwagi'],True))
-        self.setModal(True)
-    
-    def get_dane(self):
-        return {'nazwa':self.nazwa_txt.text(),'rodzaj_badan':self.rodz_txt.text(),'data':self.dt_txt.text(),
-                'autor':self.autor_txt.text(),'uwagi':self.uwagi_txt.text()}
         
-def eddial(dane):
-    dial = loadUi(abspath(__file__+'/../../forms/miejsca.ui'))
-    txt_naz = dial.findChild(QLineEdit,'nazwa')
-    txt_naz.setText(txt(dane['nazwa']))
+    def _zapisz(self):
+        obj = self._dane.feature()
+        setMapa(obj, self._widok.wartosci(), MIEJSCA_ATR)
+        if zmien(self._war,obj):
+            self._win.statusBar().showMessage('Zapisano zmiany')
+        else:
+            self._win.statusBar().showMessage('Blad zapisu')
     
-    cb_rodz = dial.findChild(QComboBox,'rodzaj_badan')
-    rb = dane['rodzaj_badan']
-    mpi = {'?':0,'P':1,'L':2}
-    if rb is None:
-        cb_rodz.setCurrentIndex(0)
-    else:
-        cb_rodz.setCurrentIndex(mpi[str(rb.toString())])
-    
-    txt_dt = dial.findChild(QLineEdit,'data')
-    txt_dt.setInputMask('    -  -  ')
-    txt_dt.setText(txt(dane['data']))
-    txt_autor = dial.findChild(QLineEdit,'autor')
-    txt_autor.setText(txt(dane['autor']))
-    txt_uwagi = dial.findChild(QPlainTextEdit,'uwagi')
-    txt_uwagi.setPlainText(txt(dane['uwagi']))
-    zatw_part = partial(zatwierdzone,dial=dial,fid=dane.feature().id(),feature=dane.feature())
-    bb = dial.findChild(QDialogButtonBox,'buttonBox')
-    QObject.connect(bb, SIGNAL('accepted()'),zatw_part)
-    dial.setModal(True)
-    return dial
-    
-def ftest(dial):
-    dial.findChild(QLineEdit,'autor').setText('autor-form')   
-     
-    
-def qgs_ed(dialog,wid,fid): #id warstwy, id feat
-    dialog.setWindowTitle('Formularz Miejsc')
-    wgt = dialog.findChild('formularz')
-    form = wgt.layout()
-    nazwa_txt, rodz_txt, dt_txt = QLineEdit(parent=dialog),QLineEdit(parent=dialog),QLineEdit(parent=dialog)
-    autor_txt, uwagi_txt = QLineEdit(parent=dialog),QLineEdit(parent=dialog)
-    form.addRow('Nazwa', nazwa_txt)
-    nazwa_txt.setObjectName('nazwa')
-    form.addRow('Rodzaj', rodz_txt)
-    rodz_txt.setObjectName('rodzaj_badan')
-    form.addRow('Data', dt_txt)
-    dt_txt.setObjectName('data')
-    form.addRow('Autor', autor_txt)
-    autor_txt.setObjectName('autor')
-    form.addRow('Uwagi', uwagi_txt)
-    uwagi_txt.setObjectName('uwagi')
-    bb = dialog.findChild(QDialogButtonBox,'buttonBox')
-    QObject.connect(bb,SIGNAL('accepted()'),partial(ftest,dial=dialog))
-        
-    
-def zatwierdzone(dial,fid,feature,ed=False):
-    if dial is None:
-        return
-    txt_naz = dial.findChild(QLineEdit,'nazwa') 
-    cb_rodz = dial.findChild(QComboBox,'rodzaj_badan')
-    txt_dt = dial.findChild(QLineEdit,'data')
-    txt_autor = dial.findChild(QLineEdit,'autor')
-    txt_uwagi = dial.findChild(QPlainTextEdit,'uwagi')
-    ma = feature.attributeMap()
-    nv = {'nazwa':txt_naz.text(),'data':txt_dt.text(),
-                'autor':txt_autor.text(),'uwagi':txt_uwagi.toPlainText()}
-    mpi = {0:'?',1:'P',2:'L'}
-    nv['rodzaj_badan'] = QVariant(mpi[cb_rodz.currentIndex()]).toString()
-    set_mapa(feature,nv)
-    #feature.setAttributeMap(nv)
-    
-    
+    def _zamknij(self):
+        self._win.usun(self)
 
 class MiejscaFrame(GFrame):
     
     warstwa = None
-    def __init__(self,warstwa,iface,win,parent=None):
+    def __init__(self, warstwa, iface, win, parent=None):
         GFrame.__init__(self,win,gmiejsca(warstwa))
         self.setObjectName('miejsca')
         self.warstwa = warstwa
@@ -155,13 +103,6 @@ class MiejscaFrame(GFrame):
         
     def utworz_model(self, gobs):
         return tab_model(gobs, self)
-    
-    def akcja_ok(self):
-        QMessageBox.information(self, 'akcja_ok', 'OK')
-        self.setVisible(False)
-        
-    def akcja_anul(self):
-        self.setVisible(False)
         
     def akcja_wyswietl(self):
         if self.warstwa is not None:
@@ -170,13 +111,7 @@ class MiejscaFrame(GFrame):
         
     def akcja_zmien(self):
         ww = self.wybrany_wiersz()[1]
-        dialog = eddial(ww)
-        r = dialog.exec_()
-        if r != QDialog.Rejected:
-            z = zmien(self.warstwa,ww.feature())
-            if z:
-                ww.aktualizuj()
-                QMessageBox.information(self, 'info', 'Zmienione')
+        self._win.dodaj(MiejscaEdytor(self.warstwa,ww,self._win))
                 
     def akcja_usun(self):
         ww = self.wybrany_wiersz()[1]
