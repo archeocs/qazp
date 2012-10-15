@@ -196,12 +196,37 @@ def wyszukajSql(ident, qgsWarstwa, atr, tab):
 def daneFizg(st,qgsWarstwa):
     return AModel(wyszukajSql(st,qgsWarstwa,JEDFIZG_ATR,'FIZGEO_DANE'))
 
+tabkier = ['N','NE','E','SE','S','SW','W','NW']
+
+def decbin(kier):
+    if kier == 0 or kier > 255:
+        return ''
+    i, n = 0, kier
+    bkier = ''
+    while n > 1:
+        if n % 2 == 1:
+            bkier += tabkier[i]+','
+        n /= 2
+        i+= 1
+    return bkier+tabkier[i]
+
+def bindec(kier):
+    if len(kier) == 0:
+        return 0
+    tb = kier.upper().replace(';',',').replace(' ',',').replace(':',',').split(',')
+    dkier = 0
+    for t in tb:
+        if t in tabkier:
+            dkier += 2**tabkier.index(t)
+        elif t != '':
+            return (False,-1)
+    return (True,dkier)
+
 def daneEksp(st,qgsWarstwa):
     wys = wyszukajSql(st,qgsWarstwa,EKSPOZYCJA_ATR,'EKSPOZYCJA_DANE')
-    if not wys.has_key('stopien'):
-        wys['stopien'] = 0
-    if not wys.has_key('rozmiar'):
-        wys['rozmiar'] = 0
+    wys['stopien'] = wys.get('stopien',0)
+    wys['rozmiar'] = wys.get('rozmiar',0)
+    wys['kierunek'] = decbin(int(wys.get('kierunek',0)))
     return AModel(wys)
 
 def daneTeren(st,qgsWarstwa):
@@ -209,8 +234,7 @@ def daneTeren(st,qgsWarstwa):
 
 def daneObszar(st,qgsWarstwa):
     wys = wyszukajSql(st,qgsWarstwa,OBSZAR_ATR,'OBSZAR_DANE')
-    if not wys.has_key('powierzchnia'):
-        wys['powierzchnia'] = 0
+    wys['powierzchnia'] = wys.get('powierzchnia',0)
     return AModel(wys)
 
 def daneZagr(st,qgsWarstwa):
@@ -263,7 +287,15 @@ def updtFizg(st,qgsWarstwa,tdane=[]):
     return updtSql(st,qgsWarstwa,JEDFIZG_ATR,'FIZGEO_DANE',tdane)
 
 def updtEkspo(st,qgsWarstwa,tdane=[]):
-    return updtSql(st,qgsWarstwa,EKSPOZYCJA_ATR,'EKSPOZYCJA_DANE',tdane)
+    td = []
+    td.extend(tdane)
+    for d in td:
+        dk = bindec(d.get('kierunek',''))
+        if dk[0]:
+            d['kierunek'] = dk[1]
+        else:
+            raise Exception(u'Nieprawidlowe okreslenie kierunku '+d.get('kierunek',''))
+    return updtSql(st,qgsWarstwa,EKSPOZYCJA_ATR,'EKSPOZYCJA_DANE',td)
 
 def updtTeren(st,qgsWarstwa,tdane=[]):
     return updtSql(st,qgsWarstwa,TEREN_ATR,'TEREN_DANE',tdane)

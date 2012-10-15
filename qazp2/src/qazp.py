@@ -32,6 +32,8 @@
 from PyQt4.QtGui import QAction, QApplication,QMainWindow,QStackedWidget
 from PyQt4.QtCore import QObject, SIGNAL
 from widok import trasy,miejsca,stanowiska, wykazy
+from qgis.core import QgsMapLayerRegistry
+from os.path import abspath
 
 class Okno(QMainWindow):
     
@@ -41,7 +43,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp2')
+        self.setWindowTitle('qazp')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         
@@ -86,6 +88,15 @@ class QazpPlugin(object):
 
         self.iface.addToolBarIcon(self.akcja)
         self.iface.addPluginToMenu("QAZP2",self.akcja)
+        QgsMapLayerRegistry.instance().layerWasAdded.connect(self._dodajUi)
+    
+    def _dodajUi(self,mapa):
+        if str(mapa.name()).startswith('miejsca'):
+            mapa.setEditForm(abspath(__file__+'/../forms/miejsca.ui'))
+        elif str(mapa.name()).startswith('stanowiska'):
+            mapa.setEditForm(abspath(__file__+'/../forms/stanowiska.ui'))
+        elif str(mapa.name()).startswith('trasy'):
+            mapa.setEditForm(abspath(__file__+'/../forms/trasy.ui'))
     
     def unload(self):
         self.iface.removePluginMenu("QAZP2",self.akcja)

@@ -6,18 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>293</width>
-    <height>260</height>
+    <width>365</width>
+    <height>321</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Trasa</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>20</x>
-     <y>210</y>
+     <x>40</x>
+     <y>270</y>
      <width>221</width>
      <height>41</height>
     </rect>
@@ -34,29 +34,25 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>271</width>
-     <height>191</height>
+     <width>351</width>
+     <height>241</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
-    <item row="0" column="1">
-     <widget class="QLineEdit" name="nazwa"/>
-    </item>
+    <property name="fieldGrowthPolicy">
+     <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+    </property>
     <item row="0" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
-       <string>Nazwa</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_2">
-      <property name="text">
        <string>Rodzaj badań</string>
       </property>
+      <property name="buddy">
+       <cstring>rodzaj_badan</cstring>
+      </property>
      </widget>
     </item>
-    <item row="1" column="1">
+    <item row="0" column="1">
      <widget class="QComboBox" name="rodzaj_badan">
       <property name="editable">
        <bool>true</bool>
@@ -82,80 +78,92 @@
       </item>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_3">
+    <item row="1" column="1">
+     <widget class="QDateEdit" name="data">
+      <property name="displayFormat">
+       <string>yyyy-MM-dd</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_2">
       <property name="text">
        <string>Data</string>
+      </property>
+      <property name="buddy">
+       <cstring>data</cstring>
       </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QLineEdit" name="data"/>
+     <widget class="QLineEdit" name="autor"/>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Autor</string>
+      </property>
+      <property name="buddy">
+       <cstring>autor</cstring>
+      </property>
+     </widget>
     </item>
     <item row="3" column="1">
-     <widget class="QLineEdit" name="autor"/>
+     <widget class="QDateTimeEdit" name="start">
+      <property name="displayFormat">
+       <string>yyyy-MM-dd HH:mm:ss</string>
+      </property>
+     </widget>
     </item>
     <item row="3" column="0">
      <widget class="QLabel" name="label_4">
       <property name="text">
-       <string>Autor</string>
+       <string>Rozpoczęcie</string>
+      </property>
+      <property name="buddy">
+       <cstring>start</cstring>
       </property>
      </widget>
     </item>
     <item row="4" column="0">
      <widget class="QLabel" name="label_5">
       <property name="text">
-       <string>Uwagi</string>
+       <string>Zakończenie</string>
+      </property>
+      <property name="buddy">
+       <cstring>koniec</cstring>
       </property>
      </widget>
     </item>
     <item row="4" column="1">
+     <widget class="QDateTimeEdit" name="koniec">
+      <property name="displayFormat">
+       <string>yyyy-MM-dd HH:mm:ss</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_7">
+      <property name="text">
+       <string>Uwagi</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
      <widget class="QPlainTextEdit" name="uwagi"/>
     </item>
    </layout>
   </widget>
  </widget>
  <tabstops>
-  <tabstop>nazwa</tabstop>
   <tabstop>rodzaj_badan</tabstop>
   <tabstop>data</tabstop>
   <tabstop>autor</tabstop>
+  <tabstop>start</tabstop>
+  <tabstop>koniec</tabstop>
   <tabstop>uwagi</tabstop>
   <tabstop>buttonBox</tabstop>
  </tabstops>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>Dialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>240</x>
-     <y>210</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>259</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>Dialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>240</x>
-     <y>210</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>259</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
