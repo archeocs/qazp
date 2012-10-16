@@ -73,7 +73,7 @@ class GpxPunkt(object):
         return self.punkt().geom()
     
     def mapa(self):
-        return {1:'punkt GPS',2:'?',3:self.czas(),4:'Anonim',5:'import'}
+        return {1:self.name,2:'?',3:self.czas(),4:'Anonim',5:'import'}
     
     def spr_czas(self):
         if self.time == '':

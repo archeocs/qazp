@@ -166,7 +166,6 @@ class ImportGpsAkcja(QAction):
         miejsca.startEditing()
         for (pi,p) in enumerate(wp.pts_list):
             m = p.mapa()
-            m[1] = 'punkt %d'%pi
             dodaj(miejsca, m, p.geom())
         if miejsca.commitChanges():
             QMessageBox.information(self._win, 'Import GPS', 'Zapisano %d punktow'%len(wp.pts_list))
