@@ -31,7 +31,7 @@
 from PyQt4.QtCore import SIGNAL,QObject
 from PyQt4.QtGui import QAction,QMessageBox,QInputDialog,QWidget
 from widok.lista import GTabModel2, GFrame
-from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie
+from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie2
 from widok.sted import Edytor
 
 def tab_model(obiekty,parent=None):
@@ -86,7 +86,7 @@ class PolaczSql(QAction):
         self._iface = iface
         
     def wykonaj(self):
-        db = getPolaczenie(get_warstwa('stanowiska'))
-        if db.isOpen():
+        db = getPolaczenie2(get_warstwa('stanowiska'))
+        if db._con.isOpen():
             QMessageBox.information(self, u'Połączenie', 'Połączenie nawiązane')
         

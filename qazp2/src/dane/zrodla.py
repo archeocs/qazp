@@ -34,7 +34,7 @@ from qgis.core import QgsVectorLayer, QgsDataSourceURI
 from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR,STANOWISKA_ATR, AModel,\
     JEDFIZG_ATR,  EKSPOZYCJA_ATR, TEREN_ATR, OBSZAR_ATR, ZAGROZENIA_ATR,\
     WNIOSKI_ATR
-import sqlite3, psycopg2    
+from micon import Polaczenie  
 def rejestr_map():
     return QgsMapLayerRegistry.instance()
 
@@ -88,12 +88,12 @@ class Wykaz(object):
 
     def __init__(self, con, wykNazwa):
         self._con = con
-        self._stLista = "select id, nazwa from "+wykNazwa+" where start='%s' order by nazwa"
-        self._stLicz = "select count(*) from "+wykNazwa+" where nazwa='%s'"
-        self._stMax = "select coalesce(max(id),0) from "+wykNazwa
-        self._stZm = "update "+wykNazwa+" set nazwa='%s', start='%s' where id=%d"
-        self._stDod = "insert into "+wykNazwa+" values(%d, '%s', '%s')"
-        self._stUsu = "delete from "+wykNazwa+" where id=%d"
+        self._stLista = self._con.prep("select id, nazwa from "+wykNazwa+" where start=# order by nazwa")
+        self._stLicz = self._con.prep("select count(*) from "+wykNazwa+" where nazwa=#")
+        self._stMax = self._con.prep("select coalesce(max(id),0) from "+wykNazwa)
+        self._stZm = self._con.prep("update "+wykNazwa+" set nazwa=#, start=# where id=#")
+        self._stDod = self._con.prep("insert into "+wykNazwa+" values(#, #, #)")
+        self._stUsu = self._con.prep("delete from "+wykNazwa+" where id=#")
         self._wykaz = []
         self._start = None
         
@@ -102,51 +102,29 @@ class Wykaz(object):
             self._start = start
         if self._start is None:
             return
-        cur = self._con.cursor()
-        cur.execute(self._stLista%self._start)
         self._wykaz = []
-        for r in cur.fetchall():
+        for r in self._stLista.wszystkie(self._start):
             self._wykaz.append((QVariant(r[0]), QVariant(r[1])))
-        cur.close()
         return len(self._wykaz)
     
     def dodaj(self,nazwa):
-        cur = self._con.cursor()
         un = nazwa.upper()
-        cur.execute(self._stLicz%un)
-        r = cur.fetchone()[0]
-        cur.close()
+        r = self._stLicz.jeden()[0]
         if r > 0:
             return False
-        cur = self._con.cursor()
-        cur.execute(self._stMax)
-        n = cur.fetchone()[0]
-        cur.close()
-        cur = self._con.cursor()
-        cur.execute(self._stDod%(n+1,un[:2],un))
-        cur.close()
-        self._con.commit()
+        n = self._stMax.jeden()[0]
+        self._stDod.wykonaj([n+1,un[:2],un])
         return True
         
     def usun(self, ident):
-        cur = self._con.cursor()
-        cur.execute(self._stUsu%ident)
-        cur.close()
-        self._con.commit()
-        
+        self._stUsu.wykonaj([ident])
         
     def zmien(self,ident,nazwa):
         un = nazwa.upper()
-        cur = self._con.cursor()
-        cur.execute(self._stLicz%un)
-        r = cur.fetchone()[0]
-        cur.close()
+        r = self._stLicz.jeden([un])[0]
         if r > 0:
             return False
-        cur = self._con.cursor()
-        cur.execute(self._stZm%(un,un[:2],ident))
-        cur.close()
-        self._con.commit()
+        self._stZm.wykonaj([un,un[:2],ident])
         return True
     
     def __len__(self):
@@ -162,32 +140,31 @@ class Wykaz(object):
             return self._wykaz[ind]
         raise Exception('indeks %d poza zakresem %d'%(ind,len(self._wykaz)))
 
-def getPolaczenie(qgsWarstwa):
+def getPolaczenie2(qgsWarstwa):
     ndp = str(qgsWarstwa.dataProvider().name())
     uri = QgsDataSourceURI(qgsWarstwa.dataProvider().dataSourceUri())
     if ndp.upper() == 'SPATIALITE':
-        return sqlite3.connect(str(uri.database()))
+        import sqlite3
+        return Polaczenie(sqlite3.connect(str(uri.database())),Polaczenie.LITE)
         #drv = 'QSQLITE'
     elif ndp.upper == 'POSTGRES':
         #drv = 'QPSQL'
-        return psycopg2.connect(database=str(uri.database),host=str(uri.host()),port=int(str(uri.port())),
-                                user=str(uri.username()), password=str(uri.password()))
+        import psycopg2
+        return Polaczenie(psycopg2.connect(database=str(uri.database),host=str(uri.host()),port=int(str(uri.port())),
+                                user=str(uri.username()), password=str(uri.password())),Polaczenie.PG)
     else:
         raise Exception('Nieobslugiwany typ bazy danych '+ndp)
 
-def _selstmt(atr,tab,ident):
+def _selstmt(atr,tab):
     a = ','.join(atr)
-    return 'select '+a+' from '+tab+' where stanowisko='+ident
+    return 'select '+a+' from '+tab+' where stanowisko=#'
     
 def wyszukajSql(ident, qgsWarstwa, atr, tab):
-    p = getPolaczenie(qgsWarstwa)
-    cur = p.cursor()
-    cur.execute(_selstmt(atr,tab,ident))
-    ret = cur.fetchone()
+    p = getPolaczenie2(qgsWarstwa)
+    ret = p.jeden(_selstmt(atr,tab),[ident])
     if ret is None:
         return {'id':-1}
-    cur.close()
-    p.close()
+    p.zakoncz()
     dane = {}
     for (ri,r) in enumerate(ret):
         dane[atr[ri]] = r
@@ -243,44 +220,35 @@ def daneZagr(st,qgsWarstwa):
 def daneWnio(st,qgsWarstwa):
     return AModel(wyszukajSql(st,qgsWarstwa,WNIOSKI_ATR,'WNIOSKI'))
 
-def _updtstmt(atr,tab,stid):
-    a = ','.join(['%s=:%s '%(a,a) for a in atr ])
-    return 'update '+tab+' set '+a+' where id = :id and stanowisko='+stid
+def _updtstmt2(atr, tab, stid):
+    a = ','.join(['%s=#'%a for a in atr])
+    return 'update '+tab+' set '+a+' where id = # and stanowisko='+stid
 
-def _instmt(atr,tab,stid):
+def _insstmt2(atr, tab, stid):
     ae = ','.join(atr)
-    b = ','.join([':%s'%a for a in atr])
+    b = ','.join(['#' for a in atr])
     return 'insert into '+tab+' ('+ae+',stanowisko) values ('+b+','+stid+')'
-
-def _nastid(tab,con):
-    cur = con.cursor()
-    cur.execute('select coalesce(max(id),0) from '+tab)
-    nid = cur.fetchone()[0]+1
-    cur.close()
-    return nid 
 
 def _genParam(atr,dane):
     return dict([(a,dane.get(a)) for a in atr])
 
 def updtSql(stid, qgsWarstwa, atr, tab,tdane=[]):
-    p = getPolaczenie(qgsWarstwa)
-    cur = p.cursor()
-    us = _updtstmt(atr,tab,stid)
-    ins = _instmt(atr,tab,stid)
+    p = getPolaczenie2(qgsWarstwa)
+    us = p.prep(_updtstmt2(atr[1:],tab,stid), atr[1:]+['id'])
+    ins = p.prep(_insstmt2(atr,tab,stid),atr)
     uzyty = -1
     for d in tdane:
         pr = _genParam(atr,d)
         pr['id'] = int(pr['id'])
         if pr['id'] > 0:
-            cur.execute(us,pr)
+            us.wykonaj(pr, False)
             uzyty = 2000+len(tdane)
         else:
-            pr['id'] = _nastid(tab,p)
-            cur.execute(ins,pr)
+            pr['id'] = p.jeden('select coalesce(max(id),0) from '+tab)[0]+1
+            ins.wykonaj(pr, False)
             uzyty = 3000+len(tdane)
-    p.commit()
-    cur.close()
-    p.close()
+    p.zatwierdz()
+    p.zakoncz()
     return uzyty
     
 def updtFizg(st,qgsWarstwa,tdane=[]):

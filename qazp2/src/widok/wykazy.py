@@ -30,7 +30,7 @@
 
 from PyQt4.QtGui import QFrame, QTableView, QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QComboBox,QLineEdit, QMessageBox, QAction
 from PyQt4.QtCore import QAbstractTableModel, Qt, QVariant, SIGNAL, QObject
-from dane.zrodla import Wykaz, get_warstwa, getPolaczenie
+from dane.zrodla import Wykaz, get_warstwa, getPolaczenie2
 
 class WykModel(QAbstractTableModel):
     
@@ -81,12 +81,9 @@ class WykModel(QAbstractTableModel):
 
 def listaStart(con,nazwa):
     sql = 'select distinct start from '+nazwa+' order by start'
-    cur = con.cursor()
-    cur.execute(sql)
     rt = []
-    for w in cur.fetchall():
+    for w in con.wszystkie(sql):
         rt.append(QVariant(w[0]).toString())
-    cur.close()
     return rt
                 
 class WykDialog(QFrame):
@@ -216,5 +213,5 @@ class WykazAkcja(QAction):
         if st is None:
             QMessageBox.warning(self._win,u'Wykazy',u'Wykazy wymagają otwartej warstwy "stanowiska"')
             return 
-        self._win.dodaj(WykDialog(getPolaczenie(st),self._naz,self._win))
+        self._win.dodaj(WykDialog(getPolaczenie2(st),self._naz,self._win))
         

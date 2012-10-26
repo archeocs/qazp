@@ -28,10 +28,11 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QStyledItemDelegate, QComboBox, QTableView, QAbstractItemView, QHeaderView,QFrame,QDialogButtonBox,QVBoxLayout,QHBoxLayout
+from PyQt4.QtGui import QStyledItemDelegate, QComboBox, QTableView, QAbstractItemView 
+from PyQt4.QtGui import   QHeaderView,QFrame,QDialogButtonBox,QVBoxLayout,QHBoxLayout
 from PyQt4.QtCore import QVariant, QAbstractTableModel, Qt
 from functools import partial
-from dane.zrodla import getPolaczenie
+from dane.zrodla import getPolaczenie2
 from lib.qgsop import setMapa, zmien
 
 def conw(w,slow):
@@ -57,13 +58,10 @@ class WyborDelegate(QStyledItemDelegate):
         self._con[r] = con
         
     def getDane(self,pc):
-        con = getPolaczenie(pc[0])
-        cur = con.cursor()
+        con = getPolaczenie2(pc[0])
         stmt = 'select id,nazwa from '+pc[1]+' order by nazwa'
-        cur.execute(stmt)
-        ret = cur.fetchall()
-        cur.close()
-        con.close()
+        ret = con.wszystkie(stmt)
+        con.zakoncz()
         return ret  
 
     def createEditor(self,parent,styl,indeks):

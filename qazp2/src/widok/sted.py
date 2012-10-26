@@ -32,7 +32,7 @@ from PyQt4.QtGui import QDialogButtonBox, QFrame, QGridLayout
 from PyQt4.QtCore import Qt, QVariant
 from functools import partial
 from lib.qgsop import setMapa,zmien
-from dane.zrodla import getPolaczenie, daneFizg, updtFizg, daneEksp, updtEkspo,\
+from dane.zrodla import getPolaczenie2, daneFizg, updtFizg, daneEksp, updtEkspo,\
     daneTeren, updtTeren, updtObszar, daneObszar, updtZagr, daneZagr, updtWnio,\
     daneWnio
 from dane.model import STANOWISKA_ATR
@@ -132,8 +132,6 @@ class Edytor(QFrame):
 def fdb(ident,war,tab):
     if ident is None:
         return None
-    con = getPolaczenie(war)
-    cur = con.cursor()
     if isinstance(ident, QVariant):
         sid=str(ident.toString())
     else:
@@ -141,10 +139,9 @@ def fdb(ident,war,tab):
     if sid == None or sid == '':
         return 'PUSTY'
     try:    
-        cur.execute('select nazwa from '+tab+' where id='+sid)
-        ret = cur.fetchone()
-        cur.close()
-        con.close()
+        con = getPolaczenie2(war)
+        ret = con.jeden('select nazwa from '+tab+' where id=#',[sid])
+        con.zakoncz()
         if ret:
             return ret[0]
     except:
