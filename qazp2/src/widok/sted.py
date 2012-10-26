@@ -28,7 +28,7 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QDialogButtonBox, QFrame, QGridLayout
+from PyQt4.QtGui import QDialogButtonBox, QFrame, QGridLayout,QWidget,QVBoxLayout,QTableView
 from PyQt4.QtCore import Qt, QVariant
 from functools import partial
 from lib.qgsop import setMapa,zmien
@@ -37,6 +37,7 @@ from dane.zrodla import getPolaczenie2, daneFizg, updtFizg, daneEksp, updtEkspo,
     daneWnio
 from dane.model import STANOWISKA_ATR
 from widok.proped import conw, PropWidok
+from widok.faktyed import EdWgt, FModel, Fakty
 
 
 
@@ -57,6 +58,7 @@ class Edytor(QFrame):
         pbb.addButton('Obszar',QDialogButtonBox.ActionRole).setObjectName('obszar')
         pbb.addButton(u'Zagrożenia',QDialogButtonBox.ActionRole).setObjectName('zagrozenia')
         pbb.addButton(u'Wnioski',QDialogButtonBox.ActionRole).setObjectName('wnioski')
+        pbb.addButton(u'Fakty',QDialogButtonBox.ActionRole).setObjectName('fakty')
         self.grid.addWidget(pbb,0,1)
         bb = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Close, parent=self)
         self.grid.addWidget(bb,1,0)
@@ -70,6 +72,8 @@ class Edytor(QFrame):
         
     def klik_pbtn(self,btn):
         biez = self.grid.itemAtPosition(0,0).widget()
+        if self.on == 'fakty':
+            biez.wycofaj() 
         biez.setParent(None)
         self.grid.removeWidget(biez)
         del biez
@@ -88,6 +92,8 @@ class Edytor(QFrame):
             self.grid.addWidget(WnioskiWidok(daneWnio(str(self._model['id'].toString()),self._war)),0,0) 
         elif self.on == 'stanowisko':   
             self.grid.addWidget(StanowiskoWidok(self._war,self._model),0,0)
+        elif self.on == 'fakty':
+            self.grid.addWidget(FaktyWidok(str(self._model['id'].toString()),self._war),0,0) 
             
     def klikZapisz(self):
         panel = self.grid.itemAtPosition(0,0).widget()
@@ -123,10 +129,14 @@ class Edytor(QFrame):
             dane = panel.wartosci()
             u = updtWnio(str(self._model['id'].toString()),self._war,[dane])
             self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+        elif self.on == 'fakty':
+            panel.zatwierdz()
         else:
             self._win.statusBar().showMessage(self.on)
 
     def klikZamknij(self):
+        if self.on == 'fakty':
+            self.grid.itemAtPosition(0,0).widget().wycofaj()    
         self._win.usun(self)
         
 def fdb(ident,war,tab):
@@ -241,3 +251,61 @@ class WnioskiWidok(PropWidok):
             (u'Interwencja','interwencja',self.wb), (u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
         self.dodajOpt(0,self.vr).dodajOpt(1,self.vb).dodajOpt(2,self.vb).dodajOpt(3,self.vb)
+        
+class FaktyWidok(QWidget):
+    def __init__(self,st,warstwa,parent=None):
+        QWidget.__init__(self,parent)
+        self._st = st
+        vbox = QVBoxLayout()
+        self.setLayout(vbox)
+        self._tab = QTableView()
+        self._con = getPolaczenie2(warstwa)
+        self._fk = Fakty(st,self._con)
+        self._mf = FModel(self._fk,self._tab)
+        self._tab.setModel(self._mf)
+        self._tab.selectionModel().currentRowChanged.connect(self._zmBiezWier)
+        vbox.addWidget(self._tab)
+        self._ew = EdWgt(self._con)
+        self._ew.setModAct(self._modWier)
+        self._ew.setUsuAct(self._delWier)
+        vbox.addWidget(self._ew)
+        
+    def _zmBiezWier(self, p, b):
+        self._ew.setDane(self._fk[p.row()])
+        
+    def _modWier(self,dane):
+        if dane['relacja'] == '':
+            dane['jed2'] = None
+            dane['relacja'] = None
+        if dane['id'] > 0:
+            print 'modyfikacja'
+            self._mf.beginResetModel()
+            self._fk.zmien(self._tab.selectionModel().currentIndex().row(),dane)
+            self._mf.endResetModel()
+        else:
+            print 'nowy',dane
+            self._mf.beginResetModel()
+            self._fk.dodaj(dane)
+            self._mf.endResetModel()
+            
+    def _delWier(self,dane):
+        if dane['id'] > 0:
+            print 'usuwanie'
+            self._mf.beginResetModel()
+            self._fk.usun(dane)
+            self._mf.endResetModel()
+    
+    def zatwierdz(self):
+        if self._con is None:
+            return
+        self._con.zatwierdz()
+        self._con.zakoncz()
+        self._con = None
+        
+    def wycofaj(self):
+        if self._con is None:
+            return
+        self._con.wycofaj()
+        self._con.zakoncz()
+        self._con = None
+        #self._con.zakoncz()
