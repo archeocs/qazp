@@ -28,8 +28,8 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt4.QtGui import QWidget, QLabel, QComboBox, QDoubleSpinBox, QGridLayout, QPushButton, QLineEdit
+from PyQt4.QtCore import QAbstractTableModel, Qt, QVariant
 from dane.zrodla import FaktyWykaz
 
 class FaktyWykModel(QAbstractTableModel):
@@ -57,10 +57,15 @@ class Fakty(object):
     fkatr = ['id', 'f.okres','jed1', 'jed2', 'relacja','pewnosc','u.funkcja', 'rodzaj_fun', 
                 'masowy', 'wydzielony', 'ja.nazwa', 'ja.skrot', 'jb.nazwa', 'jb.skrot', 'u.nazwa', 'u.skrot']
     def __init__(self,st,con):
-        self.selFk = con.prep('select '+(','.join(self.fkatr))+' from fakty f left outer join jednostki ja on f.jed1 = ja.kod left outer join jednostki jb on f.jed2 = jb.kod left outer join funkcje u on f.rodzaj_fun = u.kod where stanowisko ='+str(st))
-        self.insFk = con.prep("insert into fakty values(#,"+str(st)+" ,#,#,#,#,#,#,#,#,#)",['id','okres','jed1','jed2','relacja','pewnosc','funkcja','rodzaj_fun','masowy','wydzielony'])
-        self.updtFk = con.prep('update fakty set okres=#, funkcja=#, jed1=#, jed2=#, relacja=#, pewnosc=#, masowy=#, wydzielony=#, rodzaj_fun=# where id=# and stanowisko='+str(st),['okres','funkcja','jed1','jed2','relacja','pewnosc','masowy','wydzielony','rodzaj_fun','id'])
-        self.delFk = con.prep('delete from fakty where id=# and stanowisko='+str(st),['id'])
+        self.selFk = con.prep('select '+(','.join(self.fkatr))+' from fakty f left outer join jednostki ja on f.jed1 = ja.kod '+
+                                'left outer join jednostki jb on f.jed2 = jb.kod left outer join funkcje u on f.rodzaj_fun = u.kod '+
+                                'where stanowisko ='+str(st))
+        self.insFk = con.prep("insert into fakty values(:id,"+str(st)+" ,:okres,:jed1,:jed2,:relacja,:pewnosc,:funkcja,"+
+                                                        ":rodzaj_fun,:masowy,:wydzielony)")
+        self.updtFk = con.prep('update fakty set okres=:okres, funkcja=:funkcja, jed1=:jed1, jed2=:jed2, relacja=:relacja,'+
+                               ' pewnosc=:pewnosc, masowy=:masowy, wydzielony=:wydzielony, rodzaj_fun=:rodzaj_fun where id=:id'+
+                               ' and stanowisko='+str(st))
+        self.delFk = con.prep('delete from fakty where id=:id and stanowisko='+str(st))
         self._p = con
         self._odswiez()
         
@@ -240,7 +245,7 @@ class EdWgt(QWidget):
     relTab = [None,'L','O']
     bid = -1
     
-    def setDane(self,dd):
+    def setDane(self,dd,nowy=False):
         v = dd.get('okres')
         if v == '':
             v = None
@@ -258,6 +263,10 @@ class EdWgt(QWidget):
         self._wydzTxt.setText(unicode(dd.get('wydzielony','')))
         self._pewTxt.setValue(dd.get('pewnosc',1))
         self.bid = dd.get('id',-1)
+        if nowy:
+            self._dodBtn.setText('Dodaj')
+        else:
+            self._dodBtn.setText(u'Zmień')
     
     def setModAct(self,a):
         self._modAct = a
@@ -275,7 +284,6 @@ class EdWgt(QWidget):
             'pewnosc':self._pewTxt.value(), 'relacja':self._ci(self._relCb), 'jed2':self._ci(self._j2Cb),'id':self.bid}
     
     def _relZm(self,i):
-        #print unicode(self._j1Cb.itemData(self._j1Cb.currentIndex()).toString())
         self._j2Cb.setEnabled(i > 0)
         
     def _okrZm(self,i):

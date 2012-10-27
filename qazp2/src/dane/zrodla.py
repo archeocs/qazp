@@ -87,7 +87,7 @@ def szukaj_trasy(sql):
 class FaktyWykaz(object):
 
     def __init__(self,tab,kryt):
-        self.seljed = "select kod, nazwa, skrot from %s where %s=# order by nazwa" % (tab, kryt)
+        self.seljed = "select kod, nazwa, skrot from %s where %s=? order by nazwa" % (tab, kryt)
         self._kody, self._info = [], []
 
     def wybor(self,con,okr):
@@ -122,12 +122,12 @@ class Wykaz(object):
 
     def __init__(self, con, wykNazwa):
         self._con = con
-        self._stLista = self._con.prep("select id, nazwa from "+wykNazwa+" where start=# order by nazwa")
-        self._stLicz = self._con.prep("select count(*) from "+wykNazwa+" where nazwa=#")
+        self._stLista = self._con.prep("select id, nazwa from "+wykNazwa+" where start=? order by nazwa")
+        self._stLicz = self._con.prep("select count(*) from "+wykNazwa+" where nazwa=?")
         self._stMax = self._con.prep("select coalesce(max(id),0) from "+wykNazwa)
-        self._stZm = self._con.prep("update "+wykNazwa+" set nazwa=#, start=# where id=#")
-        self._stDod = self._con.prep("insert into "+wykNazwa+" values(#, #, #)")
-        self._stUsu = self._con.prep("delete from "+wykNazwa+" where id=#")
+        self._stZm = self._con.prep("update "+wykNazwa+" set nazwa=?, start=? where id=?")
+        self._stDod = self._con.prep("insert into "+wykNazwa+" values(?, ?, ?)")
+        self._stUsu = self._con.prep("delete from "+wykNazwa+" where id=?")
         self._wykaz = []
         self._start = None
         
@@ -137,13 +137,13 @@ class Wykaz(object):
         if self._start is None:
             return
         self._wykaz = []
-        for r in self._stLista.wszystkie(self._start):
+        for r in self._stLista.wszystkie([self._start]):
             self._wykaz.append((QVariant(r[0]), QVariant(r[1])))
         return len(self._wykaz)
     
     def dodaj(self,nazwa):
         un = nazwa.upper()
-        r = self._stLicz.jeden()[0]
+        r = self._stLicz.jeden([un])[0]
         if r > 0:
             return False
         n = self._stMax.jeden()[0]
@@ -191,7 +191,7 @@ def getPolaczenie2(qgsWarstwa):
 
 def _selstmt(atr,tab):
     a = ','.join(atr)
-    return 'select '+a+' from '+tab+' where stanowisko=#'
+    return 'select '+a+' from '+tab+' where stanowisko=?'
     
 def wyszukajSql(ident, qgsWarstwa, atr, tab):
     p = getPolaczenie2(qgsWarstwa)
@@ -255,12 +255,12 @@ def daneWnio(st,qgsWarstwa):
     return AModel(wyszukajSql(st,qgsWarstwa,WNIOSKI_ATR,'WNIOSKI'))
 
 def _updtstmt2(atr, tab, stid):
-    a = ','.join(['%s=#'%a for a in atr])
-    return 'update '+tab+' set '+a+' where id = # and stanowisko='+stid
+    a = ','.join(['%s=:%s'%(a,a) for a in atr])
+    return 'update '+tab+' set '+a+' where id = :id and stanowisko='+stid
 
 def _insstmt2(atr, tab, stid):
     ae = ','.join(atr)
-    b = ','.join(['#' for a in atr])
+    b = ','.join([':%s'%a for a in atr])
     return 'insert into '+tab+' ('+ae+',stanowisko) values ('+b+','+stid+')'
 
 def _genParam(atr,dane):
@@ -268,8 +268,8 @@ def _genParam(atr,dane):
 
 def updtSql(stid, qgsWarstwa, atr, tab,tdane=[]):
     p = getPolaczenie2(qgsWarstwa)
-    us = p.prep(_updtstmt2(atr[1:],tab,stid), atr[1:]+['id'])
-    ins = p.prep(_insstmt2(atr,tab,stid),atr)
+    us = p.prep(_updtstmt2(atr[1:],tab,stid)) # a[1:] aby pominac parametr 'id'
+    ins = p.prep(_insstmt2(atr,tab,stid))
     uzyty = -1
     for d in tdane:
         pr = _genParam(atr,d)

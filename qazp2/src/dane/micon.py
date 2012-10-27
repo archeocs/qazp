@@ -27,7 +27,7 @@
 #  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+import re
 class Polaczenie(object):
     
     PG = 1
@@ -62,17 +62,30 @@ class Polaczenie(object):
     def jeden(self, sql, vp=[], f=None):
         return self.prep(sql).jeden(vp,f)
     
-    def prep(self, sql, params=[]):
-        ts = sql
-        for p in params:
-            ts = ts.replace('#',self.nrep%p,1)
-        if params:
-            if ts.rfind('#') > -1:
-                #print 'zbyt malo parametrow'
-                return None
-            return Polecenie(self._con,ts)
-        ts = ts.replace('#',self.rep)
-        return Polecenie(self._con,ts)
+    #===========================================================================
+    # def prep(self, sql, params=[]):
+    #    ts = sql
+    #    for p in params:
+    #        ts = ts.replace('#',self.nrep%p,1)
+    #    if params:
+    #        if ts.rfind('#') > -1:
+    #            #print 'zbyt malo parametrow'
+    #            return None
+    #        return Polecenie(self._con,ts)
+    #    ts = ts.replace('#',self.rep)
+    #    return Polecenie(self._con,ts)
+    #===========================================================================
+    
+    _rn = re.compile(':([0-9a-zA-Z_]+)')
+    
+    def _rep(self,m):
+        return '%('+m.group(1)+')s'
+        
+    def prep(self,sql):
+        if self._tc == self.LITE:
+            return Polecenie(self._con,sql)
+        ns = self._rn.subn(self._rep,sql.replace('?','%s'))
+        return Polecenie(self._con,ns[0])
 
 class Polecenie(object):
     

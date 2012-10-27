@@ -150,7 +150,7 @@ def fdb(ident,war,tab):
         return 'PUSTY'
     try:    
         con = getPolaczenie2(war)
-        ret = con.jeden('select nazwa from '+tab+' where id=#',[sid])
+        ret = con.jeden('select nazwa from '+tab+' where id=?',[sid])
         con.zakoncz()
         if ret:
             return ret[0]
@@ -271,7 +271,8 @@ class FaktyWidok(QWidget):
         vbox.addWidget(self._ew)
         
     def _zmBiezWier(self, p, b):
-        self._ew.setDane(self._fk[p.row()])
+        r = p.row()
+        self._ew.setDane(self._fk[r],r>=len(self._fk))
         
     def _modWier(self,dane):
         if dane['relacja'] == '':
