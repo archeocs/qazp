@@ -36,15 +36,19 @@ from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR,STANOWISKA_ATR, AModel,\
     WNIOSKI_ATR
 from micon import Polaczenie  
 def rejestr_map():
+    """ Zwraca rejestr map z QGIS """
     return QgsMapLayerRegistry.instance()
 
 def get_warstwa(nazwa):
+    """ Wyszukuje warstwe wedlug nazwy i zwraca pierwsza znaleziona """
     reg = QgsMapLayerRegistry.instance()
     for v in reg.mapLayers().itervalues():
         if v.isValid() and v.type() == QgsMapLayer.VectorLayer and v.name() == nazwa:
             return v
 
 def _gwarstwa(qgs_warstwa,atrybuty):
+    """ Dla podanej warstwy pobiera informacje o wszystkich obiektach geometrycznych 
+        i dla kazdego z nich tworzy nowa instancje klasy model.GModel """
     kt = range(len(atrybuty))
     qgs_warstwa.select(kt)
     mt = []
@@ -67,6 +71,8 @@ def gtrasy(qgs_warstwa):
 _SZUKAJ_IDS = {}
 
 def _szukaj_warstwa(sql,nazwa_warstwy):
+    """ Wyszukuje na warstwie wszystkie obiekty, ktore spelniaja polecenie sql i zwraca je w postaci
+        nowej warstwy QgsVectorLayer"""
     qv = get_warstwa(nazwa_warstwy)
     nuri = QgsDataSourceURI(qv.dataProvider().dataSourceUri())
     nuri.setSql(sql)
@@ -85,12 +91,17 @@ def szukaj_trasy(sql):
     return _szukaj_warstwa(sql,'trasy')
 
 class FaktyWykaz(object):
-
+    """ Klasa wspomagajaca zarzadzanie wykazami do edycji faktow kulturowych - jednostek kulturowych
+        i funkcji 
+        
+        Kazdy rekord wykazu jest zbudowny z 3 atrybutow: kodu, pelnej nazwy i jej skrotu
+        """
     def __init__(self,tab,kryt):
         self.seljed = "select kod, nazwa, skrot from %s where %s=? order by nazwa" % (tab, kryt)
         self._kody, self._info = [], []
 
     def wybor(self,con,okr):
+        """ Pobiera z wykazu podany zakres danych """
         self._kody, self._info=[],[]
         for j in con.wszystkie(self.seljed,[okr]):
             self._kody.append(j[0])
@@ -103,14 +114,17 @@ class FaktyWykaz(object):
         return len(self._kody)
     
     def indeks(self,kod):
+        """ Zwraca indeks (kolejnosc) danego kodu w utworzonym wykazie """
         if kod in self._kody:
             return self._kody.index(kod)
         return 0
         
     def nazwa(self, kod):
-        return self._info[self._kody.index(kod)][0]
+        """ Zwraca nazwe w wykazie ktora jest przypisana do podanego kodu """
+        return self._info[self._kody.index(kod)][0].decode('utf-8')
     
     def skrot(self, kod):
+        """ Zwraca skrot w wykazie, ktory jest przypisany do podanego kodu"""
         return self._info[self._kody.index(kod)][1]
         
     def kod(self,i):
@@ -181,10 +195,13 @@ def getPolaczenie2(qgsWarstwa):
         import sqlite3
         return Polaczenie(sqlite3.connect(str(uri.database())),Polaczenie.LITE)
         #drv = 'QSQLITE'
-    elif ndp.upper == 'POSTGRES':
+    elif ndp.upper() == 'POSTGRES':
         #drv = 'QPSQL'
         import psycopg2
-        return Polaczenie(psycopg2.connect(database=str(uri.database),host=str(uri.host()),port=int(str(uri.port())),
+        import psycopg2.extensions
+        psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
+        psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
+        return Polaczenie(psycopg2.connect(database=str(uri.database()),host=str(uri.host()),port=str(uri.port()),
                                 user=str(uri.username()), password=str(uri.password())),Polaczenie.PG)
     else:
         raise Exception('Nieobslugiwany typ bazy danych '+ndp)

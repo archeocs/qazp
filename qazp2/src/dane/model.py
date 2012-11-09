@@ -30,9 +30,12 @@
 
 from qgis.core import QgsFeature, QgsCoordinateReferenceSystem
 from qgis.core import QgsCoordinateTransform
-from PyQt4.QtCore import *
+from PyQt4.QtCore import QVariant
 class AModel(dict):
-    
+    """
+    Prosty model dany, w ktorym rozszerzone sa funkcjonalnosci zwyklego
+    slownika
+    """
     def __init__(self,dane,domyslne={}):
         dict.__init__(self)
         self.zmiany = {}
@@ -44,6 +47,8 @@ class AModel(dict):
                 self[k] = QVariant(v)
             
     def __setitem__(self, k,v):
+        """ Wstawia wartosc do slownika i zapamietuje klucz, jezeli jego wartosc
+            jest zmieniana"""
         if not self.zmiany.has_key(k):
             self.zmiany[k] = False
         else:
@@ -51,37 +56,44 @@ class AModel(dict):
         return dict.__setitem__(self, k,v)
     
     def czy_mod(self):
+        """ Sprawdza, czy dane w slowniku byly modyfikowane """
         for k in self.zmiany.iterkeys():
             if self.zmiany[k]:
                 return True
         return False
-            
-    """
-    Domyslna implementacja. Kolejnosc kluczy jest niezdefiniowana
-    """        
+               
     def kolejnosc(self):
+        """  Domyslna implementacja. Kolejnosc kluczy jest niezdefiniowana    """     
         return self.keys()
     
-    """
-    Lista wartosci wedlug kolejnosci zwracanej przez funkcje self.kolejnosc
-    """
     def lista(self):
+        """Lista wartosci wedlug kolejnosci zwracanej przez funkcje self.kolejnosc """
         return [self[k] for k in self.kolejnosc()]
     
     def klucz(self,i):
+        """ zwraca i-ty klucz wedlug podanej kolejnosci. 
+        
+        W domyslnej implemntacji kolejnosc kluczy jest przypadkowa. Zeby to zmienic trzeba
+        nadpisac metode AModel.kolejnosc()"""
         kt = self.kolejnosc()
         if i < 0 or i >= len(kt):
             raise Exception("klucz: indeks %d poza zakresem [0,%d]"%(i,len(kt)-1))
         return self.kolejnosc()[i]
     
     def zmien(self,mapa):
+        """ Zmienia dane w slowniku wedlug zawartosci innej mapy przekazanej w parametrze metody """
         for (k,v) in mapa.iteritems():
             self[k] = v
     
     def wartosc(self,i):
+        """ Zwraca i-ta wartosc ze slownika
+        
+        W domyslnej implemntacji kolejnosc kluczy jest przypadkowa. Zeby to zmienic trzeba
+        nadpisac metode AModel.kolejnosc() """
         return self[self.klucz(i)]
     
     def submapa(self,*args):
+        """ Zwraca podzbior kluczy i wartosci wedlug podanej listy kluczy """
         nm = {}
         for a in args:
             if not self.has_key(a):
@@ -90,6 +102,7 @@ class AModel(dict):
         return nm
     
     def sublista(self,*args):
+        """ Zwraca podzbior wartosci wedlug podanej listy kluczy """
         nt = []
         for a in args:
             if not self.has_key(a):
@@ -98,7 +111,7 @@ class AModel(dict):
         
     
 class GModel(AModel):
-    
+    """ Model danych do obslugi informacji pochodzacych z QGIS"""
     def __init__(self,kolejnosc,feature):
         AModel.__init__(self,{})
         ma = feature.attributeMap()
@@ -113,6 +126,7 @@ class GModel(AModel):
         return self._kolejnosc
     
     def zatwierdz(self):
+        """ Wprowadza wlasciwosci obiektu geometrycznego na podstawie zawartosci slownika """
         self._feature.setAttributeMap(dict([(ki,self[k]) for (ki,k) in enumerate(self.kolejnosc())]))
         
     def aktualizuj(self):
@@ -121,6 +135,7 @@ class GModel(AModel):
             self[k] = ma[ki]
     
     def feature(self):
+        """ Zwraca obiekt geometryczny """
         return self._feature
     
     def __unicode__(self):
@@ -146,7 +161,7 @@ def zmien_srid(g, osr=4326, dsr=2180):
 
 MIEJSCA_ATR = ['id','nazwa','rodzaj_badan','data','autor','uwagi']
 
-TRASY_ATR = ['id','rodzaj_badan','data','autor','rozpoczecie','zakonczenie','czestotliwosc','uwagi']
+TRASY_ATR = ['id','rozpoczecie','zakonczenie','czestotliwosc','rodzaj_badan','data','autor','uwagi']
 
 STANOWISKA_ATR = ['id','obszar','nr_obszar','miejscowosc','nr_miejscowosc','gmina','powiat','wojewodztwo',
                   'rodzaj_badan','data','autor','uwagi']
@@ -154,15 +169,15 @@ STANOWISKA_ATR = ['id','obszar','nr_obszar','miejscowosc','nr_miejscowosc','gmin
 JEDFIZG_ATR = ['id','nadmorska','w_morzu','plaza','mierzeja','skarpa','wal_wydmowy','duze_doliny',
             'w_wodzie','ter_denna','ter_nadzalewowa','ter_wyzsze','brzeg_wysoczyzny','male_doliny',
             'dno_doliny','stok_doliny','krawedz_doliny','poza_dolinami','rownina',
-            'obsz_falisty','obsz_pagorkowaty','obsz_gorzysty']
+            'obsz_falisty','obsz_pagorkowaty','obsz_gorzysty','uwagi']
 
 EKSPOZYCJA_ATR = ['id','eksponowany','kraw_stoki','sfaldowania_cyple','cyple_wybitne','waly_garby','wyniesienia_okrezne', 
                 'osloniety','podst_stoku','doliny_niecki', 'kotlinki_zagleb','jaskinie','stopien','rozmiar',
                 'kierunek','uwagi']
 TEREN_ATR=['id','zabudowany','sred_zabud','rolniczy','spoleczny','przemyslowy',
-                'las','sad','park','pole_orne','laka','uwagi']
+                'las','sad','park','pole_orne','laka','utwor_geo','uwagi']
 
-OBSZAR_ATR = ['id','obserwacja','pole','nasyc_rozklad','nasyc_typ','gestosc_znal','powierzchnia']
+OBSZAR_ATR = ['id','obserwacja','pole','nasyc_rozklad','nasyc_typ','gestosc_znal','powierzchnia','uwagi']
 
 ZAGROZENIA_ATR=['id','wystepowanie','przyczyna','uzytkownik','uwagi']
 

@@ -193,7 +193,7 @@ class ObszarWidok(PropWidok):
         PropWidok.__init__(self,parent)
         opt = [(u'Obserwacja','obserwacja',self.wo),(u'Pole','pole',self.wp), (u'Rozkład nasycenia','nasyc_rozklad',self.wnr),
                 (u'Typ nasycenia','nasyc_typ',self.wnt), (u'Gęstość znalezisk','gestosc_znal',self.wr), 
-                (u'Powierzchnia','powierzchnia',self.nic)]
+                (u'Powierzchnia','powierzchnia',self.nic),(u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
         self.dodajOpt(0,self.vo).dodajOpt(1,self.vp).dodajOpt(2,self.vnr).dodajOpt(3,self.vnt).dodajOpt(4,self.vr)
         #self.setDelegat([(u'Otwarte','O'),(u'Zamknięte','Z')],100)
@@ -206,16 +206,21 @@ class FizgWidok(PropWidok):
               (u'Duże doliny','duze_doliny',self.wb),(u'W wodzie','w_wodzie',self.wb),(u'Ter. denna','ter_denna',self.wb),(u'Ter. nadzalewowa','ter_nadzalewowa',self.wb),(u'Ter. wyższe','ter_wyzsze',self.wb),(u'Brzeg wysoczyzny','brzeg_wysoczyzny',self.wb),
               (u'Małe doliny','male_doliny',self.wb),(u'Dno doliny','dno_doliny',self.wb),(u'Stok doliny','stok_doliny',self.wb),(u'Krawędź doliny','krawedz_doliny',self.wb),
               (u'Poza dolinami','poza_dolinami',self.wb),(u'Równina','rownina',self.wb),(u'Obsz. falisty','obsz_falisty',self.wb)
-                ,(u'Obsz. pagórkowaty','obsz_pagorkowaty',self.wb),(u'Obsz. górzysty','obsz_gorzysty',self.wb)]
+                ,(u'Obsz. pagórkowaty','obsz_pagorkowaty',self.wb),(u'Obsz. górzysty','obsz_gorzysty',self.wb),(u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
         for x in range(len(opt)):
             self.dodTn(x)
 
 class TerenWidok(PropWidok):
+    vg = [('L',u'Luźny'),('Z','Zwięzły'),('T','Torf.-bag.')]
+    wg = partial(conw,slow=dict(vg))
+    
     def __init__(self,dane=None,parent=None):
         PropWidok.__init__(self,parent)
-        opt=[(u'Zabudowany','zabudowany',self.wb),(u'Śred. zabudowany','sred_zabud',self.wb),(u'Rolniczy','rolniczy',self.wb),(u'Społeczny','spoleczny',self.wb),(u'Przemysłowy','przemyslowy',self.wb),
-                (u'Las','las',self.wb),(u'Sad','sad',self.wb),(u'Park','park',self.wb),(u'Pole orne','pole_orne',self.wb),(u'Łąka','laka',self.wb),(u'Uwagi','uwagi',self.nic)]
+        opt=[(u'Zabudowany','zabudowany',self.wb),(u'Śred. zabudowany','sred_zabud',self.wb),(u'Rolniczy','rolniczy',self.wb),
+             (u'Społeczny','spoleczny',self.wb),(u'Przemysłowy','przemyslowy',self.wb),
+                (u'Las','las',self.wb),(u'Sad','sad',self.wb),(u'Park','park',self.wb),(u'Pole orne','pole_orne',self.wb),
+                (u'Łąka','laka',self.wb),(u'Utwór geologiczny','utwor_geo',self.wg),(u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
         for x in range(len(opt)-1):
             self.dodTn(x)

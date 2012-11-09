@@ -360,8 +360,9 @@ class ImportGpsAkcja(QAction):
         nt = add_dial.get_track()
         nf, ni = nt[0], nt[1]
         trasy.startEditing()
-        atrs = {1:ni['rodzaj'],2:ni['data'],3:ni['autor'],4:nf.min_czas(),5:nf.max_czas(),
-                6:ni['czest'],7:ni['uwagi']}
+        #TRASY_ATR = ['id','rozpoczecie','zakonczenie','czestotliwosc','rodzaj_badan','data','autor','uwagi']
+        atrs = {4:ni['rodzaj'],5:ni['data'],6:ni['autor'],1:nf.min_czas(),2:nf.max_czas(),
+                3:ni['czest'],7:ni['uwagi']}
         dodaj(trasy, atrs, nf.geom())
         if trasy.commitChanges():
             QMessageBox.information(self._win, "Import GPS", u'Nowa trasa została zapisana')
