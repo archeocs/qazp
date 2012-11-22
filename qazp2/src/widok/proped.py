@@ -157,6 +157,10 @@ class PropWidok(QTableView):
     vr = [('M',u'Mała'),( 'S',u'Średnia'),( 'D',u'Duża')]
     ve = [('I',u'Istnieje'),( 'N',u'Nie istnieje')]
     
+    wb = partial(conw,slow=dict(vb))
+    wr = partial(conw,slow=dict(vr))
+    we = partial(conw,slow=dict(ve))
+    
     def __init__(self,dane=None,parent=None):
         QTableView.__init__(self,parent)
         self._del = WyborDelegate(parent=self)
@@ -212,10 +216,6 @@ class PropWidok(QTableView):
         
     def wartosci(self):
         return self.konwert(self._dane)
-    
-    wb = partial(conw,slow=dict(vb))
-    wr = partial(conw,slow=dict(vr))
-    we = partial(conw,slow=dict(ve))
     
     def nic(self,w):
         return w

@@ -31,6 +31,7 @@
 from qgis.core import QgsFeature, QgsCoordinateReferenceSystem
 from qgis.core import QgsCoordinateTransform
 from PyQt4.QtCore import QVariant
+from decimal import Decimal
 class AModel(dict):
     """
     Prosty model dany, w ktorym rozszerzone sa funkcjonalnosci zwyklego
@@ -44,6 +45,8 @@ class AModel(dict):
             if v is None:
                 self[k] = QVariant(domyslne.get(k))
             else:
+                if isinstance(v, Decimal):
+                    v = float(v)
                 self[k] = QVariant(v)
             
     def __setitem__(self, k,v):
@@ -174,8 +177,9 @@ JEDFIZG_ATR = ['id','nadmorska','w_morzu','plaza','mierzeja','skarpa','wal_wydmo
 EKSPOZYCJA_ATR = ['id','eksponowany','kraw_stoki','sfaldowania_cyple','cyple_wybitne','waly_garby','wyniesienia_okrezne', 
                 'osloniety','podst_stoku','doliny_niecki', 'kotlinki_zagleb','jaskinie','stopien','rozmiar',
                 'kierunek','uwagi']
-TEREN_ATR=['id','zabudowany','sred_zabud','rolniczy','spoleczny','przemyslowy',
-                'las','sad','park','pole_orne','laka','utwor_geo','uwagi']
+TEREN_ATR=['id','zabudowany','sred_zabud','rolniczy','spoleczny','przemyslowy','nieuzytek',
+                'las','sad','park','pole_orne','laka','torf','woda','bagno',
+                'utwor_geo','kamienistosc','specjalistyczne','uwagi']
 
 OBSZAR_ATR = ['id','obserwacja','pole','nasyc_rozklad','nasyc_typ','gestosc_znal','powierzchnia','uwagi']
 

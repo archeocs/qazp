@@ -208,22 +208,25 @@ class FizgWidok(PropWidok):
               (u'Poza dolinami','poza_dolinami',self.wb),(u'Równina','rownina',self.wb),(u'Obsz. falisty','obsz_falisty',self.wb)
                 ,(u'Obsz. pagórkowaty','obsz_pagorkowaty',self.wb),(u'Obsz. górzysty','obsz_gorzysty',self.wb),(u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
-        for x in range(len(opt)):
+        for x in range(len(opt)-1):
             self.dodTn(x)
 
 class TerenWidok(PropWidok):
-    vg = [('L',u'Luźny'),('Z','Zwięzły'),('T','Torf.-bag.')]
+    vg = [('L',u'Luźny'),('Z',u'Zwięzły'),('T','Torf.-bag.')]
     wg = partial(conw,slow=dict(vg))
     
     def __init__(self,dane=None,parent=None):
         PropWidok.__init__(self,parent)
         opt=[(u'Zabudowany','zabudowany',self.wb),(u'Śred. zabudowany','sred_zabud',self.wb),(u'Rolniczy','rolniczy',self.wb),
-             (u'Społeczny','spoleczny',self.wb),(u'Przemysłowy','przemyslowy',self.wb),
+             (u'Społeczny','spoleczny',self.wb),(u'Przemysłowy','przemyslowy',self.wb),(u'Nieużytek','nieuzytek',self.wb),
                 (u'Las','las',self.wb),(u'Sad','sad',self.wb),(u'Park','park',self.wb),(u'Pole orne','pole_orne',self.wb),
-                (u'Łąka','laka',self.wb),(u'Utwór geologiczny','utwor_geo',self.wg),(u'Uwagi','uwagi',self.nic)]
+                (u'Łąka','laka',self.wb),(u'Torf','torf',self.wb),(u'Woda','woda',self.wb),(u'Bagno','bagno',self.wb),
+                (u'Utwór geologiczny','utwor_geo',self.wg),(u'Kamienistość','kamienistosc',self.wr),
+                (u'Okr. specjalistyczne','specjalistyczne',self.nic),(u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
-        for x in range(len(opt)-1):
+        for x in range(len(opt)-4):
             self.dodTn(x)
+        self.dodajOpt(14,self.vg).dodajOpt(15,self.vr)
                 
 class EkspozycjaWidok(PropWidok):
     def __init__(self,dane=None,parent=None):

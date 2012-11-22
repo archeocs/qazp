@@ -32,11 +32,11 @@
 0;8;7;1;POWIAT;
 7;8;14;1;k:pow;
 0;9;7;1;WOJEWÓDZTWO;
-7;9;14;1;k:wojewodztwo; #!!!!!!!!!!!
+7;9;14;1;k:woj; #!!!!!!!!!!!
 0;10;5;2;AZP nr obsz.;
-5;10;6;2;k:nr_obsz;
+5;10;6;2;k:obszar;
 11;10;4;2;nr st.;
-15;10;6;2;k:nr_st;
+15;10;6;2;k:nr_obszar;
 0;12;5;1;Współrz. geogr.;
 5;12;1;1;N;
 6;12;7;1;k:wsp_n;
@@ -77,10 +77,10 @@
 30;8;3;2;terasy wyższe;
 33;8;3;2;brzeg wysoczyzny;
 21;10;3;1;k:w_wodzie;
-24;10;3;1;k:ter_den;
-27;10;3;1;k:ter_nadzal;
-30;10;3;1;k:ter_wyz;
-33;10;3;1;k:brzeg_wys;
+24;10;3;1;k:ter_denna;
+27;10;3;1;k:ter_nadzalewowa;
+30;10;3;1;k:ter_wyzsze;
+33;10;3;1;k:brzeg_wysoczyzny;
 21;11;14;1;MAŁE DOLINY;
 35;11;1;1;k:male_doliny;
 21;12;5;1;dno doliny;
@@ -138,8 +138,8 @@
 47;14;1;1;k:kotlinki_zagleb;
 36;15;11;1;jaskinie, schroniska skalne;
 47;15;1;1;k:jaskinie;
-36;16;7;1;FORMA SZCZEGÓLNA;
-43;16;5;1;k:euwagi;
+36;16;5;1;FORMA SZCZE;
+41;16;7;1;k:euwagi;
 
 #================
 48;6;1;1;4;
@@ -149,7 +149,7 @@
 52;7;3;1;śr. zabud;
 55;7;1;1;k:sred_zabud;
 56;7;3;1;zabud;
-59;7;1;1;k:zabududowany;
+59;7;1;1;k:zabudowany;
 48;8;3;1;pole orne;
 51;8;1;1;k:pole_orne;
 52;8;3;1;nieużytek;
