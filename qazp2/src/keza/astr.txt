@@ -1,0 +1,283 @@
+0;0;3;2;AZP;
+3;0;50;2;KARTA  EWIDENCYJNA  ZABYTKU  ARCHEOLOGICZNEGO;
+
+# ==============
+
+53;0;1;1;A;
+54;0;1;1;T;
+55;0;1;1;X;
+56;0;1;1;N;
+57;0;1;1;W;
+58;0;1;1;P;
+59;0;1;1;L;
+
+53;1;1;1;k:rodz_a;
+54;1;1;1;k:rodz_t;
+55;1;1;1;k:rodz_x;
+56;1;1;1;k:rodz_n;
+57;1;1;1;k:rodz_w;
+58;1;1;1;k:rodz_p;
+59;1;1;1;k:rodz_l;
+
+# ============================
+
+0;2;1;1;1;
+1;2;20;1;LOKALIZACJA;
+0;3;2;2;M.;
+2;3;19;2;k:miej;
+0;5;7;2;Nr stan. w miejscowości;
+7;5;14;2;k:nr_miejscowosc;
+0;7;7;1;GMINA;
+7;7;14;1;k:gm;
+0;8;7;1;POWIAT;
+7;8;14;1;k:pow;
+0;9;7;1;WOJEWÓDZTWO;
+7;9;14;1;k:wojewodztwo; #!!!!!!!!!!!
+0;10;5;2;AZP nr obsz.;
+5;10;6;2;k:nr_obsz;
+11;10;4;2;nr st.;
+15;10;6;2;k:nr_st;
+0;12;5;1;Współrz. geogr.;
+5;12;1;1;N;
+6;12;7;1;k:wsp_n;
+13;12;1;1;E;
+14;12;7;1;k:wsp_e;
+0;13;5;1;Nazwa lokalna;
+5;13;16;1;k:lokalna;
+0;14;5;1;Nr działki geodez.;
+5;14;16;1;k:nr_dzialki;
+0;15;5;1;Identyfikator EGB;
+5;15;16;1;k:egb;
+0;16;5;1;Właściciel terenu;
+5;16;16;1;k:wlasciciel;
+
+# ===============
+
+21;2;1;1;2;
+22;2;26;1;POŁOŻENIE FIZYCZNOGEOGRAFICZNE;
+21;3;14;1;JEDNOSTKA FIZYCZNOGEOGRAFICZNA;
+35;3;13;1;k:fuwagi;
+21;4;14;1;STREFA NADMORSKA (NADZALEWOWA);
+35;4;1;1;k:nadmorska;
+21;5;3;1;w morzu;
+24;5;3;1;plaża;
+27;5;3;1;mierzeja;
+30;5;3;1;skarpa;
+33;5;3;1;wał wydm.;
+21;6;3;1;k:w_morzu;
+24;6;3;1;k:plaza;
+27;6;3;1;k:mierzeja;
+30;6;3;1;k:skarpa;
+33;6;3;1;k:wal_wydmowy;
+21;7;14;1;DUŻE DOLINY;
+35;7;1;1;k:duze_doliny;
+21;8;3;2;w wodzie;
+24;8;3;2;terasa denna;
+27;8;3;2;terasa nad- zalewowa;
+30;8;3;2;terasy wyższe;
+33;8;3;2;brzeg wysoczyzny;
+21;10;3;1;k:w_wodzie;
+24;10;3;1;k:ter_den;
+27;10;3;1;k:ter_nadzal;
+30;10;3;1;k:ter_wyz;
+33;10;3;1;k:brzeg_wys;
+21;11;14;1;MAŁE DOLINY;
+35;11;1;1;k:male_doliny;
+21;12;5;1;dno doliny;
+26;12;5;1;stok doliny;
+31;12;5;1;krawędź doliny;
+21;13;5;1;k:dno_doliny;
+26;13;5;1;k:stok_doliny;
+31;13;5;1;k:krawedz_doliny;
+21;14;14;1;STREFA POZA DOLINAMI;
+35;14;1;1;k:poza_dolinami;
+21;15;3;1;równina;
+24;15;4;1;ob. falisty;
+28;15;4;1;ob pagórk;
+32;15;4;1;ob. górzysty;
+21;16;3;1;k:rownina;
+24;16;4;1;k:obsz_falisty;
+28;16;4;1;k:obsz_pagorkowaty;
+32;16;4;1;k:obsz_gorzysty;
+
+# ==================
+
+48;2;1;1;3;
+49;2;11;1;UTWÓR GEOLOGICZNY;
+48;3;3;1;luźny;
+51;3;1;1;k:ter_utwor_luzny;
+52;3;3;1;zwięzły;
+55;3;1;1;k:ter_utwor_zwiezly;
+56;3;3;1;torf-bag;
+59;3;1;1;k:ter_utwor_torbag;
+48;4;12;1;OKREŚLENIE SPECJALISTYCZNE;
+48;5;12;1;k:specjalistyczne;
+
+# ==================
+36;4;11;1;TEREN NIEEKSPONOWANY;
+47;4;1;1;k:nieeksponowany;
+36;5;11;1;TEREN EKSPONOWANY;
+47;5;1;1;k:eksponowany;
+36;6;11;1;krawędzie,stoki wklęsłe i proste;
+47;6;1;1;k:kraw_stoki;
+36;7;11;1;sfałdowania i niewielkie cyple;
+47;7;1;1;k:sfaldowania_cyple;
+36;8;11;1;cyple wybitne;
+47;8;1;1;k:cyple_wybitne;
+36;9;11;1;wały i garby;
+47;9;1;1;k:waly_garby;
+36;10;11;1;wyniesienie o eksp. okrężnej;
+47;10;1;1;k:okrezna;
+36;11;11;1;TEREN OSŁONIĘTY;
+47;11;1;1;k:osloniety;
+36;12;11;1;podstawa stoku;
+47;12;1;1;k:podst_stoku;
+36;13;11;1;doliny denud,niecki,jary,parowy;
+47;13;1;1;k:doliny_niecki;
+36;14;11;1;kotlinki,zagłębienia bezodpływowe;
+47;14;1;1;k:kotlinki_zagleb;
+36;15;11;1;jaskinie, schroniska skalne;
+47;15;1;1;k:jaskinie;
+36;16;7;1;FORMA SZCZEGÓLNA;
+43;16;5;1;k:euwagi;
+
+#================
+48;6;1;1;4;
+49;6;11;1;DOSTĘPNOŚĆ TERENU;
+48;7;3;1;niezabud;
+51;7;1;1;k:ter_niezabudowany;
+52;7;3;1;śr. zabud;
+55;7;1;1;k:sred_zabud;
+56;7;3;1;zabud;
+59;7;1;1;k:zabududowany;
+48;8;3;1;pole orne;
+51;8;1;1;k:pole_orne;
+52;8;3;1;nieużytek;
+55;8;1;1;k:nieuzytek;
+56;8;3;1;łąka;
+59;8;1;1;k:laka;
+48;9;3;1;sad;
+51;9;1;1;k:sad;
+52;9;3;1;park;
+55;9;1;1;k:park;
+56;9;3;1;las;
+59;9;1;1;k:las;
+48;10;3;1;torf;
+51;10;1;1;k:torf;
+52;10;3;1;bagno;
+55;10;1;1;k:bagno;
+56;10;3;1;woda;
+59;10;1;1;k:woda;
+48;11;4;1;ter. przemysł;
+52;11;8;1;k:przemyslowy;
+48;12;12;1;określenie bliższe;
+48;13;12;4;k:tuwagi;
+
+# =========================
+0;17;1;1;5;
+1;17;59;1;KLASYFIKACJA  FUNKCJONALNO-KULTUROWO-CHRONOLOGICZNA  STANOWISKA;
+0;18;1;1;nr;
+1;18;10;1;FUNKCJA;
+11;18;10;1;KULTURA;
+21;18;10;1;CHRONOLOGIA;
+31;18;29;1;OPIS MATERIAŁOW, OBIEKTÓW, WARSTW ORAZ FORM TERENOWYCH;
+
+0;19;1;1;k:nr;
+1;19;10;6;k:fun;
+11;19;10;6;k:kult;
+21;19;10;6;k:chrono;
+31;19;29;6;k:opis;
+
+# ==========================
+0;25;1;1;6;
+1;25;11;1;OPIS OBSZARU STANOW.;
+0;26;5;1;obser. utrudniona;
+5;26;1;1;k:obs_utrudniona;
+6;26;5;1;obser. bez przeszkód;
+11;26;1;1;k:obs_bez_przeszkod;
+0;27;5;1;pole otwarte;
+5;27;1;1;k:obs_pole_otwarte;
+6;27;5;1;pole zamknięte;
+11;27;1;1;k:obs_pole_zamkniete;
+0;28;6;1;nasycenie znlez.;
+6;28;5;1;równomierne;
+11;28;1;1;k:obs_nasyc_rozkl_rownomierne;
+0;29;5;1;jednocentryczne;
+5;29;1;1;k:nasyc_typ_jednocentr;
+6;29;5;1;wielocentryczne;
+11;29;1;1;k:nasyc_typ_wielocentr;
+0;30;12;1;powierzchnia stanowiska;
+0;31;2;1;-1 ar;
+2;31;2;1;-0.5 ha;
+4;31;2;1;-1 ha;
+6;31;2;1;-5 ha;
+8;31;2;1;-15 ha;
+10;31;2;1;>15ha;
+0;32;2;1;k:obs_pow_ar1;
+2;32;2;1;k:obs_pow_ha05;
+4;32;2;1;k:obs_pow_ha1;
+6;32;2;1;k:obs_pow_ha5;
+8;32;2;1;k:obs_pow_ha15;
+10;32;2;1;k:obs_pow_ha15+; # > 15 ha // 162
+0;33;12;1;gęstość występowania znalezisk;
+0;34;3;1;mała;
+3;34;1;1;k:obs_gest_mala;
+4;34;3;1;średnia;
+7;34;1;1;k:obs_gest_sre;
+8;34;3;1;duża;
+11;34;1;1;k:obs_gest_duza;
+
+# ===================
+12;25;1;1;7;
+13;25;11;1;ZAGROŻENIA;
+12;26;12;9;k:opis_zagrozenia;
+
+#=============================
+24;25;1;1;8;
+25;25;11;1;WNIOSKI KONSERWAT.;
+24;26;11;1;szczegółowa inwentaryzacja;
+35;26;1;1;k:inwentaryzacja;
+24;27;11;1;badania wykopaliskowe;
+35;27;1;1;k:wykopaliska;
+24;28;11;1;interwencja administracyjna;
+35;28;1;1;k:interwencja;
+
+# =====================
+36;25;1;1;10;
+37;25;11;1;OPRACOWANIE KEZA;
+36;26;6;1;data dd\mm\rrrr;
+42;26;6;1;k:opr_data;
+36;27;12;1;autor karty;
+36;28;12;1;k:opr_autor;
+36;29;12;1;określił chronologię;
+36;30;12;3;k:okr_chrono;
+36;33;12;1;sprawdził - konsultant AZP;
+36;34;12;1;k:opr_sprawdzil;
+
+# ======================
+48;25;1;1;11;
+49;25;11;1;WERYFIKACJA KONSERW.;
+48;26;6;2;akceptacja WKZ;
+54;26;6;2;k:wer_wkz;
+48;28;6;2;miejscowość,data;
+54;28;6;2;k:miej_dt;
+
+# ==========
+24;29;1;1;9;
+25;29;11;1;AKTUALNA OCHRONA;
+24;30;6;1;nr rejestru zabytków;
+30;30;6;1;k:nr_rej;
+24;31;6;1;data wpisu do rejestru;
+30;31;6;1;k:data_wpisu;
+24;32;6;1;park kulturowy;
+30;32;6;1;k:akt_park_kul;   
+24;33;12;1;plan zagospodarowania przestrzennego;
+24;34;12;1;k:akt_plan_przes;
+
+#====================
+48;30;1;1;12;
+49;30;11;1;ZBIORY I NR INWENT.;
+48;31;6;1;miejsce przechowywania;
+54;31;6;1;nr inwentarza;
+48;32;6;3;k:inne_miej_przech;
+54;32;6;3;k:inne_nr_inw;
