@@ -1,13 +1,14 @@
-﻿-- drop table aktualnosci;
-CREATE TABLE aktualnosci -- aktualna ochrona
+﻿CREATE TABLE aktualnosci -- aktualna ochrona
 (
   id integer NOT NULL,
-  lokalizacja integer NOT NULL,
-  rejestr varchar(20), -- nr rejestru zabytkow
-  data date null, -- data wpisu do rejestru
-  park character varying(20) null, -- park kulturowy
-  plan character varying(50) null,
-  CONSTRAINT pk_aktualnosci PRIMARY KEY (id),
-  constraint fk_stanowisko_aktualnosci foreign key (lokalizacja) references lokalizacje (id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE cascade
+  stanowisko integer NOT NULL,
+  magazyn varchar(20),
+  nr_inwentarza varchar(20),
+  nr_krz varchar(20), -- nr rejestru zabytkow
+  data_krz date, -- data wpisu do rejestru
+  park character varying(20), -- park kulturowy
+  plan character varying(50),
+  wlasciciel varchar(500),
+  uwagi varchar(255)
+  CONSTRAINT aktualnosci_pkey PRIMARY KEY (id),
 );

@@ -1,18 +1,3 @@
-﻿CREATE TABLE zagrozenia -- zagrozenia
-(
-  id integer NOT NULL,
-  stanowisko integer NOT NULL,
-  istnieje character varying(1) NOT NULL DEFAULT 'N',
-  stale character varying(1) null, -- literka N oznacza zagrozenie dorazne, null - nieokreslone
-  ludzie character varying(1) null, -- literna N oznacza zagrozenie przez nature, T - przez ludzi, null nieokreslone
-  prywatny character varying(1) null, -- uzytkownik prywatny
-  spoleczny character varying(1) null, -- uzytkownik spoleczny
-  uwagi character varying(255),
-  CONSTRAINT pk_zagrozenia PRIMARY KEY (id),
-  constraint fk_stanowisko_zagrozenia foreign key (stanowisko) references stanowiska (id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE cascade
-);
-
 CREATE TABLE ZAGROZENIA(
     id integer not null,
     stanowisko integer not null,

@@ -1,7 +1,7 @@
 CREATE TABLE jednostki
 ( 
     kod varchar(6), 
-    okres varchar(1), 
+    okres varchar(2), 
     czlon1 varchar(70), 
     czlon2 varchar(110), 
     nazwa varchar(110), 
@@ -12,7 +12,7 @@ CREATE TABLE jednostki
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE miejsca OWNER TO milosz;
+ALTER TABLE jednostki OWNER TO milosz;
 
 INSERT INTO jednostki VALUES('P','P',NULL,NULL,'P','P','KA');
 INSERT INTO jednostki VALUES('PKL','P','TECHNOKOMPLEKS KLAKTOŃSKI',NULL,'TECHNOKOMPLEKS KLAKTOŃSKI','TK. KLAKTOŃS.','KL');
