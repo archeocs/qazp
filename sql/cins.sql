@@ -1,17 +1,3 @@
-drop table okresy_dziejow;
-CREATE TABLE okresy_dziejow
-( 
-    kod varchar(4), 
-    kod_epoka varchar(1), 
-    epoka varchar(20), 
-    okres varchar(20),  
-    skrot varchar(20), 
-    constraint okresy_dziejow_pkey primary key (kod)
-)
-WITH (
-  OIDS=FALSE
-);
-ALTER TABLE okresy_dziejow OWNER TO milosz;
 insert into okresy_dziejow values('K', 'K', 'EPOKA KAMIENIA', NULL, 'EP. KAMIENIA');
 insert into okresy_dziejow values('KP', 'K', 'EPOKA KAMIENIA', 'PALEOLIT', 'PALEOLIT');
 insert into okresy_dziejow values('KM', 'K', 'EPOKA KAMIENIA', 'MEZOLIT', 'MEZOLIT');
@@ -50,5 +36,5 @@ insert into okresy_dziejow values('SP', 'S', 'ŚREDNIOWIECZE', 'PÓŹNE', 'PÓŹ
 insert into okresy_dziejow values('N', 'N', 'NOWOŻYTNOŚĆ', NULL, 'NOWOŻYTNOŚĆ');
 insert into okresy_dziejow values('NW', 'N', 'NOWOŻYTNOŚĆ', 'WCZESNA', 'WCZES. NOWOŻYT.');
 insert into okresy_dziejow values('NP', 'N', 'NOWOŻYTNOŚĆ', 'PÓŹNA', 'PÓŻNA NOWOŻYT.');
-insert into okresy_dziejow values('W', 'P', 'WSPÓŁCZESNOŚĆ', NULL, 'WSPÓŁCZESNOŚĆ');
+insert into okresy_dziejow values('W', 'W', 'WSPÓŁCZESNOŚĆ', NULL, 'WSPÓŁCZESNOŚĆ');
 insert into okresy_dziejow values('P', 'P', 'PRADZIEJE', NULL, 'PRADZIEJE');

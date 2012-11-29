@@ -13,7 +13,7 @@ CREATE TABLE TEREN_DANE(
     torf varchar(1) check (torf in ('T','N')),
     woda varchar(1) check (woda in ('T','N')),
     bagno varchar(1) check (bagno in ('T','N')), 
-    prywatny varchar(1) check (rolniczy in ('T','N')),
+    prywatny varchar(1) check (prywatny in ('T','N')),
     spoleczny varchar(1) check (spoleczny in ('T','N')),
     przemyslowy varchar(1) check (przemyslowy in ('T','N')),
     uwagi varchar(255), 

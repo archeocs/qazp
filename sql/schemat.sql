@@ -114,7 +114,7 @@ COMMIT;
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE TEREN_DANE(
-id integer not null,
+    id integer not null,
     stanowisko integer not null,
     zabudowany varchar(1) check (zabudowany in ('T','N')),
     sred_zabud varchar(1) check (sred_zabud in ('T','N')),
@@ -172,7 +172,7 @@ COMMIT;
 BEGIN TRANSACTION;
 CREATE TABLE gleba_dane -- gleby 
 (
-  id integer NOT NULL,
+    id integer NOT NULL,
   stanowisko integer NOT NULL,
   luzna character varying(1) check (luzna in ('T','N')),
   zwiezla character varying(1) check (zwiezla in ('T','N')),
@@ -271,21 +271,25 @@ CREATE TABLE fakty
 (
     id integer, 
     stanowisko integer, 
-    okres varchar(1), 
+    okres1 varchar(10),
+    okres2 varchar(10),
+    okr_relacja varchar(1) check (okr_relacja in ('Z','P')),
+    okr_pewnosc decimal(3,2),
     jed1 varchar(10), 
     jed2 varchar(10), 
-    relacja varchar(10) check (relacja in ('L','O')), 
-    pewnosc decimal(3,2), 
+    jed_relacja varchar(1) check (jed_relacja in ('Z','P')), 
+    jed_pewnosc decimal(3,2), 
     funkcja varchar(1), 
-    rodzaj_fun varchar(10), 
-    masowy varchar(20), 
-    wydzielony varchar(20),
+    rodzaj_fun varchar(10),
+    fun_pewnosc decimal(3,2), 
+    masowy varchar(50), 
+    wydzielony varchar(50),
      CONSTRAINT fakty_pkey PRIMARY KEY (id)
 );
 COMMIT;
 CREATE TABLE karty -- do kazdego stanowiska mozna dodac informacje o wypelnionej karcie azp
 (
-  id integer NOT NULL,
+  id integer not null,
   stanowisko integer NOT NULL,
   nazwa_lok varchar(50),
   arkusz_mapy varchar(10),
@@ -298,11 +302,11 @@ CREATE TABLE karty -- do kazdego stanowiska mozna dodac informacje o wypelnionej
   autorzy character varying(255),
   chronologia character varying(255), -- okreslil chronologie
   konsultant character varying(255), -- sprawdzil
+  uwagi varchar(255),
   CONSTRAINT pk_karty PRIMARY KEY (id)
 );
 
-CREATE TABLE aktualnosci -- aktualna ochrona
-(
+CREATE TABLE aktualnosci(
   id integer NOT NULL,
   stanowisko integer NOT NULL,
   magazyn varchar(20),
@@ -312,9 +316,19 @@ CREATE TABLE aktualnosci -- aktualna ochrona
   park character varying(20), -- park kulturowy
   plan character varying(50),
   wlasciciel varchar(500),
+  uwagi varchar(255),
   CONSTRAINT aktualnosci_pkey PRIMARY KEY (id)
 );
 
+CREATE TABLE okresy_dziejow
+( 
+    kod varchar(4) not null, 
+    kod_epoka varchar(1) not null, 
+    epoka varchar(20), 
+    okres varchar(20),  
+    skrot varchar(20), 
+    constraint okresy_dziejow_pkey primary key (kod)
+);
 
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
@@ -351,7 +365,7 @@ CREATE TABLE ustawienia(klucz varchar(10) primary key, wartosc varchar(20));
 COMMIT;
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
-CREATE TABLE geometry_columns (
+/*CREATE TABLE geometry_columns (
     f_table_name TEXT NOT NULL,
     f_geometry_column TEXT NOT NULL,
     type TEXT NOT NULL,
@@ -359,10 +373,10 @@ CREATE TABLE geometry_columns (
     srid INTEGER NOT NULL,
     spatial_index_enabled INTEGER NOT NULL,
     CONSTRAINT pk_geom_cols PRIMARY KEY (f_table_name, f_geometry_column),
-    CONSTRAINT fk_gc_srs FOREIGN KEY (srid) REFERENCES spatial_ref_sys (srid));
+    CONSTRAINT fk_gc_srs FOREIGN KEY (srid) REFERENCES spatial_ref_sys (srid)); */
     
     INSERT INTO "geometry_columns" VALUES('trasy','wspolrzedne','LINESTRING','XY',2180,0);
     INSERT INTO "geometry_columns" VALUES('miejsca','wspolrzedne','POINT','XY',2180,0);
     INSERT INTO "geometry_columns" VALUES('stanowiska','wspolrzedne','POLYGON','XY',2180,0);
-    CREATE INDEX idx_srid_geocols ON geometry_columns(srid);
+    -- CREATE INDEX idx_srid_geocols ON geometry_columns(srid);
 COMMIT;
