@@ -31,7 +31,7 @@
 from PyQt4.QtCore import QAbstractTableModel, Qt, QVariant
 from PyQt4.QtGui import QVBoxLayout, QHBoxLayout, QLayout, QWidget, \
                         QLabel, QLineEdit,QComboBox, QHeaderView, QTableView, \
-                        QPushButton
+                        QPushButton,QMessageBox
                         
 from lib.fkwykazy import KodyWykaz, WykazFaktow
 from functools import partial
@@ -52,7 +52,16 @@ class ListaFaktow(QAbstractTableModel):
         if rola == Qt.DisplayRole and indeks.row() < len(self._fk):
             return QVariant(self._fk.widok(indeks.row(), indeks.column()))
         return QVariant()
-
+    
+    NAGLOWKI = [u'Chronologia',u'Kultura',u'Funkcja',u'Masowy',u'Wydzielone']
+    def headerData(self, sekcja, orientacja, rola = Qt.DisplayRole):
+        if orientacja == Qt.Vertical:
+            return None
+        if rola == Qt.DisplayRole:
+            if sekcja < 5:
+                return self.NAGLOWKI[sekcja]
+        return QVariant()
+    
 def funWykaz(con):
     return KodyWykaz(con,'funkcje')
 
@@ -232,13 +241,14 @@ class FaktyWidok(QWidget):
         self._tab.selectionModel().currentRowChanged.connect(self._zmBiezWier)
 
     def _zmienFk(self,b=True):
-        print self._bw
         self._model.beginResetModel()
         self._fk.zmien(self._bw)
         self._model.endResetModel()        
     
     def _usunFk(self,b=True):
-        print self._bw
+        odp = QMessageBox.question(self,'Usuwanie',u'Czy na pewno chcesz usunąć fakt nr '+str(self._bw),QMessageBox.Yes | QMessageBox.No)
+        if odp != QMessageBox.Yes:
+            return
         self._model.beginResetModel()
         self._fk.usun(self._bw)
         self._model.endResetModel()  
