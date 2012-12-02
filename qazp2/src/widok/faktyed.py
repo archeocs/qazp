@@ -28,282 +28,269 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QWidget, QLabel, QComboBox, QDoubleSpinBox, QGridLayout, QPushButton, QLineEdit
 from PyQt4.QtCore import QAbstractTableModel, Qt, QVariant
-from dane.zrodla import FaktyWykaz
+from PyQt4.QtGui import QVBoxLayout, QHBoxLayout, QLayout, QWidget, \
+                        QLabel, QLineEdit,QComboBox, QHeaderView, QTableView, \
+                        QPushButton
+                        
+from lib.fkwykazy import KodyWykaz, WykazFaktow
+from functools import partial
 
-class FaktyWykModel(QAbstractTableModel):
-    
-    KodRola = 100
-    
-    def __init__(self,jedwyk, parent=None):
+class ListaFaktow(QAbstractTableModel):
+
+    def __init__(self,fakty, parent=None):
         QAbstractTableModel.__init__(self)
-        self._jw = jedwyk
-        
-    def rowCount(self, *args, **kwargs):
-        return len(self._jw)
-    
-    def columnCount(self, *args, **kwargs):
-        return 1
-        
-    def data(self, indeks, rola = Qt.DisplayRole):
-        if rola == Qt.DisplayRole:
-            return QVariant(self._jw[indeks.row()])
-        else:
-            return QVariant(self._jw.kod(indeks.row()))
-        
-class Fakty(object):
-    
-    fkatr = ['id', 'f.okres','jed1', 'jed2', 'relacja','pewnosc','u.funkcja', 'rodzaj_fun', 
-                'masowy', 'wydzielony', 'ja.nazwa', 'ja.skrot', 'jb.nazwa', 'jb.skrot', 'u.nazwa', 'u.skrot']
-    def __init__(self,st,con):
-        self.selFk = con.prep('select '+(','.join(self.fkatr))+' from fakty f left outer join jednostki ja on f.jed1 = ja.kod '+
-                                'left outer join jednostki jb on f.jed2 = jb.kod left outer join funkcje u on f.rodzaj_fun = u.kod '+
-                                'where stanowisko ='+str(st))
-        self.insFk = con.prep("insert into fakty values(:id,"+str(st)+" ,:okres,:jed1,:jed2,:relacja,:pewnosc,:funkcja,"+
-                                                        ":rodzaj_fun,:masowy,:wydzielony)")
-        self.updtFk = con.prep('update fakty set okres=:okres, funkcja=:funkcja, jed1=:jed1, jed2=:jed2, relacja=:relacja,'+
-                               ' pewnosc=:pewnosc, masowy=:masowy, wydzielony=:wydzielony, rodzaj_fun=:rodzaj_fun where id=:id'+
-                               ' and stanowisko='+str(st))
-        self.delFk = con.prep('delete from fakty where id=:id and stanowisko='+str(st))
-        self._p = con
-        self._odswiez()
-        
-    def _odswiez(self):    
-        self._fk = []
-        for f in self.selFk.wszystkie():
-            self._fk.append(dict([(ei,e) for (ei, e) in enumerate(f)]))
-   
-    def __len__(self):
-        return len(self._fk)
-    
-    def __getitem__(self, i):
-        if i < len(self._fk):
-            f = self._fk[i]
-            return {'okres':f[1], 'jed1':f[2], 'jed2':f[3], 'relacja':f[4], 'pewnosc':float(f[5]), 'funkcja':f[6], 'rodzaj_fun':f[7], 'masowy':f[8], 'wydzielony':f[9], 'id':f[0]}
-        return {}
-    
-    def _krep(self,r):
-        f = self._fk[r]
-        kw = f[11]
-        if f[3] is not None:
-            if f[4] == 'O':
-                kw += '-'+f[13]
-            elif f[4] == 'L':
-                kw += '/'+f[13]
-        if float(f[5]) < 1:
-            kw = '?'+kw
-        return kw
-    
-    def _frep(self,r):
-        f = self._fk[r]
-        if f[7] is not None:
-            return f[15]
-        elif f[6] is not None:
-            return f[6]
-        return None        
-    
-    def wget(self, r, c):
-        if r >= len(self._fk):
-            return QVariant()
-        elif c == 0:
-            return QVariant(r+1)
-        elif c == 1:
-            return QVariant(self._fk[r][1])
-        elif c == 2:
-            return QVariant(self._krep(r)) # reprezentacja kultury
-        elif c == 3:
-            return QVariant(self._frep(r))
-        elif c == 4:
-            return QVariant(self._fk[r][8])
-        elif c == 5:
-            return QVariant(self._fk[r][9])
-        return QVariant()
-     
-    def wset(self, r, c, v):
-        if r == len(self._fk):
-            self._fk.append[{}]
-        self._fk[r][c] = v
-    
-    def _poprDane(self,dane):
-        if dane['relacja'] is None or dane['relacja'].strip() == '':
-            dane['relacja'] = 'null'
-            dane['jed2'] = 'null'
-        for (k,v) in dane.iteritems():
-            if v is None:
-                dane[k] = 'null'
-            elif isinstance(v,(str,unicode)) and v != 'null':
-                dane[k] = "'%s'" % v
-        return dane
-    
-    _cmpTab = ['id','okres','jed1','jed2','relacja','pewnosc','funkcja','rodzaj_fun','masowy','wydzielony']    
-    def cmpMapy(self, d, f):
-        for (ci, c) in enumerate(self._cmpTab):
-            if ci > 0 and d.get(c) != f.get(ci):
-                #print d[c], f[ci]
-                return False # dane roznia sie miedzy soba
-        return True
-    
-    def zmien(self, r, dane):
-        if self.cmpMapy(dane,self._fk[r]):
-            return (False,'')
-        if dane['id'] == -1:
-            return (False,'Taki fakt nie istnieje w bazie')
-        self.updtFk.wykonaj(dane,False)
-        self._odswiez()
-        return (True,'')
-        
-    def usun(self,dane):
-        self.delFk.wykonaj(dane,False)
-        self._odswiez()
-        return (True,'')
-    
-    def dodaj(self, dane):
-        ni = self._p.jeden('select coalesce(max(id),0) from fakty')[0]+1
-        dane['id'] = ni
-        print self.insFk._ps
-        self.insFk.wykonaj(dane,False)
-        self._odswiez()
-        
-class FModel(QAbstractTableModel):
-
-    def __init__(self,fakty,parent=None):
-        QAbstractTableModel.__init__(self,parent)
         self._fk = fakty
-        self._nag = [u'Nr', u'Okres', u'Kultura', u'Funkcja', u'Masowy', u'Wydzielony']
-
+       
     def rowCount(self, *args, **kwargs):
         return len(self._fk)+1
-    
+   
     def columnCount(self, *args, **kwargs):
-        return 6
-    
+        return 5
+       
     def data(self, indeks, rola = Qt.DisplayRole):
-        if rola == Qt.DisplayRole:
-            r,c = indeks.row(), indeks.column()
-            return self._fk.wget(r,c)
-        
-    def headerData(self, sekcja, orientacja, rola = Qt.DisplayRole):
-        if orientacja == Qt.Vertical:
-            return None
-        if sekcja > len(self._nag):
-            raise Exception("headerData: indeks %d poza zakresem [0,%d]"%(sekcja,len(self._nag)-1))
-        elif rola == Qt.DisplayRole:
-            return QVariant(self._nag[sekcja])
-        return QVariant() 
+        if rola == Qt.DisplayRole and indeks.row() < len(self._fk):
+            return QVariant(self._fk.widok(indeks.row(), indeks.column()))
+        return QVariant()
 
-def wypCb(cb, tab):
-    for t in tab:
-        cb.addItem(t[0],t[1])
-        
-class EdWgt(QWidget):
-    
-    def _dodajEt(self,lay,et):
-        for (ei,e) in enumerate(et):
-            lay.addWidget(QLabel(e),0,ei)
-    
-    def _dodajWgt(self,lay,wgt):
-        for (wi,w) in enumerate(wgt):
-            lay.addWidget(w,1,wi)        
-    
-    def __init__(self,con,parent=None):
-        QWidget.__init__(self)
-        self._con = con
-        hbox = QGridLayout()
-        self.setLayout(hbox)
-        self._okrCb, self._j1Cb, self._relCb, self._j2Cb, self._funCb = QComboBox(),QComboBox(),QComboBox(),QComboBox(),QComboBox()
-        self._masTxt, self._wydzTxt, self._rodzCb, self._pewTxt = QLineEdit(), QLineEdit(), QComboBox(), QDoubleSpinBox()
-        self._dodBtn, self._usuBtn = QPushButton('Dodaj'),QPushButton(u'Usuń')
-        self._modAct, self._usuAct = None, None
-        self._dodajEt(hbox, ['Okres','Jednostka','Relacja','Jednostka',u'Pewność',u'Funkcja',u'Rodzaj','Masowy','Wydzielony'])
-        self._dodajWgt(hbox, [self._okrCb,self._j1Cb,self._relCb,self._j2Cb,self._pewTxt,self._funCb,
-                              self._rodzCb,self._masTxt,self._wydzTxt,self._dodBtn,self._usuBtn])
-        wypCb(self._okrCb,[(u'Nieokreślona',None),('Paleolit','P'),('Mezolit','M'),('Mezolit/Neolit','L'),
-                           ('Neolit','N'),(u'E. Brązu','B'),(u'E. Żelaza','Z')])
-        self._okrCb.currentIndexChanged.connect(self._okrZm)
-        wypCb(self._funCb,[(u'Nieokreślona', None),('GOSPODARCZA','G'),(u'KOMPLEKS OSADNICZY','K'),('KOPIEC','P'),
-                           ('OBRONNA','O'),(u'OBRZĘDOWA','B'),('OSADNICZA','M'),('POLE BITWY','T'),('SEPULKRALNA','S'),
-                           ('SKARB','R'),('STANOWISKO','A'),('ST. REDEPONOWANE','D'),(u'WAŁY','W'),(u'LUŹNE','L')])
-        wypCb(self._relCb,[(u'Brak',None),(u'Lub [/]','L'),(u'Oraz','O')])
-        self._funCb.currentIndexChanged.connect(self._funZm)
-        self._j2Cb.setEnabled(False)
-        self._relCb.currentIndexChanged.connect(self._relZm)
-        self._dodBtn.clicked.connect(self._modKlik)
-        self._usuBtn.clicked.connect(self._delKlik)
-        self._jw = FaktyWykaz('jednostki','okres')
-        self._fw = FaktyWykaz('funkcje','funkcja')
-        self._jm1, self._jm2 = FaktyWykModel(self._jw), FaktyWykModel(self._jw)
-        self._fm = FaktyWykModel(self._fw)
-        self._j1Cb.setModel(self._jm1)
-        self._j2Cb.setModel(self._jm2)
-        self._rodzCb.setModel(self._fm)
-        #self._funCb.setModel(self._fm)
-    
-    okrTab = [None,'P','M','L','N','B','Z']
-    funTab = [None,'G','K','P','O','B','M','T','S','R','A','D','W','L']
+def funWykaz(con):
+    return KodyWykaz(con,'funkcje')
 
-    relTab = [None,'L','O']
-    bid = -1
+def jedWykaz(con):
+    return KodyWykaz(con,'jednostki')
+
+def okrWykaz(con):
+    return KodyWykaz(con,'okresy_dziejow')        
+
+def lwgt(widgety,box,marg=0):
+    nwgt = QWidget()
+    box.setSizeConstraint(QLayout.SetMinimumSize)
+    box.setContentsMargins(marg,marg,marg,marg)
+    for w in widgety:
+        if w is not None:
+            box.addWidget(w)
+    nwgt.setLayout(box)
+    return nwgt
+
+def hwgt(widgety,marg=0):
+    return lwgt(widgety,QHBoxLayout(),marg)
+
+def vwgt(widgety,marg=0):
+    return lwgt(widgety,QVBoxLayout(),marg)    
+
+class UniPole(QWidget):
     
-    def setDane(self,dd,nowy=False):
-        v = dd.get('okres')
-        if v == '':
-            v = None
-        self._okrCb.setCurrentIndex(self.okrTab.index(v))
-        self._j1Cb.setCurrentIndex(self._jw.indeks(dd.get('jed1',None)))
-        self._relCb.setCurrentIndex(self.relTab.index(dd.get('relacja',None)))
-        self._j2Cb.setCurrentIndex(self._jw.indeks(dd.get('jed2',None)))
-        v = dd.get('funkcja')
-        if v == '':
-            v = None
-        self._funCb.setCurrentIndex(self.funTab.index(v))
-        self._rodzCb.setCurrentIndex(self._fw.indeks(dd.get('rodzaj_fun',None)))
-        #self._funTxt.setText(dd.get('funkcja',""))
-        self._masTxt.setText(unicode(dd.get('masowy','')))
-        self._wydzTxt.setText(unicode(dd.get('wydzielony','')))
-        self._pewTxt.setValue(dd.get('pewnosc',1))
-        self.bid = dd.get('id',-1)
-        if nowy:
-            self._dodBtn.setText('Dodaj')
+    class Builder(object):
+        def __init__(self):
+            self.parent, self.wka, self.wkb = None,None,None # wka, wkb - QComboBox
+            self.tokr, self.tsym = [], []
+            self.re = False
+            self.wyk = None
+            self.funZm = None
+            
+        def buduj(self):
+            return UniPole(self)
+    
+    def __init__(self,builder):
+        QWidget.__init__(self,builder.parent)
+        mbox = QVBoxLayout()
+        mbox.setSizeConstraint(QLayout.SetMinimumSize)
+        mbox.setContentsMargins(5,5,5,5)
+        self.setLayout(mbox)
+        self._wyk = builder.wyk
+        self._funZmiana = builder.funZm # funkcja wywolywana w chwili zmiany wartosci
+        self._ka, self._kb = builder.wka, builder.wkb
+        self._tsym = builder.tsym
+        self._ka.addItems(builder.tokr)
+        self._ka.activated.connect(partial(self._kategorie, km='koda'))
+        mbox.addWidget(self._ka)
+        if self._kb is not None:
+            self._kb.addItems(builder.tokr)
+            self._kb.activated.connect(partial(self._kategorie,km='kodb'))
+            mbox.addWidget(self._kb)
+        else: # przypadek pola do edycji funkcji
+            mbox.addWidget(QLabel())
+        self._re = None
+        if builder.re: # lista do okreslania relacji miedzy funkcjami
+            self._re = QComboBox()
+            self._re.addItems(['',u'-',u'/'])
+        self._pew = QLineEdit()
+        self._pew.editingFinished.connect(self._pewzm)
+        mbox.addWidget(hwgt([self._re,self._pew]))
+    
+    def setDane(self,mapa):
+        self._mapa = mapa
+        self.wka = mapa.get('koda')
+        self.wkb = mapa.get('kodb')
+        self.wre = mapa.get('re','')
+        self.wpew = mapa.get('pew','1')
+        if self.wka is not None:
+            self._ka.setCurrentIndex(self._tsym.index(self.wka[0]))
         else:
-            self._dodBtn.setText(u'Zmień')
+            self._ka.setCurrentIndex(0)
+        if self.wkb is not None and self._kb is not None:
+            bi = self._tsym.index(self.wkb[0])
+            self._kb.setCurrentIndex(bi)
+        elif self._kb is not None:
+            self._kb.setCurrentIndex(0)
+        if self._re is not None:
+            self._re.setCurrentIndex(['','Z','P'].index(self.wre))
+            self._re.activated.connect(self._rezm)
+        self._pew.setText(str(self.wpew))
     
-    def setModAct(self,a):
-        self._modAct = a
+    def _rezm(self,i):
+        tv = ['','Z','P']
+        self._mapa['re'] = tv[i]
+        self._zmianaDanych()
+    
+    def _pewzm(self):
+        try:
+            self._mapa['pew'] = float(str(self._pew.text()).replace(',','.'))
+            self._zmianaDanych()
+        except:
+            pass
+    
+    def _kategorie(self,i,km=None):
+        if 0 < i < len(self._tsym):
+            menu = QComboBox(self._ka)
+            ci = 0
+            for (ki,k) in enumerate(self._wyk.listaKat(self._tsym[i])):
+                menu.addItem(k[1],k[0])
+                if km is not None and k[0] == self._mapa.get(km):
+                    ci = ki
+            menu.setCurrentIndex(ci)
+            menu.activated.connect(partial(self._cbwyb,menu=menu,klucz=km))
+            menu.showPopup()
+        elif i == 0:
+            self._mapa[km] = None
+            self._zmianaDanych()
+    
+    def _zmianaDanych(self):
+        if self._funZmiana is not None:
+            self._funZmiana(self._mapa)
         
-    def setUsuAct(self,a):
-        self._usuAct = a
+    def _cbwyb(self,i,menu=None,klucz=None):
+        self._mapa[klucz] = str(menu.itemData(i).toString())
+        if self._mapa[klucz] == '':
+            self._mapa[klucz] = None
+        self._zmianaDanych()
+
+def _edPole(wyk,f,parent,tokr,tsym):
+    b = UniPole.Builder()
+    b.parent = parent
+    b.wka, b.wkb = QComboBox(), QComboBox()
+    b.tokr, b.tsym = tokr, tsym
+    b.re = True
+    b.wyk = wyk
+    b.funZm = f
+    return b.buduj()
+
+def okrPole(wyk,f,parent):
+    tokr = ['',u'EP. KAM.', u'EP. BRĄZU', u'EP.ŻELAZA', u'ŚREDN.', u'NOWOŻYT',u'WSPÓŁCZES.',u'PRADZIEJE']
+    tsym = ['','K','B','Z','S','N','W','P'] 
+    return _edPole(wyk,f,parent,tokr,tsym)
     
-    def _ci(self,cb):
-        return unicode(cb.itemData(cb.currentIndex()).toString())
+def jedPole(wyk,f,parent):
+    tokr = ['',u'PALEO.',u'MEZO.','MEZ./NEOL.','NEO.', u'EP. BRĄZU', u'EP.ŻELAZA','WIELOKUL.']
+    tsym = ['','P','M','L','N','B','Z','W']         
+    return _edPole(wyk,f,parent,tokr,tsym)
     
-    def getDane(self):
-        return {'okres':self._ci(self._okrCb), 'jed1':self._ci(self._j1Cb), 'funkcja':self._ci(self._funCb), 
-                'rodzaj_fun':self._ci(self._rodzCb),
-            'masowy':unicode(self._masTxt.text()), 'wydzielony':unicode(self._wydzTxt.text()),
-            'pewnosc':self._pewTxt.value(), 'relacja':self._ci(self._relCb), 'jed2':self._ci(self._j2Cb),'id':self.bid}
+def funPole(wyk,f,parent):
+    b = UniPole.Builder()
+    b.parent = parent
+    b.wka = QComboBox()
+    b.tokr = ['',u'OBRONNA',u'OBRZĘD.',u'OSAD.',u'SEPULKR.',u'GOSP.',u'KOMP. OS.',u'KOPIEC',u'POLE BITWY',u'STAN.',u'REDEP.',u'WAŁY',u'LUŹNE'  ]
+    b.tsym = ['','O','B','M','S','G','K','P','T','R','A','D','W','L']
+    b.wyk = wyk
+    b.funZm = f
+    return b.buduj()
+
+class FaktyWidok(QWidget):
     
-    def _relZm(self,i):
-        self._j2Cb.setEnabled(i > 0)
+    def __init__(self,st,con,parent=None):
+        QWidget.__init__(self,parent)
+        wlay = QVBoxLayout()
+        self.setLayout(wlay)
+        self._tab = QTableView()
+        self._tab.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+        owyk,jwyk,fwyk = okrWykaz(con), jedWykaz(con), funWykaz(con)
+        self._fk = WykazFaktow(st,con,owyk,jwyk,fwyk)
+        self._con = con
+        self._model = ListaFaktow(self._fk)
+        self._tab.setModel(self._model)
+        wlay.addWidget(self._tab)
+        self._op = okrPole(owyk,self._okrZmiana,self) # pole do edycji wykresow
+        self._jp = jedPole(jwyk,self._jedZmiana,self)
+        self._fp = funPole(fwyk,self._funZmiana,self)
+        self._mp, self._wp = QLineEdit(), QLineEdit()
+        self._btnUsu, self._btnZm = QPushButton(u'Usuń'), QPushButton(u'Dodaj')
+        self._mp.editingFinished.connect(self._masZmiana)
+        self._wp.editingFinished.connect(self._wyZmiana)
+        self._btnZm.clicked.connect(self._zmienFk)
+        self._btnUsu.clicked.connect(self._usunFk)
+        wlay.addWidget(hwgt([self._op,self._jp,self._fp,vwgt([self._mp,self._btnUsu]),vwgt([self._wp,self._btnZm])]))
+        self._tab.selectionModel().currentRowChanged.connect(self._zmBiezWier)
+
+    def _zmienFk(self,b=True):
+        print self._bw
+        self._model.beginResetModel()
+        self._fk.zmien(self._bw)
+        self._model.endResetModel()        
+    
+    def _usunFk(self,b=True):
+        print self._bw
+        self._model.beginResetModel()
+        self._fk.usun(self._bw)
+        self._model.endResetModel()  
         
-    def _okrZm(self,i):
-        ko = unicode(self._okrCb.itemData(i).toString())
-        self._jm1.beginResetModel()
-        self._jm2.beginResetModel()
-        self._jw.wybor(self._con,ko)
-        self._jm2.endResetModel()
-        self._jm1.endResetModel()
+    def _okrZmiana(self,dane):
+        self._model.beginResetModel()
+        r = self._bw
+        self._fk.setMapa(r,{'okresa':dane['koda'],'okresb':dane['kodb'],
+                             'okr_pewnosc':dane['pew'],'okr_relacja':dane['re']})
+        self._model.endResetModel()
+
+    def _jedZmiana(self,dane):
+        self._model.beginResetModel()
+        r = self._bw
+        self._fk.setMapa(r,{'jeda':dane['koda'],'jedb':dane['kodb'],
+                             'jed_pewnosc':dane['pew'],'jed_relacja':dane['re']})
+        self._model.endResetModel()
         
-    def _funZm(self,i):
-        ko = unicode(self._funCb.itemData(i).toString())
-        self._fm.beginResetModel()
-        self._fw.wybor(self._con,ko)
-        self._fm.endResetModel()
-        
-    def _modKlik(self):
-        if self._modAct is not None:
-            self._modAct(self.getDane())
+    def _funZmiana(self,dane):
+        self._model.beginResetModel()
+        r = self._bw
+        self._fk.setMapa(r,{'funkcja':dane['koda'],'fun_pewnosc':dane['pew']})
+        self._model.endResetModel()
     
-    def _delKlik(self):
-        if self._usuAct is not None:
-            self._usuAct(self.getDane())
+    def _masZmiana(self):
+        self._model.beginResetModel()
+        self._fk.setWartosc(self._bw,'masowy',unicode(self._mp.text()))
+        self._model.endResetModel()
+    
+    def _wyZmiana(self):
+        self._model.beginResetModel()
+        self._fk.setWartosc(self._bw,'wydzielony',unicode(self._wp.text()))
+        self._model.endResetModel()
+    
+    def _zmBiezWier(self, p, b):
+        self._bw = p.row()
+        self._op.setDane({'koda':self._fk.get(self._bw,'okresa'),'kodb':self._fk.get(self._bw,'okresb'),'pew':self._fk.get(self._bw,'okr_pewnosc','1'),'re':self._fk.get(self._bw,'okr_relacja','')})
+        self._jp.setDane({'koda':self._fk.get(self._bw,'jeda'),'kodb':self._fk.get(self._bw,'jedb'),'pew':self._fk.get(self._bw,'jed_pewnosc','1'),'re':self._fk.get(self._bw,'jed_relacja','')})
+        self._fp.setDane({'koda':self._fk.get(self._bw,'funkcja'),'pew':self._fk.get(self._bw,'fun_pewnosc','1')})
+        self._mp.setText(self._fk.get(self._bw,'masowy',''))
+        self._wp.setText(self._fk.get(self._bw,'wydzielony',''))
+        
+    def zatwierdz(self):
+        if self._con is None:
+            return
+        self._con.zatwierdz()
+        self._con.zakoncz()
+        self._con = None
+        
+    def wycofaj(self):
+        if self._con is None:
+            return
+        self._con.wycofaj()
+        self._con.zakoncz()
+        self._con = None

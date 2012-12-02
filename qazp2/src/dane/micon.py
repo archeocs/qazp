@@ -29,19 +29,21 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import re
 class Polaczenie(object):
-    
+    """ Adapter polaczenia z baza danych PostgreSQL/Postgis albo Sqlite3/Spatialite"""
     PG = 1
     LITE = 2
 
     def __init__(self, con, typ):
+        """ Konstruktor obiektu klasy
+        
+        con: obiekt Connection zgodny z DBAPI 2.0
+        typ: typ bazy do wyboru: 
+            - Polaczenie.PG - postgre
+            - Polaczenie.LITE - sqlite
+        """
+        
         self._con = con
         self._tc = typ
-        if typ == self.PG:
-            self.nrep = '%%(%s)s'
-            self.rep = '%s'
-        elif typ == self.LITE:
-            self.nrep = ':%s'
-            self.rep = '?'
 
     def zatwierdz(self):
         self._con.commit()
@@ -62,45 +64,48 @@ class Polaczenie(object):
     def jeden(self, sql, vp=[], f=None):
         return self.prep(sql).jeden(vp,f)
     
-    #===========================================================================
-    # def prep(self, sql, params=[]):
-    #    ts = sql
-    #    for p in params:
-    #        ts = ts.replace('#',self.nrep%p,1)
-    #    if params:
-    #        if ts.rfind('#') > -1:
-    #            #print 'zbyt malo parametrow'
-    #            return None
-    #        return Polecenie(self._con,ts)
-    #    ts = ts.replace('#',self.rep)
-    #    return Polecenie(self._con,ts)
-    #===========================================================================
-    
     _rn = re.compile(':([0-9a-zA-Z_]+)')
     
     def _rep(self,m):
         return '%('+m.group(1)+')s'
         
     def prep(self,sql):
+        """ Przygotowuje nowe polecenie do wykonania.
+        
+        Parametry powinny byc podawane w konwencji uzywanej w module sqlite3. Jezeli
+        polaczenie dotyczy bazy Postgresql, to polecenie zostanie przeksztalcone do postaci
+        wymaganej przez sterownik psycopg """
         if self._tc == self.LITE:
             return Polecenie(self._con,sql)
         ns = self._rn.subn(self._rep,sql.replace('?','%s'))
         return Polecenie(self._con,ns[0])
 
 class Polecenie(object):
+    """ Polecenie sql przygotowane do wykonania. Ma postac zgodna z 
+    wymaganiami sterownika """
     
     def __init__(self, con, prepSql):
         self._ps = prepSql
         self._con = con    
     
     def wykonaj(self, params=[], zatwierdz=True): # mapa albo lista
-        cur = self._con.cursor()
-        cur.execute(self._ps, params)
-        cur.close()
-        if zatwierdz:
-            self._con.commit()
+        """ Wykonanie polecenia DML 
+        
+        Jezeli zatwierdz == True to zmiany sa natychmiast zatwierdzane"""
+        try:
+            cur = self._con.cursor()
+            cur.execute(self._ps, params)
+            cur.close()
+            if zatwierdz:
+                self._con.commit()
+            return cur.rowcount
+        except:
+            return -1
     
     def wszystkie(self, params=[], f=None):
+        """ Wykonanie polecenia SELECT i pobranie wszystkich wierszy z opcjonalna konwersja
+        
+        f: funkcja konwertujaca kazdy pobrany wiersz """
         cur = self._con.cursor()
         cur.execute(self._ps, params)
         ret = []
@@ -114,6 +119,9 @@ class Polecenie(object):
         return ret
     
     def jeden(self, params=[], f=None):
+        """ Wykonanie polecenia SELECT i pobranie pierwszeg wiersza z opcjonalna konwersja
+        
+        f: funkcja konwertujaca kazdy pobrany wiersz """
         cur = self._con.cursor()
         cur.execute(self._ps, params)
         r = cur.fetchone()

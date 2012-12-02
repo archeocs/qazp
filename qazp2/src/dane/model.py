@@ -177,12 +177,20 @@ JEDFIZG_ATR = ['id','nadmorska','w_morzu','plaza','mierzeja','skarpa','wal_wydmo
 EKSPOZYCJA_ATR = ['id','eksponowany','kraw_stoki','sfaldowania_cyple','cyple_wybitne','waly_garby','wyniesienia_okrezne', 
                 'osloniety','podst_stoku','doliny_niecki', 'kotlinki_zagleb','jaskinie','stopien','rozmiar',
                 'kierunek','uwagi']
-TEREN_ATR=['id','zabudowany','sred_zabud','rolniczy','spoleczny','przemyslowy','nieuzytek',
-                'las','sad','park','pole_orne','laka','torf','woda','bagno',
-                'utwor_geo','kamienistosc','specjalistyczne','uwagi']
+TEREN_ATR=['id','zabudowany','sred_zabud','prywatny','spoleczny','przemyslowy','nieuzytek',
+                'las','sad','park','pole_orne','laka','torf','woda','bagno','uwagi']
+
+GLEBA_ATR=['id','luzna','zwiezla','torf_bag','kamienistosc','uwagi']
 
 OBSZAR_ATR = ['id','obserwacja','pole','nasyc_rozklad','nasyc_typ','gestosc_znal','powierzchnia','uwagi']
 
-ZAGROZENIA_ATR=['id','wystepowanie','przyczyna','uzytkownik','uwagi']
+ZAGROZENIA_ATR=['id','wystepowanie','czas','przyczyna','uzytkownik','uwagi']
 
 WNIOSKI_ATR=['id','wartosc','inwentaryzacja','wykopaliska','interwencja','uwagi']
+
+AKTUALNOSCI_ATR=['id','magazyn','nr_inwentarza','nr_krz','data_krz', 
+                 'park','plan','wlasciciel','uwagi']
+
+KARTA_ATR = ['id','nazwa_lok','arkusz_mapy','dalsze_losy','dzieje_badan',
+             'metryka_hist','literatura','dzialka_geodezyjna','egb','autorzy',
+             'chronologia','konsultant','uwagi']

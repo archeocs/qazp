@@ -228,3 +228,12 @@ insert into funkcje values('GP14', 'G', 'MIEJSCE PRODUKCJI', 'WARSZTAT RZEMIEŚL
 insert into funkcje values('GP15', 'G', 'MIEJSCE PRODUKCJI', 'INNE', NULL, 'MIEJSCE PRODUKCJI INNE', 'MIEJ. PROD');
 insert into funkcje values('GS01', 'G', 'ŚMIETNISKO', NULL, NULL, 'ŚMIETNISKO', 'ŚMIET.');
 insert into funkcje values('GM01', 'G', 'ŚMIETNISKO MUSZLOWE', NULL, NULL, 'ŚMIETNISKO MUSZLOWE', 'ŚMIET MUSZ.');
+----------------
+insert into funkcje values('K', 'K', 'KOMPLEKS OSADNICZY', NULL, NULL, 'KOMPLEKS OSADNICZY', 'KOMPL. OS.');
+insert into funkcje values('P', 'P', 'KOPIEC', NULL, NULL, 'KOPIEC', 'KOPIEC');
+insert into funkcje values('T', 'T', 'POLE BITWY', NULL, NULL, 'POLE BITWY', 'POLE BITWY');
+insert into funkcje values('R', 'R', 'SKARB', NULL, NULL, 'SKARB', 'SKARB');
+insert into funkcje values('A', 'A', 'STANOWISKO ARCHEOLOGICZNE', NULL, NULL, 'STANOWISKO ARCHEOLOGICZNE', 'ST. ARCHEO.');
+insert into funkcje values('D', 'D', 'STANOWISKO REDEPONOWANE', NULL, NULL, 'STANOWISKO REDEPONOWANE', 'ST. REDEPON.');
+insert into funkcje values('W', 'W', 'WAŁY', NULL, NULL, 'WAŁY', 'WAŁY');
+insert into funkcje values('L', 'L', 'ZNALEZISKO LUŹNE', NULL, NULL, 'ZNALEZISKO LUŹNE', 'ZNAL. LUŹ');

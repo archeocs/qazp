@@ -57,7 +57,7 @@ class Okno(QMainWindow):
         trasy_menu.addAction(trasy.ImportGpsAkcja(self._iface,self))
         stan_menu = self.menuBar().addMenu('Stanowiska')
         stan_menu.addAction(stanowiska.WyszukajAkcja(self._iface,self))
-        stan_menu.addAction(stanowiska.PolaczSql(self._iface,self))
+        stan_menu.addAction(stanowiska.PokazujZazn(self._iface,self))
         wykaz_menu = self.menuBar().addMenu('Wykazy')
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Miejscowości','miejscowosci',self._iface,self))
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Gminy','gminy',self._iface,self))
@@ -65,6 +65,13 @@ class Okno(QMainWindow):
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Województwa','wojewodztwa',self._iface,self))
         
     
+    zaznWgt = None
+    def pokazZaznaczone(self,wgt):
+        if self.zaznWgt:
+            self._stack.removeWidget(self.zaznWgt)
+        self.zaznWgt = wgt
+        self.dodaj(wgt)
+
     def dodaj(self,wgt):
         self._stack.addWidget(wgt)
         self._stack.setCurrentWidget(wgt)

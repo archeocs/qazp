@@ -31,37 +31,48 @@
 from qgis.core import QgsPoint,QgsGeometry
 
 class Punkt(dict):
-    
+    """ Klasa reprezentuje punkt okreslony przez dlugosc geograficzna - longitude
+    i szerokosc geograficzna - latitiude """
+        
     def __init__(self,lon,lat):
         dict.__init__(self)
         self._pt = QgsPoint(float(lon),float(lat))
     
     def punkt(self):
+        """ Zwraca punkt w reprezentacji QGI """
         return self._pt
     
     def geom(self):
+        """
+        Tworzy obiekt geometryczny QgsGeometry uzywany do zapisywania wspolrzednych w QGIS
+        """
         return QgsGeometry.fromPoint(self._pt)
-    
+  
 class Linia(object):
+    """ Linia jako lista punktow typu Punkt """      
     
     def __init__(self,punkty=[]):
         self._punkty = []
         self._punkty.extend(punkty)
         
-    
     def dodaj(self,lon,lat):
+        """ Dodaje punkt podany jako lon - dlugosc geograficzna i lat - szerokosc """
         np = Punkt(lon,lat)
         self._punkty.append(np)
         return np
     
     def dodaj_linie(self,punkty):
+        """ Dodaje linie w postaci listy punktow """
         self._punkty.extend(punkty)
     
     def punkty(self):
+        """ Zwraca liste punktow """
         return self._punkty
     
     def polyline(self):
+        """ Zwraca linie w reprezentacji QGIS jako liste punktow QGIS """
         return [p.punkt() for p in self._punkty]
     
     def geom(self):
+        """ Tworzy obiekt gemetryczny QGIS QgsGeometry reprezentujacy linie"""
         return QgsGeometry.fromPolyline(self.polyline())

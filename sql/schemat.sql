@@ -271,20 +271,24 @@ CREATE TABLE fakty
 (
     id integer, 
     stanowisko integer, 
-    okres1 varchar(10),
-    okres2 varchar(10),
+    okresa varchar(2),
+    okresb varchar(2),
     okr_relacja varchar(1) check (okr_relacja in ('Z','P')),
     okr_pewnosc decimal(3,2),
-    jed1 varchar(10), 
-    jed2 varchar(10), 
+    jeda varchar(6), 
+    jedb varchar(6), 
     jed_relacja varchar(1) check (jed_relacja in ('Z','P')), 
     jed_pewnosc decimal(3,2), 
-    funkcja varchar(1), 
-    rodzaj_fun varchar(10),
+    funkcja varchar(8), 
     fun_pewnosc decimal(3,2), 
     masowy varchar(50), 
     wydzielony varchar(50),
-     CONSTRAINT fakty_pkey PRIMARY KEY (id)
+     CONSTRAINT fakty_pkey PRIMARY KEY (id),
+     constraint okresa_okresy_dziejow_fkey foreign key(okresa) references okresy_dziejow(kod),
+     constraint okresb_okresy_dziejow_fkey foreign key(okresb) references okresy_dziejow(kod),
+     constraint jeda_jednostki_fkey foreign key(jeda) references jednostki(kod),
+     constraint jedb_jednostki_fkey foreign key(jedb) references jednostki(kod),
+     constraint funkcja_funkcje_fkey foreign key(funkcja) references funkcje(kod)
 );
 COMMIT;
 CREATE TABLE karty -- do kazdego stanowiska mozna dodac informacje o wypelnionej karcie azp

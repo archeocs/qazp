@@ -29,7 +29,7 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from PyQt4.QtGui import QStyledItemDelegate, QComboBox, QTableView, QAbstractItemView 
-from PyQt4.QtGui import   QHeaderView,QFrame,QDialogButtonBox,QVBoxLayout,QHBoxLayout
+from PyQt4.QtGui import   QHeaderView,QFrame,QDialogButtonBox,QVBoxLayout
 from PyQt4.QtCore import QVariant, QAbstractTableModel, Qt
 from functools import partial
 from dane.zrodla import getPolaczenie2

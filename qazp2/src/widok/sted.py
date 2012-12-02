@@ -34,10 +34,10 @@ from functools import partial
 from lib.qgsop import setMapa,zmien
 from dane.zrodla import getPolaczenie2, daneFizg, updtFizg, daneEksp, updtEkspo,\
     daneTeren, updtTeren, updtObszar, daneObszar, updtZagr, daneZagr, updtWnio,\
-    daneWnio
+    daneWnio, daneGleba, updtGleba, daneAkt, updtAkt, daneKarta, updtKarta
 from dane.model import STANOWISKA_ATR
 from widok.proped import conw, PropWidok
-from widok.faktyed import EdWgt, FModel, Fakty
+from widok.faktyed import FaktyWidok
 
 
 
@@ -55,14 +55,19 @@ class Edytor(QFrame):
         pbb.addButton('Jed. fiz-geo',QDialogButtonBox.ActionRole).setObjectName('fizgeo')
         pbb.addButton('Ekspozycja',QDialogButtonBox.ActionRole).setObjectName('ekspozycja')
         pbb.addButton('Teren',QDialogButtonBox.ActionRole).setObjectName('teren')
+        pbb.addButton('Gleba',QDialogButtonBox.ActionRole).setObjectName('gleba')
         pbb.addButton('Obszar',QDialogButtonBox.ActionRole).setObjectName('obszar')
         pbb.addButton(u'Zagrożenia',QDialogButtonBox.ActionRole).setObjectName('zagrozenia')
         pbb.addButton(u'Wnioski',QDialogButtonBox.ActionRole).setObjectName('wnioski')
+        pbb.addButton(u'Aktualnosci',QDialogButtonBox.ActionRole).setObjectName('aktualnosci')
+        pbb.addButton(u'Karta',QDialogButtonBox.ActionRole).setObjectName('karta')
         pbb.addButton(u'Fakty',QDialogButtonBox.ActionRole).setObjectName('fakty')
         self.grid.addWidget(pbb,0,1)
         bb = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Close, parent=self)
         self.grid.addWidget(bb,1,0)
         self.on = 'stanowisko'
+        cent = model.feature().geometry().centroid().asPoint().toDegreesMinutesSeconds(1)
+        self._win.statusBar().showMessage(cent)
         self.grid.addWidget(StanowiskoWidok(self._war,model),0,0) # zamiast informacje o stanowisku
         self.grid.setRowMinimumHeight(0,150)
         self.grid.setColumnMinimumWidth(0,150)
@@ -82,6 +87,8 @@ class Edytor(QFrame):
             self.grid.addWidget(FizgWidok(daneFizg(str(self._model['id'].toString()),self._war)),0,0) 
         elif self.on == 'teren':
             self.grid.addWidget(TerenWidok(daneTeren(str(self._model['id'].toString()),self._war)),0,0)
+        elif self.on == 'gleba':
+            self.grid.addWidget(GlebaWidok(daneGleba(str(self._model['id'].toString()),self._war)),0,0)
         elif self.on == 'ekspozycja':
             self.grid.addWidget(EkspozycjaWidok(daneEksp(str(self._model['id'].toString()),self._war)),0,0)
         elif self.on == 'obszar':
@@ -90,10 +97,14 @@ class Edytor(QFrame):
             self.grid.addWidget(ZagrozenieWidok(daneZagr(str(self._model['id'].toString()),self._war)),0,0)
         elif self.on == 'wnioski':
             self.grid.addWidget(WnioskiWidok(daneWnio(str(self._model['id'].toString()),self._war)),0,0) 
+        elif self.on == 'aktualnosci':
+            self.grid.addWidget(AktualnosciWidok(daneAkt(str(self._model['id'].toString()),self._war)),0,0) 
+        elif self.on == 'karta':
+            self.grid.addWidget(KartaWidok(daneKarta(str(self._model['id'].toString()),self._war)),0,0) 
         elif self.on == 'stanowisko':   
             self.grid.addWidget(StanowiskoWidok(self._war,self._model),0,0)
         elif self.on == 'fakty':
-            self.grid.addWidget(FaktyWidok(str(self._model['id'].toString()),self._war),0,0) 
+            self.grid.addWidget(faktyWidok(str(self._model['id'].toString()),self._war),0,0) 
             
     def klikZapisz(self):
         panel = self.grid.itemAtPosition(0,0).widget()
@@ -117,6 +128,10 @@ class Edytor(QFrame):
             dane = panel.wartosci()
             u = updtTeren(str(self._model['id'].toString()),self._war,[dane])
             self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+        elif self.on == 'gleba':
+            dane = panel.wartosci()
+            u = updtGleba(str(self._model['id'].toString()),self._war,[dane])
+            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
         elif self.on == 'obszar':
             dane = panel.wartosci()
             u = updtObszar(str(self._model['id'].toString()),self._war,[dane])
@@ -128,6 +143,14 @@ class Edytor(QFrame):
         elif self.on == 'wnioski':
             dane = panel.wartosci()
             u = updtWnio(str(self._model['id'].toString()),self._war,[dane])
+            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+        elif self.on == 'aktualnosci':
+            dane = panel.wartosci()
+            u = updtAkt(str(self._model['id'].toString()),self._war,[dane])
+            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+        elif self.on == 'karta':
+            dane = panel.wartosci()
+            u = updtKarta(str(self._model['id'].toString()),self._war,[dane])
             self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
         elif self.on == 'fakty':
             panel.zatwierdz()
@@ -212,21 +235,28 @@ class FizgWidok(PropWidok):
             self.dodTn(x)
 
 class TerenWidok(PropWidok):
-    vg = [('L',u'Luźny'),('Z',u'Zwięzły'),('T','Torf.-bag.')]
-    wg = partial(conw,slow=dict(vg))
     
     def __init__(self,dane=None,parent=None):
         PropWidok.__init__(self,parent)
-        opt=[(u'Zabudowany','zabudowany',self.wb),(u'Śred. zabudowany','sred_zabud',self.wb),(u'Rolniczy','rolniczy',self.wb),
+        opt=[(u'Zabudowany','zabudowany',self.wb),(u'Śred. zabudowany','sred_zabud',self.wb),(u'Prywatny','prywatny',self.wb),
              (u'Społeczny','spoleczny',self.wb),(u'Przemysłowy','przemyslowy',self.wb),(u'Nieużytek','nieuzytek',self.wb),
                 (u'Las','las',self.wb),(u'Sad','sad',self.wb),(u'Park','park',self.wb),(u'Pole orne','pole_orne',self.wb),
                 (u'Łąka','laka',self.wb),(u'Torf','torf',self.wb),(u'Woda','woda',self.wb),(u'Bagno','bagno',self.wb),
-                (u'Utwór geologiczny','utwor_geo',self.wg),(u'Kamienistość','kamienistosc',self.wr),
-                (u'Okr. specjalistyczne','specjalistyczne',self.nic),(u'Uwagi','uwagi',self.nic)]
+                (u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
-        for x in range(len(opt)-4):
+        for x in range(len(opt)-1):
             self.dodTn(x)
-        self.dodajOpt(14,self.vg).dodajOpt(15,self.vr)
+
+class GlebaWidok(PropWidok):
+    
+    def __init__(self,dane=None,parent=None):
+        PropWidok.__init__(self,parent)
+        opt=[(u'Luźna','luzna',self.wb),(u'Zwięzła','zwiezla',self.wb),(u'Torf.-bag','torf_bag',self.wb),
+             (u'Kamienistość','kamienistosc',self.wr) ,(u'Uwagi','uwagi',self.nic)]
+        self.ustawModel(dane,opt)
+        for x in range(len(opt)-2):
+            self.dodTn(x)
+        self.dodajOpt(3,self.vr)
                 
 class EkspozycjaWidok(PropWidok):
     def __init__(self,dane=None,parent=None):
@@ -245,12 +275,14 @@ class ZagrozenieWidok(PropWidok):
     wp = partial(conw,slow=dict(vp))
     vu = [('S',u'Społeczny'),('P',u'Prywatny')]
     wu = partial(conw,slow=dict(vu))
+    vc = [('S',u'Stałe'),('D',u'Doraźne')]
+    wc = partial(conw,slow=dict(vu))
     def __init__(self,dane=None,parent=None):
         PropWidok.__init__(self,parent)
-        opt=[(u'Występowanie','wystepowanie',self.we),(u'Przyczyna','przyczyna',self.wp),(u'Użytkownik','uzytkownik',self.wu),
+        opt=[(u'Występowanie','wystepowanie',self.we),(u'Czas','czas',self.wc),(u'Przyczyna','przyczyna',self.wp),(u'Użytkownik','uzytkownik',self.wu),
             (u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
-        self.dodajOpt(0,self.ve).dodajOpt(1,self.vp).dodajOpt(2,self.vu)
+        self.dodajOpt(0,self.ve).dodajOpt(1,self.vc).dodajOpt(2,self.vp).dodajOpt(3,self.vu)
         
 class WnioskiWidok(PropWidok):
     def __init__(self,dane=None,parent=None):
@@ -259,62 +291,83 @@ class WnioskiWidok(PropWidok):
             (u'Interwencja','interwencja',self.wb), (u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
         self.dodajOpt(0,self.vr).dodajOpt(1,self.vb).dodajOpt(2,self.vb).dodajOpt(3,self.vb)
-        
-class FaktyWidok(QWidget):
-    def __init__(self,st,warstwa,parent=None):
-        QWidget.__init__(self,parent)
-        self._st = st
-        vbox = QVBoxLayout()
-        self.setLayout(vbox)
-        self._tab = QTableView()
-        self._con = getPolaczenie2(warstwa)
-        self._fk = Fakty(st,self._con)
-        self._mf = FModel(self._fk,self._tab)
-        self._tab.setModel(self._mf)
-        self._tab.selectionModel().currentRowChanged.connect(self._zmBiezWier)
-        vbox.addWidget(self._tab)
-        self._ew = EdWgt(self._con)
-        self._ew.setModAct(self._modWier)
-        self._ew.setUsuAct(self._delWier)
-        vbox.addWidget(self._ew)
-        
-    def _zmBiezWier(self, p, b):
-        r = p.row()
-        self._ew.setDane(self._fk[r],r>=len(self._fk))
-        
-    def _modWier(self,dane):
-        if dane['relacja'] == '':
-            dane['jed2'] = None
-            dane['relacja'] = None
-        if dane['id'] > 0:
-            print 'modyfikacja'
-            self._mf.beginResetModel()
-            self._fk.zmien(self._tab.selectionModel().currentIndex().row(),dane)
-            self._mf.endResetModel()
-        else:
-            print 'nowy',dane
-            self._mf.beginResetModel()
-            self._fk.dodaj(dane)
-            self._mf.endResetModel()
-            
-    def _delWier(self,dane):
-        if dane['id'] > 0:
-            print 'usuwanie'
-            self._mf.beginResetModel()
-            self._fk.usun(dane)
-            self._mf.endResetModel()
-    
-    def zatwierdz(self):
-        if self._con is None:
-            return
-        self._con.zatwierdz()
-        self._con.zakoncz()
-        self._con = None
-        
-    def wycofaj(self):
-        if self._con is None:
-            return
-        self._con.wycofaj()
-        self._con.zakoncz()
-        self._con = None
-        #self._con.zakoncz()
+
+class AktualnosciWidok(PropWidok):
+    def __init__(self,dane=None,parent=None):
+        PropWidok.__init__(self,parent)
+        opt=[(u'Materiały znajdują się w','magazyn',self.nic),(u'Nr inwentarza','nr_inwentarza',self.nic),(u'Rejestr zabytków','nr_krz',self.nic),
+            (u'Data rejestracji','data_krz',self.nic), (u'Park kulturowy','park',self.nic), (u'Plan zagospodarowania','plan',self.nic),
+             (u'Właściciel','wlasciciel',self.nic), (u'Uwagi','uwagi',self.nic)]
+        self.ustawModel(dane,opt)
+
+class KartaWidok(PropWidok):
+    def __init__(self,dane=None,parent=None):
+        PropWidok.__init__(self,parent)
+        opt=[(u'Nazwa lokalna','nazwa_lok',self.nic),(u'Arkusz mapy','arkusz_mapy',self.nic),(u'Dalsze losy','dalsze_losy',self.nic),
+            (u'Dzieje badań','dzieje_badan',self.nic), (u'Metryka historyczna','metryka_hist',self.nic), (u'Literatura','literatura',self.nic),
+             (u'Nr działki geod.','dzialka_geodezyjna',self.nic), (u'Identyfikator EGB','egb',self.nic), (u'Autorzy','autorzy',self.nic),  
+             (u'Określił chronologię','chronologia',self.nic),(u'Sprawdził','konsultant',self.nic),  (u'Uwagi','uwagi',self.nic)]
+        self.ustawModel(dane,opt)
+
+def faktyWidok(st,warstwa,parent=None):
+    return FaktyWidok(st,getPolaczenie2(warstwa),parent)
+#===============================================================================
+# class FaktyWidok(QWidget):
+#    def __init__(self,st,warstwa,parent=None):
+#        QWidget.__init__(self,parent)
+#        self._st = st
+#        vbox = QVBoxLayout()
+#        self.setLayout(vbox)
+#        self._tab = QTableView()
+#        self._con = getPolaczenie2(warstwa)
+#        self._fk = Fakty(st,self._con)
+#        self._mf = FModel(self._fk,self._tab)
+#        self._tab.setModel(self._mf)
+#        self._tab.selectionModel().currentRowChanged.connect(self._zmBiezWier)
+#        vbox.addWidget(self._tab)
+#        self._ew = EdWgt(self._con)
+#        self._ew.setModAct(self._modWier)
+#        self._ew.setUsuAct(self._delWier)
+#        vbox.addWidget(self._ew)
+#        
+#    def _zmBiezWier(self, p, b):
+#        r = p.row()
+#        self._ew.setDane(self._fk[r],r>=len(self._fk))
+#        
+#    def _modWier(self,dane):
+#        if dane['relacja'] == '':
+#            dane['jed2'] = None
+#            dane['relacja'] = None
+#        if dane['id'] > 0:
+#            print 'modyfikacja'
+#            self._mf.beginResetModel()
+#            self._fk.zmien(self._tab.selectionModel().currentIndex().row(),dane)
+#            self._mf.endResetModel()
+#        else:
+#            print 'nowy',dane
+#            self._mf.beginResetModel()
+#            self._fk.dodaj(dane)
+#            self._mf.endResetModel()
+#            
+#    def _delWier(self,dane):
+#        if dane['id'] > 0:
+#            print 'usuwanie'
+#            self._mf.beginResetModel()
+#            self._fk.usun(dane)
+#            self._mf.endResetModel()
+#    
+#    def zatwierdz(self):
+#        if self._con is None:
+#            return
+#        self._con.zatwierdz()
+#        self._con.zakoncz()
+#        self._con = None
+#        
+#    def wycofaj(self):
+#        if self._con is None:
+#            return
+#        self._con.wycofaj()
+#        self._con.zakoncz()
+#        self._con = None
+#        #self._con.zakoncz()
+#===============================================================================

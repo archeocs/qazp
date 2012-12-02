@@ -29,9 +29,10 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from PyQt4.QtCore import SIGNAL,QObject
-from PyQt4.QtGui import QAction,QMessageBox,QInputDialog,QWidget
+from PyQt4.QtGui import QAction,QMessageBox,QInputDialog
 from widok.lista import GTabModel2, GFrame
-from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie2
+from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie2,\
+    rejestr_map, stLista
 from widok.sted import Edytor
 
 def tab_model(obiekty,parent=None):
@@ -42,21 +43,27 @@ def tab_model(obiekty,parent=None):
 class StanowiskaFrame(GFrame):
     
     warstwa = None
-    def __init__(self,warstwa,iface,win,parent=None):
-        GFrame.__init__(self,win,gstanowiska(warstwa))
+    def __init__(self,warstwa,listaSt,iface,win,parent=None):
+        GFrame.__init__(self,win,listaSt)
         self.setObjectName('stanowiska')
         self.warstwa = warstwa
         self._if = iface
         self._win = win
         self._win.statusBar().showMessage("Wyszukano %s obiektow %s"%(str(self.warstwa.featureCount()),
                                                                       self.warstwa.dataProvider().dataSourceUri()))
-        
+    
+    def akcja_wyswietl(self):
+        if self.warstwa is not None:
+            rejestr_map().addMapLayer(self.warstwa)
+            QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+self.warstwa.name())    
+    
     def utworz_model(self, gobs):
         return tab_model(gobs, self)
     
     def akcja_zmien(self):
         ww = self.wybrany_wiersz()[1]
         ed = Edytor(self.warstwa,ww,self._win)
+        self._win.setWindowTitle('Stanowisko: '+str(ww['obszar'].toString())+'/'+str(ww['nr_obszar'].toString()))
         self._win.dodaj(ed)
 
 class WyszukajAkcja(QAction):
@@ -72,11 +79,33 @@ class WyszukajAkcja(QAction):
         if trasy is None:
             QMessageBox.warning(self._win,u'Wyszukaj',u'Przed wyszukiwaniem należy otworzyć warstwę "stanowiska"')
             return 
-        warunek = QInputDialog.getText(self._win, 'Stanowiska', 'Wprowadz warunek', text='id >= 0')
+        warunek = QInputDialog.getText(self._win, 'Stanowiska', 'Wprowadz warunek', text="obszar='56-27' and nr_obszar='1'")
         if warunek[1]:
-            mf = StanowiskaFrame(szukaj_stanowiska(unicode(warunek[0])),self._iface,self._win)
+            warstwa = szukaj_stanowiska(unicode(warunek[0]))
+            mf = StanowiskaFrame(warstwa,gstanowiska(warstwa),self._iface,self._win)
             self._win.dodaj(mf)
-            
+
+class PokazujZaznAkcja(QAction):
+    
+    def __init__(self,iface,window):
+        QAction.__init__(self,'Pokazuj zaznaczone',window)
+        self.triggered.connect(self.wykonaj)
+        #QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self._win = window
+        self._iface = iface
+        self.setCheckable(True)
+    
+    def wykonaj(self):
+        sts = get_warstwa('stanowiska')
+        sts.selectionChanged.connect(self._pokWybrane)
+    
+    def _pokWybrane(self):
+        sts = get_warstwa('stanowiska')
+        lista = sts.selectedFeatures()
+        if len(lista) > 0:
+            mf = StanowiskaFrame(sts,stLista(lista),self._iface,self._win)
+            self._win.pokazZaznaczone(mf)
+        
 class PolaczSql(QAction):
     
     def __init__(self,iface,window):

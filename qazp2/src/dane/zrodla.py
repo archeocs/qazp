@@ -33,7 +33,7 @@ from qgis.core import QgsMapLayerRegistry, QgsMapLayer,QgsFeature
 from qgis.core import QgsVectorLayer, QgsDataSourceURI
 from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR,STANOWISKA_ATR, AModel,\
     JEDFIZG_ATR,  EKSPOZYCJA_ATR, TEREN_ATR, OBSZAR_ATR, ZAGROZENIA_ATR,\
-    WNIOSKI_ATR
+    WNIOSKI_ATR, GLEBA_ATR, AKTUALNOSCI_ATR, KARTA_ATR
 from micon import Polaczenie  
 def rejestr_map():
     """ Zwraca rejestr map z QGIS """
@@ -58,6 +58,12 @@ def _gwarstwa(qgs_warstwa,atrybuty):
             mt.append(GModel(atrybuty,f))
         else:
             return mt
+
+def _listaMap(listaObi, atrybuty):
+    return [GModel(atrybuty,f) for f in listaObi]
+
+def stLista(listaObi):
+    return _listaMap(listaObi, STANOWISKA_ATR)        
         
 def gstanowiska(qgs_warstwa):
     return _gwarstwa(qgs_warstwa,STANOWISKA_ATR)
@@ -89,48 +95,50 @@ def szukaj_miejsca(sql):
 
 def szukaj_trasy(sql):
     return _szukaj_warstwa(sql,'trasy')
-
-class FaktyWykaz(object):
-    """ Klasa wspomagajaca zarzadzanie wykazami do edycji faktow kulturowych - jednostek kulturowych
-        i funkcji 
-        
-        Kazdy rekord wykazu jest zbudowny z 3 atrybutow: kodu, pelnej nazwy i jej skrotu
-        """
-    def __init__(self,tab,kryt):
-        self.seljed = "select kod, nazwa, skrot from %s where %s=? order by nazwa" % (tab, kryt)
-        self._kody, self._info = [], []
-
-    def wybor(self,con,okr):
-        """ Pobiera z wykazu podany zakres danych """
-        self._kody, self._info=[],[]
-        for j in con.wszystkie(self.seljed,[okr]):
-            self._kody.append(j[0])
-            self._info.append(j[1:])
-    
-    def __getitem__(self, i):
-        return self._info[i][0]
-        
-    def __len__(self):
-        return len(self._kody)
-    
-    def indeks(self,kod):
-        """ Zwraca indeks (kolejnosc) danego kodu w utworzonym wykazie """
-        if kod in self._kody:
-            return self._kody.index(kod)
-        return 0
-        
-    def nazwa(self, kod):
-        """ Zwraca nazwe w wykazie ktora jest przypisana do podanego kodu """
-        return self._info[self._kody.index(kod)][0].decode('utf-8')
-    
-    def skrot(self, kod):
-        """ Zwraca skrot w wykazie, ktory jest przypisany do podanego kodu"""
-        return self._info[self._kody.index(kod)][1]
-        
-    def kod(self,i):
-        if 0 <= i < len(self._kody):
-            return self._kody[i]
-        return None
+#==================== do usuniecia ===========================================================
+# 
+# class FaktyWykaz(object):
+#    """ Klasa wspomagajaca zarzadzanie wykazami do edycji faktow kulturowych - jednostek kulturowych
+#        i funkcji 
+#        
+#        Kazdy rekord wykazu jest zbudowny z 3 atrybutow: kodu, pelnej nazwy i jej skrotu
+#        """
+#    def __init__(self,tab,kryt):
+#        self.seljed = "select kod, nazwa, skrot from %s where %s=? order by nazwa" % (tab, kryt)
+#        self._kody, self._info = [], []
+# 
+#    def wybor(self,con,okr):
+#        """ Pobiera z wykazu podany zakres danych """
+#        self._kody, self._info=[],[]
+#        for j in con.wszystkie(self.seljed,[okr]):
+#            self._kody.append(j[0])
+#            self._info.append(j[1:])
+#    
+#    def __getitem__(self, i):
+#        return self._info[i][0]
+#        
+#    def __len__(self):
+#        return len(self._kody)
+#    
+#    def indeks(self,kod):
+#        """ Zwraca indeks (kolejnosc) danego kodu w utworzonym wykazie """
+#        if kod in self._kody:
+#            return self._kody.index(kod)
+#        return 0
+#        
+#    def nazwa(self, kod):
+#        """ Zwraca nazwe w wykazie ktora jest przypisana do podanego kodu """
+#        return self._info[self._kody.index(kod)][0].decode('utf-8')
+#    
+#    def skrot(self, kod):
+#        """ Zwraca skrot w wykazie, ktory jest przypisany do podanego kodu"""
+#        return self._info[self._kody.index(kod)][1]
+#        
+#    def kod(self,i):
+#        if 0 <= i < len(self._kody):
+#            return self._kody[i]
+#        return None
+#===============================================================================
 
 class Wykaz(object):
 
@@ -260,6 +268,9 @@ def daneEksp(st,qgsWarstwa):
 def daneTeren(st,qgsWarstwa):
     return AModel(wyszukajSql(st,qgsWarstwa,TEREN_ATR,'TEREN_DANE'))
 
+def daneGleba(st,qgsWarstwa):
+    return AModel(wyszukajSql(st,qgsWarstwa,GLEBA_ATR,'GLEBA_DANE'))
+
 def daneObszar(st,qgsWarstwa):
     wys = wyszukajSql(st,qgsWarstwa,OBSZAR_ATR,'OBSZAR_DANE')
     wys['powierzchnia'] = wys.get('powierzchnia',0)
@@ -270,6 +281,12 @@ def daneZagr(st,qgsWarstwa):
 
 def daneWnio(st,qgsWarstwa):
     return AModel(wyszukajSql(st,qgsWarstwa,WNIOSKI_ATR,'WNIOSKI'))
+
+def daneAkt(st,qgsWarstwa):
+    return AModel(wyszukajSql(st,qgsWarstwa,AKTUALNOSCI_ATR,'AKTUALNOSCI'))
+
+def daneKarta(st,qgsWarstwa):
+    return AModel(wyszukajSql(st,qgsWarstwa,KARTA_ATR,'KARTY'))
 
 def _updtstmt2(atr, tab, stid):
     a = ','.join(['%s=:%s'%(a,a) for a in atr])
@@ -319,6 +336,9 @@ def updtEkspo(st,qgsWarstwa,tdane=[]):
 def updtTeren(st,qgsWarstwa,tdane=[]):
     return updtSql(st,qgsWarstwa,TEREN_ATR,'TEREN_DANE',tdane)
 
+def updtGleba(st,qgsWarstwa,tdane=[]):
+    return updtSql(st,qgsWarstwa,GLEBA_ATR,'GLEBA_DANE',tdane)
+
 def updtObszar(st,qgsWarstwa,tdane=[]):
     return updtSql(st,qgsWarstwa,OBSZAR_ATR,'OBSZAR_DANE',tdane)
 
@@ -327,3 +347,10 @@ def updtZagr(st,qgsWarstwa,tdane=[]):
 
 def updtWnio(st,qgsWarstwa,tdane=[]):
     return updtSql(st,qgsWarstwa,WNIOSKI_ATR,'WNIOSKI',tdane)
+
+def updtAkt(st,qgsWarstwa,tdane=[]):
+    return updtSql(st,qgsWarstwa,AKTUALNOSCI_ATR,'AKTUALNOSCI',tdane)
+
+def updtKarta(st,qgsWarstwa,tdane=[]):
+    return updtSql(st,qgsWarstwa,KARTA_ATR,'KARTY',tdane)
+
