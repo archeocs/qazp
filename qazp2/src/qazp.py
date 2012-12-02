@@ -57,7 +57,7 @@ class Okno(QMainWindow):
         trasy_menu.addAction(trasy.ImportGpsAkcja(self._iface,self))
         stan_menu = self.menuBar().addMenu('Stanowiska')
         stan_menu.addAction(stanowiska.WyszukajAkcja(self._iface,self))
-        stan_menu.addAction(stanowiska.PokazujZazn(self._iface,self))
+        stan_menu.addAction(stanowiska.PokazujZaznAkcja(self._iface,self))
         wykaz_menu = self.menuBar().addMenu('Wykazy')
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Miejscowości','miejscowosci',self._iface,self))
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Gminy','gminy',self._iface,self))
