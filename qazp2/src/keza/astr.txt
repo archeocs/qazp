@@ -43,7 +43,7 @@
 13;12;1;1;E;
 14;12;7;1;k:wsp_e;
 0;13;5;1;Nazwa lokalna;
-5;13;16;1;k:lokalna;
+5;13;16;1;k:nazwa_lok;
 0;14;5;1;Nr działki geodez.;
 5;14;16;1;k:nr_dzialki;
 0;15;5;1;Identyfikator EGB;
@@ -105,11 +105,11 @@
 48;2;1;1;3;
 49;2;11;1;UTWÓR GEOLOGICZNY;
 48;3;3;1;luźny;
-51;3;1;1;k:ter_utwor_luzny;
+51;3;1;1;k:luzna;
 52;3;3;1;zwięzły;
-55;3;1;1;k:ter_utwor_zwiezly;
+55;3;1;1;k:zwiezla;
 56;3;3;1;torf-bag;
-59;3;1;1;k:ter_utwor_torbag;
+59;3;1;1;k:ug_torfbag;
 48;4;12;1;OKREŚLENIE SPECJALISTYCZNE;
 48;5;12;1;k:specjalistyczne;
 
@@ -145,7 +145,7 @@
 48;6;1;1;4;
 49;6;11;1;DOSTĘPNOŚĆ TERENU;
 48;7;3;1;niezabud;
-51;7;1;1;k:ter_niezabudowany;
+51;7;1;1;k:niezabudowany;
 52;7;3;1;śr. zabud;
 55;7;1;1;k:sred_zabud;
 56;7;3;1;zabud;
@@ -246,13 +246,13 @@
 36;25;1;1;10;
 37;25;11;1;OPRACOWANIE KEZA;
 36;26;6;1;data dd\mm\rrrr;
-42;26;6;1;k:opr_data;
+42;26;6;1;k:data;
 36;27;12;1;autor karty;
-36;28;12;1;k:opr_autor;
+36;28;12;1;k:autor;
 36;29;12;1;określił chronologię;
-36;30;12;3;k:okr_chrono;
+36;30;12;3;k:chronologia;
 36;33;12;1;sprawdził - konsultant AZP;
-36;34;12;1;k:opr_sprawdzil;
+36;34;12;1;k:konsultant;
 
 # ======================
 48;25;1;1;11;
@@ -266,18 +266,18 @@
 24;29;1;1;9;
 25;29;11;1;AKTUALNA OCHRONA;
 24;30;6;1;nr rejestru zabytków;
-30;30;6;1;k:nr_rej;
+30;30;6;1;k:nr_krz;
 24;31;6;1;data wpisu do rejestru;
-30;31;6;1;k:data_wpisu;
+30;31;6;1;k:data_krz;
 24;32;6;1;park kulturowy;
-30;32;6;1;k:akt_park_kul;   
+30;32;6;1;k:park_kult;   
 24;33;12;1;plan zagospodarowania przestrzennego;
-24;34;12;1;k:akt_plan_przes;
+24;34;12;1;k:plan_zp;
 
 #====================
 48;30;1;1;12;
 49;30;11;1;ZBIORY I NR INWENT.;
 48;31;6;1;miejsce przechowywania;
 54;31;6;1;nr inwentarza;
-48;32;6;3;k:inne_miej_przech;
-54;32;6;3;k:inne_nr_inw;
+48;32;6;3;k:magazyn;
+54;32;6;3;k:nr_inwentarza;

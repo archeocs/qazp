@@ -262,7 +262,10 @@ def daneEksp(st,qgsWarstwa):
     wys = wyszukajSql(st,qgsWarstwa,EKSPOZYCJA_ATR,'EKSPOZYCJA_DANE')
     wys['stopien'] = wys.get('stopien',0)
     wys['rozmiar'] = wys.get('rozmiar',0)
-    wys['kierunek'] = decbin(int(wys.get('kierunek',0)))
+    kier = wys.get('kierunek',0)
+    if kier is None:
+        kier = 0
+    wys['kierunek'] = decbin(int(kier))
     return AModel(wys)
 
 def daneTeren(st,qgsWarstwa):
