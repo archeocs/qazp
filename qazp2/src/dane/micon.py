@@ -79,6 +79,12 @@ class Polaczenie(object):
             return Polecenie(self._con,sql)
         ns = self._rn.subn(self._rep,sql.replace('?','%s'))
         return Polecenie(self._con,ns[0])
+    
+    def getMax(self, tabela, pole='id'):
+        sql = 'select coalesce(max(%s), 0) from %s'
+        stmt = self.prep(sql%(pole, tabela))
+        mx = stmt.jeden()
+        return mx[0]
 
 class Polecenie(object):
     """ Polecenie sql przygotowane do wykonania. Ma postac zgodna z 
@@ -126,7 +132,7 @@ class Polecenie(object):
         cur.execute(self._ps, params)
         r = cur.fetchone()
         cur.close()
-        if f is not None:
+        if r is not None and f is not None:
             return f(r)
         return r
         

@@ -1,0 +1,25 @@
+0;0;1;1;13;
+1;0;27;1;MAPA W SKALI 1:10000 - UKŁAD WSPÓŁRZĘDNYCH KARTOGRAF.;
+28;0;11;1;UKŁAD 1992;
+39;0;1;1;15;
+40;0;6;1;DOKUMENTACJA;
+46;0;1;1;16;
+47;0;6;1;LITERATURA;
+53;0;1;1;17;
+54;0;6;1;INNE DANE;
+
+0;1;8;1;godło arkusza;
+8;1;5;1;k:nr_ark;
+13;1;12;1;k:nazwa_ark;
+25;1;1;1;N;
+26;1;6;1;k:wsp_n;
+32;1;1;1;E;
+33;1;6;1;k:wsp_e;
+39;1;21;34;k:literatura;
+
+0;2;39;27;k:mapa_img;
+
+0;29;1;1;18;
+1;29;38;1;HISTORIA BADAŃ STANOWISKA (rok/rodzaj/autor i instytucja);
+
+0;30;39;5;k:historia;

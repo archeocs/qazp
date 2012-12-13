@@ -28,12 +28,13 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtCore import SIGNAL,QObject
-from PyQt4.QtGui import QAction,QMessageBox,QInputDialog
+from PyQt4.QtCore import SIGNAL,QObject,Qt
+from PyQt4.QtGui import QAction,QMessageBox,QInputDialog, QProgressDialog, QFileDialog
 from widok.lista import GTabModel2, GFrame
 from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie2,\
     rejestr_map, stLista
 from widok.sted import Edytor
+from lib.keza import GeneratorKeza
 
 def tab_model(obiekty,parent=None):
     return GTabModel2([('Ident','id'),('Obszar','obszar'),('Nr na obszarze','nr_obszar'),('Rodzaj','rodzaj_badan')
@@ -65,6 +66,22 @@ class StanowiskaFrame(GFrame):
         ed = Edytor(self.warstwa,ww,self._win)
         self._win.setWindowTitle('Stanowisko: '+str(ww['obszar'].toString())+'/'+str(ww['nr_obszar'].toString()))
         self._win.dodaj(ed)
+        
+    def _akcjaDrukuj(self):
+        gen = GeneratorKeza(getPolaczenie2(self.warstwa))
+        pd = QProgressDialog("Przygotowuje wydruk", "Cancel", 0, len(self._gobs)+1);
+        pd.setWindowModality(Qt.WindowModal);
+        c = 0
+        for st in self.wszystkie():
+            c+=1
+            pd.setValue(c)
+            pd.setLabelText(u'Stanowisko %s/%s'%(unicode(st['obszar'].toString()),unicode(st['nr_obszar'].toString())))
+            sid = st['id'].toInt()[0]
+            gen.dodajKarte(sid)
+        plik = QFileDialog.getSaveFileName(parent=self, filter='PNG (*.pdf)')
+        gen.zapisz(str(plik))
+        pd.setValue(len(self._gobs)+1)
+        QMessageBox.information(self,'Drukowanie','Karty wygenerowane')
 
 class WyszukajAkcja(QAction):
     

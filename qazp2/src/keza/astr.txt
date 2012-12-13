@@ -138,8 +138,8 @@
 47;14;1;1;k:kotlinki_zagleb;
 36;15;11;1;jaskinie, schroniska skalne;
 47;15;1;1;k:jaskinie;
-36;16;5;1;FORMA SZCZE;
-41;16;7;1;k:euwagi;
+36;16;6;1;FORMA SZCZE;
+42;16;6;1;k:euwagi;
 
 #================
 48;6;1;1;4;
@@ -182,11 +182,41 @@
 21;18;10;1;CHRONOLOGIA;
 31;18;29;1;OPIS MATERIAŁOW, OBIEKTÓW, WARSTW ORAZ FORM TERENOWYCH;
 
-0;19;1;1;k:nr;
-1;19;10;6;k:fun;
-11;19;10;6;k:kult;
-21;19;10;6;k:chrono;
-31;19;29;6;k:opis;
+0;19;1;1;k:nr1;
+1;19;10;1;k:fun1;
+11;19;10;1;k:kult1;
+21;19;10;1;k:chrono1;
+31;19;29;1;k:opis1;
+
+0;20;1;1;k:nr2;
+1;20;10;1;k:fun2;
+11;20;10;1;k:kult2;
+21;20;10;1;k:chrono2;
+31;20;29;1;k:opis2;
+
+0;21;1;1;k:nr3;
+1;21;10;1;k:fun3;
+11;21;10;1;k:kult3;
+21;21;10;1;k:chrono3;
+31;21;29;1;k:opis3;
+
+0;22;1;1;k:nr4;
+1;22;10;1;k:fun4;
+11;22;10;1;k:kult4;
+21;22;10;1;k:chrono4;
+31;22;29;1;k:opis4;
+
+0;23;1;1;k:nr5;
+1;23;10;1;k:fun5;
+11;23;10;1;k:kult5;
+21;23;10;1;k:chrono5;
+31;23;29;1;k:opis5;
+
+0;24;1;1;k:nr6;
+1;24;10;1;k:fun6;
+11;24;10;1;k:kult6;
+21;24;10;1;k:chrono6;
+31;24;29;1;k:opis6;
 
 # ==========================
 0;25;1;1;6;
@@ -277,7 +307,7 @@
 #====================
 48;30;1;1;12;
 49;30;11;1;ZBIORY I NR INWENT.;
-48;31;6;1;miejsce przechowywania;
+48;31;6;1;miej. przechowywania;
 54;31;6;1;nr inwentarza;
 48;32;6;3;k:magazyn;
 54;32;6;3;k:nr_inwentarza;

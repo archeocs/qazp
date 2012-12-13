@@ -28,24 +28,42 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import sys
-sys.path.extend(__path__)
+from PyQt4.QtCore import QByteArray, QBuffer, QIODevice
+from PyQt4.QtGui import QImage
+from os.path import basename
 
-def name():
-    return "QAZP2"
+def odczyt(ident, con, nout=None):
+    stmt = con.prep('select dane from media where id=?')
+    w = stmt.jeden([ident])
+    if w is None:
+        return None
+    bajty = QByteArray.fromRawData(w[0])
+    return QImage.fromData(bajty)
 
-def description():
-    return "qazp2"
+def zapiszMapa(plik, st, syg, con):
+    mx = con.getMax('media','id')+1
+    stmt = con.prep("insert into media(id, sygnatura, plik, format, tabela, dane) values(?, ?, ?, ?, 'S', ?)")
+    s2 = con.prep('insert into st_media(medium, stanowisko,typ) values(?,?,?)')
+    img = QImage(plik)
+    buf = QBuffer()
+    buf.open(QIODevice.WriteOnly)
+    if img.save(buf, 'PNG'):
+        if stmt.wykonaj([mx, syg, basename(plik), 'PNG', buffer(buf.buffer().data())], False) != 1:
+            con.wycofaj()
+            return False
+        if s2.wykonaj([mx,st,'M'],False) != 1:
+            con.wycofaj()
+            return False
+        return True
+    return False
 
-def version():
-    return "0.10"
-
-def qgisMinimumVersion():
-    return "1.6"
-
-def authorName():
-    return u"Milosz Piglas"
-
-def classFactory(iface):
-    import qazp
-    return qazp.QazpPlugin(iface)
+def usunMapa(st, ident, con):
+    ps = con.prep('delete from st_media where stanowisko=? and medium=? and typ=?')
+    if ps.wykonaj([st, ident, 'M']) != 1:
+        con.wycofaj()
+        return False
+    ps = con.prep('delete from media where id=? and tabela=?')
+    if ps.wykonaj([ident, 'S']) != 1:
+        con.wycofaj()
+        return False
+    return True

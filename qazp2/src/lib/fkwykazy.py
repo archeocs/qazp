@@ -205,6 +205,10 @@ class WykazFaktow(object):
             widok += self._fw.widok(f.get('funkcja'))
         return widok
     
+    def mapa(self,r):
+        return {'chronologia':self.widok(r,0), 'kultura':self.widok(r,1), 'funkcja':self.widok(r,2), 'masowy':self.widok(r,3),
+                    'wydzielony':self.widok(r,4)}
+    
     def widok(self, r, c):
         if c == 0:
             return self.okrWidok(r)
@@ -216,3 +220,12 @@ class WykazFaktow(object):
             return self._fk[r]['masowy']
         elif c == 4:
             return self._fk[r]['wydzielony']
+
+def funWykaz(con):
+    return KodyWykaz(con,'funkcje')
+
+def jedWykaz(con):
+    return KodyWykaz(con,'jednostki')
+
+def okrWykaz(con):
+    return KodyWykaz(con,'okresy_dziejow') 

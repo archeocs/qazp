@@ -29,11 +29,36 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QAction, QApplication,QMainWindow,QStackedWidget
+from PyQt4.QtGui import QAction, QApplication,QMainWindow,QStackedWidget, QMessageBox
 from PyQt4.QtCore import QObject, SIGNAL
 from widok import trasy,miejsca,stanowiska, wykazy
 from qgis.core import QgsMapLayerRegistry
 from os.path import abspath
+from dane.zrodla import get_warstwa, getPolaczenie2
+from lib.uzytki import dostosujSchemat
+
+class SchematAkcja(QAction):
+    def __init__(self,iface,window):
+        QAction.__init__(self,'Dostosuj schemat',window)
+        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self._win = window
+        self._iface = iface
+        
+    def wykonaj(self):
+        warstwa = get_warstwa('stanowiska')
+        if trasy is None:
+            QMessageBox.warning(self._win,u'Dostosuj schemat',u'Przed wyszukiwaniem należy otworzyć warstwę "stanowiska"')
+            return 
+        pytanie = QMessageBox.question(self._win, u'Dostosuj schemat', u'Czy została wykonana kopia zapasowa bazy?\n'\
+                                       u'Czy na pewno chcesz zmodyfikować schemat bazy danych?', QMessageBox.Yes | QMessageBox.No, 
+                                       QMessageBox.No)
+        if pytanie == QMessageBox.Yes:
+            con = getPolaczenie2(warstwa)
+            if dostosujSchemat(con):
+                self._win.statusBar().showMessage("Schemat zmieniony")
+            else:
+                self._win.statusBar().showMessage("Niepowodzenie")
+            con.zakoncz()
 
 class Okno(QMainWindow):
     
@@ -63,6 +88,8 @@ class Okno(QMainWindow):
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Gminy','gminy',self._iface,self))
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Powiaty','powiaty',self._iface,self))
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Województwa','wojewodztwa',self._iface,self))
+        admin_menu = self.menuBar().addMenu('Administracja')
+        admin_menu.addAction(SchematAkcja(self._iface,self))
         
     
     zaznWgt = None

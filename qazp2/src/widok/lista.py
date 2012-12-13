@@ -129,11 +129,14 @@ class GFrame(QFrame):
         btn_wysw.setObjectName('btn_wysw')
         btn_usun = QPushButton('Usun')
         btn_usun.setObjectName('btn_usun')
+        btn_drukuj = QPushButton('Drukuj')
+        btn_drukuj.setObjectName('btn_drukuj')
         hbox.addWidget(btn_ok)
         hbox.addWidget(btn_zmien)
         hbox.addWidget(btn_usun)
         hbox.addWidget(btn_wysw)
         hbox.addWidget(btn_anul)
+        hbox.addWidget(btn_drukuj)
         btn_box.setLayout(hbox)      
         vbox.addWidget(btn_box)
         
@@ -143,11 +146,15 @@ class GFrame(QFrame):
         grupa.addButton(btn_zmien,3)
         grupa.addButton(btn_wysw,4)
         grupa.addButton(btn_usun,5)
+        grupa.addButton(btn_drukuj,6)
         self.connect(grupa, SIGNAL('buttonPressed(int)'), self.btn_klik)
         
     def wybrany_wiersz(self):
         ci = self._tab.currentIndex()
         return (ci,self._gobs[ci.row()])
+    
+    def wszystkie(self):
+        return self._gobs
         
     def btn_klik(self,id):
         if id == 1:
@@ -160,6 +167,8 @@ class GFrame(QFrame):
             self.akcja_wyswietl()
         elif id == 5:
             self.akcja_usun()
+        elif id == 6:
+            self._akcjaDrukuj()
     def utworz_model(self,gobs):
         raise Exception("GFrame.utworz_model: brak implementacji") 
     
@@ -170,6 +179,9 @@ class GFrame(QFrame):
         
     def _akcjaAnul(self):
         self._win.usun(self)
+    
+    def _akcjaDrukuj(self):
+        pass
         
     def akcja_zmien(self):
         print 'akcja_zmien: brak implementacji'

@@ -28,7 +28,8 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QDialogButtonBox, QFrame, QGridLayout,QWidget,QVBoxLayout,QTableView
+from PyQt4.QtGui import QDialogButtonBox, QFrame, QGridLayout,QWidget,QVBoxLayout,QHBoxLayout,\
+                        QLabel, QPushButton, QFileDialog, QPixmap
 from PyQt4.QtCore import Qt, QVariant
 from functools import partial
 from lib.qgsop import setMapa,zmien
@@ -38,6 +39,8 @@ from dane.zrodla import getPolaczenie2, daneFizg, updtFizg, daneEksp, updtEkspo,
 from dane.model import STANOWISKA_ATR
 from widok.proped import conw, PropWidok
 from widok.faktyed import FaktyWidok
+from lib.media import odczyt, zapiszMapa, usunMapa
+from lib.uzytki import sprSchemat
 
 
 
@@ -62,6 +65,7 @@ class Edytor(QFrame):
         pbb.addButton(u'Aktualnosci',QDialogButtonBox.ActionRole).setObjectName('aktualnosci')
         pbb.addButton(u'Karta',QDialogButtonBox.ActionRole).setObjectName('karta')
         pbb.addButton(u'Fakty',QDialogButtonBox.ActionRole).setObjectName('fakty')
+        pbb.addButton(u'Mapa',QDialogButtonBox.ActionRole).setObjectName('mapa')
         self.grid.addWidget(pbb,0,1)
         bb = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Close, parent=self)
         self.grid.addWidget(bb,1,0)
@@ -105,6 +109,13 @@ class Edytor(QFrame):
             self.grid.addWidget(StanowiskoWidok(self._war,self._model),0,0)
         elif self.on == 'fakty':
             self.grid.addWidget(faktyWidok(str(self._model['id'].toString()),self._war),0,0) 
+        elif self.on == 'mapa':
+            con = getPolaczenie2(self._war)
+            if sprSchemat(con, '0001')[0]:
+                self.grid.addWidget(MapaWidok(str(self._model['id'].toString()),self._war),0,0)
+            else:
+                self._win.statusBar().showMessage('Nieaktualny schemat bazy danych')
+            con.zakoncz()
             
     def klikZapisz(self):
         panel = self.grid.itemAtPosition(0,0).widget()
@@ -153,6 +164,8 @@ class Edytor(QFrame):
             u = updtKarta(str(self._model['id'].toString()),self._war,[dane])
             self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
         elif self.on == 'fakty':
+            panel.zatwierdz()
+        elif self.on == 'mapa':
             panel.zatwierdz()
         else:
             self._win.statusBar().showMessage(self.on)
@@ -309,65 +322,67 @@ class KartaWidok(PropWidok):
              (u'Określił chronologię','chronologia',self.nic),(u'Sprawdził','konsultant',self.nic),  (u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
 
+class MapaWidok(QWidget):
+    
+    def __init__(self, st, qgsWarstwa, parent=None):
+        QWidget.__init__(self, parent=parent)
+        self._st = int(st)
+        self._con = getPolaczenie2(qgsWarstwa)
+        box = QVBoxLayout()
+        self._lbImg = QLabel()
+        panelBtn = QWidget()
+        layBtn = QHBoxLayout()
+        btnDodaj, btnUsun = QPushButton(u'Dodaj'), QPushButton(u'Usuń')
+        layBtn.addWidget(btnDodaj)
+        layBtn.addWidget(btnUsun)
+        btnDodaj.clicked.connect(self._dodajImg)
+        btnUsun.clicked.connect(self._usunImg)
+        panelBtn.setLayout(layBtn)
+        self.setLayout(box)
+        box.addWidget(self._lbImg)
+        box.addWidget(panelBtn)
+        self._mapaId = -1
+        self._odswiezImg()
+    
+    def zatwierdz(self):
+        self._con.zatwierdz()
+        self._con.zakoncz()
+    
+    def _dodajImg(self):
+        if self._mapaId > 0:
+            return
+        plik = QFileDialog.getOpenFileName(parent=self, filter='PNG (*.png)')
+        if plik is None:
+            return
+        syg = 'MAPA/%d'%self._st
+        if zapiszMapa(str(plik), self._st, syg, self._con):
+            self._odswiezImg() 
+    
+    def _usunImg(self):
+        if self._mapaId <= 0:
+            return
+        if usunMapa(self._st, self._mapaId, self._con):
+            self._odswiezImg()
+            
+    def _odswiezImg(self):
+        ps = self._con.prep("select medium from st_media where stanowisko=? and typ='M'")
+        r = ps.jeden([self._st])
+        if r is None:
+            self._lbImg.setText(u'Brak mapy stanowiska')
+            self._mapaId = -1
+            return
+        img = odczyt(r[0], self._con)
+        if img is None:
+            self._lbImg.setText(u'Brak mapy stanowiska')
+            self._mapaId = -1
+            return
+        dx,dy = img.dotsPerMeterX(), img.dotsPerMeterY()
+        nw = (12 * dx) / 100 # nowa szerokosc wg wzor szer w cm / (100 / dx )
+        nh = (12 * dy) / 100
+        img = img.scaled(nw,nh,Qt.KeepAspectRatio)
+        pm = QPixmap.fromImage(img)
+        self._lbImg.setPixmap(pm)
+        self._mapaId = r[0]
+
 def faktyWidok(st,warstwa,parent=None):
     return FaktyWidok(st,getPolaczenie2(warstwa),parent)
-#===============================================================================
-# class FaktyWidok(QWidget):
-#    def __init__(self,st,warstwa,parent=None):
-#        QWidget.__init__(self,parent)
-#        self._st = st
-#        vbox = QVBoxLayout()
-#        self.setLayout(vbox)
-#        self._tab = QTableView()
-#        self._con = getPolaczenie2(warstwa)
-#        self._fk = Fakty(st,self._con)
-#        self._mf = FModel(self._fk,self._tab)
-#        self._tab.setModel(self._mf)
-#        self._tab.selectionModel().currentRowChanged.connect(self._zmBiezWier)
-#        vbox.addWidget(self._tab)
-#        self._ew = EdWgt(self._con)
-#        self._ew.setModAct(self._modWier)
-#        self._ew.setUsuAct(self._delWier)
-#        vbox.addWidget(self._ew)
-#        
-#    def _zmBiezWier(self, p, b):
-#        r = p.row()
-#        self._ew.setDane(self._fk[r],r>=len(self._fk))
-#        
-#    def _modWier(self,dane):
-#        if dane['relacja'] == '':
-#            dane['jed2'] = None
-#            dane['relacja'] = None
-#        if dane['id'] > 0:
-#            print 'modyfikacja'
-#            self._mf.beginResetModel()
-#            self._fk.zmien(self._tab.selectionModel().currentIndex().row(),dane)
-#            self._mf.endResetModel()
-#        else:
-#            print 'nowy',dane
-#            self._mf.beginResetModel()
-#            self._fk.dodaj(dane)
-#            self._mf.endResetModel()
-#            
-#    def _delWier(self,dane):
-#        if dane['id'] > 0:
-#            print 'usuwanie'
-#            self._mf.beginResetModel()
-#            self._fk.usun(dane)
-#            self._mf.endResetModel()
-#    
-#    def zatwierdz(self):
-#        if self._con is None:
-#            return
-#        self._con.zatwierdz()
-#        self._con.zakoncz()
-#        self._con = None
-#        
-#    def wycofaj(self):
-#        if self._con is None:
-#            return
-#        self._con.wycofaj()
-#        self._con.zakoncz()
-#        self._con = None
-#        #self._con.zakoncz()
-#===============================================================================
