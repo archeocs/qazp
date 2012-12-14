@@ -16,9 +16,9 @@
 
 </pyqgis_plugin>
 
-<pyqgis_plugin name='QAZP2' version='0.10'>
+<pyqgis_plugin name='QAZP2' version='0.10.1'>
     <description>Przestrzenne dane archeologiczne</description>
-    <version>0.10</version>
+    <version>0.10.1</version>
     <qgis_minimum_version>1.6</qgis_minimum_version>
     <homepage>http://code.google.com/p/QAZP</homepage>
 
@@ -27,7 +27,7 @@
     <download_url>http://qazp.googlecode.com/hg/qazp2/dist/qazp2.zip</download_url>
     <uploaded_by>Milosz Piglas</uploaded_by>
     <create_date>2012-09-01</create_date>
-    <update_date>2012-12-13</update_date>
+    <update_date>2012-12-14</update_date>
 
 </pyqgis_plugin>
    
