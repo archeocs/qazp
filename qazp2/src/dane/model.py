@@ -141,6 +141,9 @@ class GModel(AModel):
         """ Zwraca obiekt geometryczny """
         return self._feature
     
+    def wspolrzedne(self):
+        return self._feature.geometry()
+    
     def __unicode__(self):
         return unicode(self)
 

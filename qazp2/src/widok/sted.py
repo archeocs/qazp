@@ -70,8 +70,8 @@ class Edytor(QFrame):
         bb = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Close, parent=self)
         self.grid.addWidget(bb,1,0)
         self.on = 'stanowisko'
-        cent = model.feature().geometry().centroid().asPoint().toDegreesMinutesSeconds(1)
-        self._win.statusBar().showMessage(cent)
+        #cent = model.feature().geometry().centroid().asPoint().toDegreesMinutesSeconds(1)
+        #self._win.statusBar().showMessage(cent)
         self.grid.addWidget(StanowiskoWidok(self._war,model),0,0) # zamiast informacje o stanowisku
         self.grid.setRowMinimumHeight(0,150)
         self.grid.setColumnMinimumWidth(0,150)

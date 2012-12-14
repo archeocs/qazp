@@ -29,12 +29,13 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from PyQt4.QtCore import SIGNAL,QObject,Qt
-from PyQt4.QtGui import QAction,QMessageBox,QInputDialog, QProgressDialog, QFileDialog
+from PyQt4.QtGui import QAction,QMessageBox,QInputDialog, QProgressDialog, QFileDialog, QDialog
 from widok.lista import GTabModel2, GFrame
 from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie2,\
     rejestr_map, stLista
 from widok.sted import Edytor
 from lib.keza import GeneratorKeza
+from widok.dialog import NrAzpDialog
 
 def tab_model(obiekty,parent=None):
     return GTabModel2([('Ident','id'),('Obszar','obszar'),('Nr na obszarze','nr_obszar'),('Rodzaj','rodzaj_badan')
@@ -69,6 +70,7 @@ class StanowiskaFrame(GFrame):
         
     def _akcjaDrukuj(self):
         gen = GeneratorKeza(getPolaczenie2(self.warstwa))
+        plik = QFileDialog.getSaveFileName(parent=self, filter='PNG (*.pdf)')
         pd = QProgressDialog("Przygotowuje wydruk", "Cancel", 0, len(self._gobs)+1);
         pd.setWindowModality(Qt.WindowModal);
         c = 0
@@ -77,8 +79,9 @@ class StanowiskaFrame(GFrame):
             pd.setValue(c)
             pd.setLabelText(u'Stanowisko %s/%s'%(unicode(st['obszar'].toString()),unicode(st['nr_obszar'].toString())))
             sid = st['id'].toInt()[0]
-            gen.dodajKarte(sid)
-        plik = QFileDialog.getSaveFileName(parent=self, filter='PNG (*.pdf)')
+            cent = st.wspolrzedne().centroid().asPoint()
+            wsp = {'x':round(cent.x(),2), 'y':round(cent.y(),2)}
+            gen.dodajKarte(sid,wsp)
         gen.zapisz(str(plik))
         pd.setValue(len(self._gobs)+1)
         QMessageBox.information(self,'Drukowanie','Karty wygenerowane')
@@ -101,6 +104,29 @@ class WyszukajAkcja(QAction):
             warstwa = szukaj_stanowiska(unicode(warunek[0]))
             mf = StanowiskaFrame(warstwa,gstanowiska(warstwa),self._iface,self._win)
             self._win.dodaj(mf)
+
+class WyszukajNrAzpAkcja(QAction):
+    
+    def __init__(self,iface,window):
+        QAction.__init__(self,u'Wyszukaj wg numeru AZP',window)
+        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self._win = window
+        self._iface = iface
+        
+    def wykonaj(self):
+        trasy = get_warstwa('stanowiska')
+        if trasy is None:
+            QMessageBox.warning(self._win,u'Wyszukaj',u'Przed wyszukiwaniem należy otworzyć warstwę "stanowiska"')
+            return 
+        #warunek = QInputDialog.getText(self._win, 'Stanowiska', 'Wprowadz warunek', text="obszar='56-27' and nr_obszar='1'")
+        dialog = NrAzpDialog(self._win)
+        if dialog.exec_() != QDialog.Accepted:
+            return
+        warunek = "obszar='%(obszar)s' and nr_obszar='%(nr_obszar)s'" % dialog.getDane()
+        warstwa = szukaj_stanowiska(unicode(warunek))
+        mf = StanowiskaFrame(warstwa,gstanowiska(warstwa),self._iface,self._win)
+        self._win.dodaj(mf)
+
 
 class PokazujZaznAkcja(QAction):
     

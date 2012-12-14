@@ -330,7 +330,7 @@ class GeneratorKeza(object):
         self._doc.print_(dev)
         return self._klicz
     
-    def dodajKarte(self, stid, wsp=[]):
+    def dodajKarte(self, stid, wsp={}):
         pkz = self.pstr.karta(self._txtCur)
         md = getDane(self._daneStmt, stid)
         _prepLog(md)
@@ -349,6 +349,8 @@ class GeneratorKeza(object):
         img = _prepImg(self._con,md)
         if img is not None:
             dkz['mapa_img'] = img
+        md['wsp_x'] = str(wsp['x'])
+        md['wsp_y'] = str(wsp['y'])
         dkz.setDane(md)
         self._txtCur.movePosition(QTextCursor.End)
         self._klicz += 1
