@@ -226,6 +226,7 @@ insert into jednostki values('NLJ06', 'N', 'KULTURA PUCHARÓW LEJKOWATYCH', 'GRU
 insert into jednostki values('NLJ07', 'N', 'KULTURA PUCHARÓW LEJKOWATYCH', 'GRUPA ŚLĄSKO-MORAWSKA', 'GRUPA ŚLĄSKO-MORAWSKA', 'GR. ŚLĄS.-MORA.', 'ŚL');
 insert into jednostki values('NLJ08', 'N', 'KULTURA PUCHARÓW LEJKOWATYCH', 'GRUPA USTOWSKA', 'GRUPA USTOWSKA', 'GR. USTOWSKA.', 'US');
 insert into jednostki values('NLJ09', 'N', 'KULTURA PUCHARÓW LEJKOWATYCH', 'GRUPA WSCHODNIA', 'GRUPA WSCHODNIA', 'GR. WSCHODNI.', 'WS');
+insert into jednostki values('NLJ10', 'N', 'KULTURA PUCHARÓW LEJKOWATYCH', 'FAZA WIÓRECKA', 'FAZA WIÓRECKA', 'F. WIÓRECKA', 'WI');
 insert into jednostki values('NRO', 'N', 'KULTURA RÖSSEŃSKA', NULL, 'KULTURA RÖSSEŃSKA', 'KUL. RÖSSEŃSK.', 'RÖ');
 insert into jednostki values('NRZ', 'N', 'KULTURA RZUCEWSKA', NULL, 'KULTURA RZUCEWSKA', 'KUL. RZUCEWSK.', 'RZ');
 insert into jednostki values('NSN', 'N', 'SUBNEOLIT', NULL, 'SUBNEOLIT', 'SUBNEOLIT', 'SU');
@@ -309,8 +310,12 @@ insert into jednostki values('ZLZ11', 'Z', 'KULTURA ŁUŻYCKA', 'GRUPA WSCHODNIO
 insert into jednostki values('ZMI', 'Z', 'KULTURA MIŁOGRADZKA', NULL, 'KULTURA MIŁOGRADZKA', 'KUL. MIŁOGRAD.', 'MI');
 insert into jednostki values('ZOK', 'Z', 'KULTURA OKSYWSKA', NULL, 'KULTURA OKSYWSKA', 'KUL. OKSYWSKA.', 'OK');
 insert into jednostki values('ZPO', 'Z', 'KULTURA POMORSKA', NULL, 'KULTURA POMORSKA', 'KUL. POMORSKA.', 'PO');
-insert into jednostki values('ZPR', 'Z', 'KULTURA PRZEWORSKA', NULL, 'KULTURA PRZEWORSKA', 'KUL. PRZEWORS.', 'PR');
-insert into jednostki values('ZPU', 'Z', 'KULTURA PUCHOWSKA', NULL, 'KULTURA PUCHOWSKA', 'KUL. PUCHOWSK.', 'PU');
+insert into jednostki values('ZPR', 'Z', 'KULTURA PRZEWORSKA', NULL, 'KULTURA PRZEWORSKA', 'PRZEWORSKA', 'PR');
+insert into jednostki values('ZPR', 'Z', 'KULTURA PRZEWORSKA', 'FAZA A', 'KULTURA PRZEWORSKA A', 'PRZEWORSKA A', 'PR');
+insert into jednostki values('ZPR', 'Z', 'KULTURA PRZEWORSKA', 'FAZA B', 'KULTURA PRZEWORSKA B', 'PRZEWORSKA B', 'PR');
+insert into jednostki values('ZPR', 'Z', 'KULTURA PRZEWORSKA', 'FAZA C', 'KULTURA PRZEWORSKA C', 'PRZEWORSKA C', 'PR');
+insert into jednostki values('ZPR', 'Z', 'KULTURA PRZEWORSKA', 'FAZA D', 'KULTURA PRZEWORSKA D', 'PRZEWORSKA D', 'PR');
+insert into jednostki values('ZPU', 'Z', 'KULTURA PUCHOWSKA', NULL, 'KULTURA PUCHOWSKA', 'PUCHOWSKA', 'PU');
 insert into jednostki values('ZSU', 'Z', 'KULTURA SUDOWSKA', NULL, 'KULTURA SUDOWSKA', 'KUL. SUDOWSKA.', 'SU');
 insert into jednostki values('ZDA', 'Z', 'UGRUPOWANIA DACKIE', NULL, 'UGRUPOWANIA DACKIE', 'UGRUPOWANIA DACKIE', 'DA');
 insert into jednostki values('ZDA01', 'Z', 'UGRUPOWANIA DACKIE', 'MATERIAŁY TYPU WIETRZNO-SOLINA', 'MATERIAŁY TYPU WIETRZNO-SOLINA', 'MATERIAŁY TYPU WIETRZNO-SOLINA', 'TY');
