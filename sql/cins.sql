@@ -1,8 +1,11 @@
 insert into okresy_dziejow values('K', 'K', 'EPOKA KAMIENIA', NULL, 'EPOKA KAMIENIA', 'EP. KAMIENIA');
 insert into okresy_dziejow values('KP', 'K', 'EPOKA KAMIENIA', 'PALEOLIT', 'PALEOLIT', 'PALEOLIT');
+insert into okresy_dziejow values('KS', 'K', 'EPOKA KAMIENIA', 'PALEOLIT SCHYŁKOWY', 'PALEOLIT SCHYŁKOWY', 'PALEOLIT SCH.'); --
 insert into okresy_dziejow values('KM', 'K', 'EPOKA KAMIENIA', 'MEZOLIT', 'MEZOLIT', 'MEZOLIT');
 insert into okresy_dziejow values('KL', 'K', 'EPOKA KAMIENIA', 'MEZOLIT/NEOLIT', 'MEZOLIT/NEOLIT', 'MEZ/NEO');
 insert into okresy_dziejow values('KN', 'K', 'EPOKA KAMIENIA', 'NEOLIT', 'NEOLIT', 'NEOLIT');
+insert into okresy_dziejow values('KN', 'K', 'EPOKA KAMIENIA', 'NEOLIT SCHYŁKOWY', 'NEOLIT SCHYŁKOWY', 'NEOLIT SCH.'); --
+insert into okresy_dziejow values('KN', 'K', 'EPOKA KAMIENIA', 'NEOLIT PÓŹNY', 'NEOLIT PÓŹNY', 'NEOLIT PÓŹ.'); --
 insert into okresy_dziejow values('B', 'B', 'EPOKA BRĄZU', NULL, 'EPOKA BRĄZU', 'EP. BRĄZU');
 insert into okresy_dziejow values('BW', 'B', 'EPOKA BRĄZU', 'WCZESNA', 'WCZESNA', 'WCZESNY BRĄZ');
 insert into okresy_dziejow values('BS', 'B', 'EPOKA BRĄZU', 'STARSZA', 'STARSZA', 'ST. EP. BRĄZU');
@@ -28,13 +31,29 @@ insert into okresy_dziejow values('ZH', 'Z', 'EPOKA ŻELAZA', 'OKRES HALSZTACKI'
 insert into okresy_dziejow values('ZC', 'Z', 'EPOKA ŻELAZA', 'OKRES HALSZTACKI C', 'OKRES HALSZTACKI C', 'HA C');
 insert into okresy_dziejow values('ZD', 'Z', 'EPOKA ŻELAZA', 'OKRES HALSZTACKI D', 'OKRES HALSZTACKI D', 'HA D');
 insert into okresy_dziejow values('ZP', 'Z', 'EPOKA ŻELAZA', 'OKRES PRZEDRZYMSKI/LATEŃSKI', 'OKRES PRZEDRZYMSKI/LATEŃSKI', 'LATEŃSKI');
+insert into okresy_dziejow values('ZA', 'Z', 'EPOKA ŻELAZA', 'OKRES PRZEDRZYMSKI/LATEŃSKI A', 'OKRES PRZEDRZYMSKI/LATEŃSKI A', 'LATEŃSKI A'); --
+insert into okresy_dziejow values('ZB', 'Z', 'EPOKA ŻELAZA', 'OKRES PRZEDRZYMSKI/LATEŃSKI B', 'OKRES PRZEDRZYMSKI/LATEŃSKI B', 'LATEŃSKI B'); --
 insert into okresy_dziejow values('ZR', 'Z', 'EPOKA ŻELAZA', 'OKRES WPŁYWÓW RZYMSKICH', 'OKRES WPŁYWÓW RZYMSKICH', 'OWR');
+insert into okresy_dziejow values('ZX', 'Z', 'EPOKA ŻELAZA', 'WCZESNY OKRES WPŁYWÓW RZYMSKICH', 'WCZESNY OKRES WPŁYWÓW RZYMSKICH', 'WCZE. OWR'); --
+insert into okresy_dziejow values('ZY', 'Z', 'EPOKA ŻELAZA', 'PÓŹNY OKRES WPŁYWÓW RZYMSKICH', 'WCZESNY OKRES WPŁYWÓW RZYMSKICH', 'PÓŹ. OWR'); --
 insert into okresy_dziejow values('ZL', 'Z', 'EPOKA ŻELAZA', 'OKRES WĘDRÓWEK LUDÓW', 'OKRES WĘDRÓWEK LUDÓW', 'OWL');
 insert into okresy_dziejow values('S', 'S', 'ŚREDNIOWIECZE', NULL, 'ŚREDNIOWIECZE', 'ŚREDNIOWIECZE');
-insert into okresy_dziejow values('SW', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE', 'WCZES. ŚRED.');
-insert into okresy_dziejow values('SP', 'S', 'ŚREDNIOWIECZE', 'PÓŹNE', 'PÓŹNE', 'PÓŹNE ŚRED.');
+insert into okresy_dziejow values('SW', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE ŚREDNIOWIECZE', 'WCZES. ŚRED.');
+insert into okresy_dziejow values('SA', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE ŚREDNIOWIECZE A', 'WCZES. ŚRED. A'); --
+insert into okresy_dziejow values('SB', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE ŚREDNIOWIECZE B', 'WCZES. ŚRED. B'); -- 
+insert into okresy_dziejow values('SC', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE ŚREDNIOWIECZE C', 'WCZES. ŚRED. C'); --
+insert into okresy_dziejow values('SD', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE ŚREDNIOWIECZE D', 'WCZES. ŚRED. D'); --
+insert into okresy_dziejow values('SE', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE ŚREDNIOWIECZE E', 'WCZES. ŚRED. E'); --
+insert into okresy_dziejow values('SF', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE ŚREDNIOWIECZE F', 'WCZES. ŚRED. F'); --
+insert into okresy_dziejow values('SP', 'S', 'ŚREDNIOWIECZE', 'PÓŹNE', 'PÓŹNE ŚREDNIOWIECZE', 'PÓŹNE ŚRED.');
 insert into okresy_dziejow values('N', 'N', 'NOWOŻYTNOŚĆ', NULL, 'NOWOŻYTNOŚĆ', 'NOWOŻYTNOŚĆ');
-insert into okresy_dziejow values('NW', 'N', 'NOWOŻYTNOŚĆ', 'WCZESNA', 'WCZESNA', 'WCZES. NOWOŻYT.');
-insert into okresy_dziejow values('NP', 'N', 'NOWOŻYTNOŚĆ', 'PÓŹNA', 'PÓŹNA', 'PÓŻNA NOWOŻYT.');
+insert into okresy_dziejow values('NW', 'N', 'NOWOŻYTNOŚĆ', 'WCZESNA', 'WCZESNA NOWOŻYTNOŚĆ', 'WCZES. NOWOŻYT.');
+insert into okresy_dziejow values('NP', 'N', 'NOWOŻYTNOŚĆ', 'PÓŹNA', 'PÓŹNA NOWOŻYTNOŚĆ', 'PÓŻNA NOWOŻYT.');
+insert into okresy_dziejow values('N5', 'N', 'NOWOŻYTNOŚĆ', 'XV WIEK', 'NOWYŻYTNOŚĆ - XV WIEK', 'XV W.'); --
+insert into okresy_dziejow values('N6', 'N', 'NOWOŻYTNOŚĆ', 'XVI WIEK', 'NOWYŻYTNOŚĆ - XVI WIEK', 'XVI W.');
+insert into okresy_dziejow values('N7', 'N', 'NOWOŻYTNOŚĆ', 'XVII WIEK', 'NOWYŻYTNOŚĆ - XVII WIEK', 'XVII W.');
+insert into okresy_dziejow values('N8', 'N', 'NOWOŻYTNOŚĆ', 'XVIII WIEK', 'NOWYŻYTNOŚĆ - XVIII WIEK', 'XVIII W.');
+insert into okresy_dziejow values('N9', 'N', 'NOWOŻYTNOŚĆ', 'XIX WIEK', 'NOWYŻYTNOŚĆ - XIX WIEK', 'XIX W.');
+insert into okresy_dziejow values('N0', 'N', 'NOWOŻYTNOŚĆ', 'XX WIEK', 'NOWYŻYTNOŚĆ - XX WIEK', 'XX W.');
 insert into okresy_dziejow values('W', 'W', 'WSPÓŁCZESNOŚĆ', NULL, 'WSPÓŁCZESNOŚĆ', 'WSPÓŁCZESNOŚĆ');
 insert into okresy_dziejow values('P', 'P', 'PRADZIEJE', NULL, 'PRADZIEJE', 'PRADZIEJE');
