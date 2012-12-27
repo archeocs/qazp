@@ -126,13 +126,13 @@ CREATE TABLE ZAGROZENIA(
     stanowisko integer not null,
     wystepowanie varchar(1) not null, -- istnieje / nie istnieje
     czas varchar(1), -- stale / dorazne
-    przyczyna varchar(1), -- ludzie / natura
-    uzytkownik varchar(1), -- wypelniane jezeli przyczyna == ludzie: uzytkownik spoleczny / prywatny
+    przyczyna_ludzie varchar(1) check (przyczyna_ludzie in ('T','N')),
+    przyczyna_natura varchar(1) check (przyczyna_natura in ('T','N')),
+    uzytkownik_spoleczny varchar(1) check (uzytkownik_spoleczny in ('T','N')),
+    uzytkownik_prywatny varchar(1) check (uzytkownik_prywatny in ('T','N'))
     uwagi varchar(255),
     CONSTRAINT zagrozenia_pkey PRIMARY KEY (id),
     CONSTRAINT check_wystepowanie CHECK (wystepowanie in ('I','N')),
-    CONSTRAINT check_przyczyna CHECK (przyczyna in ('L','N')),
-    CONSTRAINT check_uzytkownik CHECK (uzytkownik in ('S','P')),
     CONSTRAINT check_czas CHECK (czas in ('S','D')),
     constraint unique_zagrozenia_st unique(id, stanowisko)
 );
