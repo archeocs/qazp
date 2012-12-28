@@ -33,6 +33,8 @@ insert into okresy_dziejow values('ZD', 'Z', 'EPOKA ŻELAZA', 'OKRES HALSZTACKI 
 insert into okresy_dziejow values('ZP', 'Z', 'EPOKA ŻELAZA', 'OKRES PRZEDRZYMSKI/LATEŃSKI', 'OKRES PRZEDRZYMSKI/LATEŃSKI', 'LATEŃSKI');
 insert into okresy_dziejow values('ZA', 'Z', 'EPOKA ŻELAZA', 'OKRES PRZEDRZYMSKI/LATEŃSKI A', 'OKRES PRZEDRZYMSKI/LATEŃSKI A', 'LATEŃSKI A'); --
 insert into okresy_dziejow values('ZB', 'Z', 'EPOKA ŻELAZA', 'OKRES PRZEDRZYMSKI/LATEŃSKI B', 'OKRES PRZEDRZYMSKI/LATEŃSKI B', 'LATEŃSKI B'); --
+insert into okresy_dziejow values('ZG', 'Z', 'EPOKA ŻELAZA', 'OKRES PRZEDRZYMSKI/LATEŃSKI WCZESNY', 'OKRES PRZEDRZYMSKI/LATEŃSKI WCZESNY', 'LATEŃSKI WCZESNY'); --
+insert into okresy_dziejow values('ZI', 'Z', 'EPOKA ŻELAZA', 'OKRES PRZEDRZYMSKI/LATEŃSKI PÓŹNY', 'OKRES PRZEDRZYMSKI/LATEŃSKI PÓŹNY', 'LATEŃSKI PÓŹNY'); --
 insert into okresy_dziejow values('ZE', 'Z', 'EPOKA ŻELAZA', 'MŁODSZY OKRES PRZEDRZYMSKI', 'MŁODSZY OKRES PRZEDRZYMSKI', 'MŁ. OKR. PRZEDRZYM'); --
 insert into okresy_dziejow values('ZR', 'Z', 'EPOKA ŻELAZA', 'OKRES WPŁYWÓW RZYMSKICH', 'OKRES WPŁYWÓW RZYMSKICH', 'OWR');
 insert into okresy_dziejow values('ZX', 'Z', 'EPOKA ŻELAZA', 'WCZESNY OKRES WPŁYWÓW RZYMSKICH', 'WCZESNY OKRES WPŁYWÓW RZYMSKICH', 'WCZE. OWR'); --
