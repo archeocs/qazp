@@ -16,7 +16,7 @@
 
 </pyqgis_plugin>
 
-<pyqgis_plugin name='QAZP2' version='0.10.1'>
+<pyqgis_plugin name='QAZP2' version='0.10.2'>
     <description>Przestrzenne dane archeologiczne</description>
     <version>0.10.2</version>
     <qgis_minimum_version>1.6</qgis_minimum_version>
