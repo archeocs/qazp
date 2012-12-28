@@ -198,7 +198,7 @@ class WykazFaktow(object):
     def funWidok(self, i):
         f = self._fk[i]
         widok = ''
-        if 0 < float(f.get('fun_pewnosc','1')) < 1:
+        if f['fun_pewnosc'] is not None and 0 < float(f.get('fun_pewnosc','1')) < 1:
             widok = '?'
         nf = self._fw.widok(f.get('funkcja'))
         if nf is not None:
