@@ -4,8 +4,8 @@ insert into okresy_dziejow values('KS', 'K', 'EPOKA KAMIENIA', 'PALEOLIT SCHYŁK
 insert into okresy_dziejow values('KM', 'K', 'EPOKA KAMIENIA', 'MEZOLIT', 'MEZOLIT', 'MEZOLIT');
 insert into okresy_dziejow values('KL', 'K', 'EPOKA KAMIENIA', 'MEZOLIT/NEOLIT', 'MEZOLIT/NEOLIT', 'MEZ/NEO');
 insert into okresy_dziejow values('KN', 'K', 'EPOKA KAMIENIA', 'NEOLIT', 'NEOLIT', 'NEOLIT');
-insert into okresy_dziejow values('KN', 'K', 'EPOKA KAMIENIA', 'NEOLIT SCHYŁKOWY', 'NEOLIT SCHYŁKOWY', 'NEOLIT SCH.'); --
-insert into okresy_dziejow values('KN', 'K', 'EPOKA KAMIENIA', 'NEOLIT PÓŹNY', 'NEOLIT PÓŹNY', 'NEOLIT PÓŹ.'); --
+insert into okresy_dziejow values('KO', 'K', 'EPOKA KAMIENIA', 'NEOLIT SCHYŁKOWY', 'NEOLIT SCHYŁKOWY', 'NEOLIT SCH.'); --
+insert into okresy_dziejow values('KR', 'K', 'EPOKA KAMIENIA', 'NEOLIT PÓŹNY', 'NEOLIT PÓŹNY', 'NEOLIT PÓŹ.'); --
 insert into okresy_dziejow values('B', 'B', 'EPOKA BRĄZU', NULL, 'EPOKA BRĄZU', 'EP. BRĄZU');
 insert into okresy_dziejow values('BW', 'B', 'EPOKA BRĄZU', 'WCZESNA', 'WCZESNA', 'WCZESNY BRĄZ');
 insert into okresy_dziejow values('BS', 'B', 'EPOKA BRĄZU', 'STARSZA', 'STARSZA', 'ST. EP. BRĄZU');
