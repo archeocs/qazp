@@ -47,7 +47,8 @@ KOLEJNOSC = ['obszar', 'nr_obszar', 'miej', 'nr_miejscowosc', 'gm',
                'pole_orne', 'laka', 'nieuzytek','woda','torf','bagno', 
                'prywatny', 'spoleczny', 'przemyslowy', 'tuwagi', 'wartosc',
                 'inwentaryzacja', 'wykopaliska', 'interwencja', 'wuwagi', 
-                'wystepowanie', 'przyczyna', 'uzytkownik', 'zuwagi', 
+                'wystepowanie', 'przyczyna_ludzie', 'przyczyna_natura', 
+                'uzytkownik_spoleczny', 'uzytkownik_prywatny', 'czas','zuwagi', 
                 'eksponowany', 'kraw_stoki', 'sfaldowania_cyple', 
                 'cyple_wybitne', 'waly_garby', 'wyniesienia_okrezne', 
                 'osloniety', 'podst_stoku', 'doliny_niecki', 
@@ -75,7 +76,8 @@ def prepSt(con):
     t.woda, t.torf, t.bagno, t.prywatny, t.spoleczny,
     t.przemyslowy, t.uwagi as tuwagi,
     w.wartosc, w.inwentaryzacja, w.wykopaliska, w.interwencja, w.uwagi as wuwagi,
-    z.wystepowanie, z.przyczyna, z.uzytkownik, z.uwagi as zuwagi, 
+    z.wystepowanie, z.przyczyna_ludzie, z.przyczyna_natura, 
+    z.uzytkownik_spoleczny, z.uzytkownik_prywatny,  z.czas, z.uwagi as zuwagi, 
     e.eksponowany, e.kraw_stoki, e.sfaldowania_cyple, e.cyple_wybitne, e.waly_garby,
     e.wyniesienia_okrezne, e.osloniety, e.podst_stoku, e.doliny_niecki, e.kotlinki_zagleb,
     e.jaskinie, e.rozmiar, e.stopien, e.kierunek, e.uwagi as euwagi,
@@ -163,16 +165,23 @@ def _prepZagr(m):
     zag = u''
     if wy == 'I':
         zag += u'Istnieje\n'
-    pr = m.pop('przyczyna',None)
-    if pr == 'L':
+    cz = m.pop('czas',None)
+    if cz == 'S':
+        zag += u'Stałe\n'
+    elif cz == 'D':
+        zag+=u'Doraźne\n'
+    pr = m.pop('przyczyna_ludzie',None)
+    if pr == 'x':
         zag += u'Przyczyna: ludzie\n'
-    elif pr == 'N':
+    pr = m.pop('przyczyna_natura',None)
+    if pr == 'x':
         zag += u'Przyczyna: natura\n'
-    uz = m.pop('uzytkownik',None)
-    if uz == 'S':
+    uz = m.pop('uzytkownik_spoleczny',None)
+    if uz == 'x':
         zag+= u'Użyt. społ\n'
-    elif uz == 'P':
-        zag += u'Użyt. pryw.\n'
+    uz = m.pop('uzytkownik_prywatny',None)
+    if uz == 'x':
+        zag+= u'Użyt. pryw\n'
     uw = m.pop('zuwagi',None)
     if uw is not None:
         zag += uw
@@ -301,11 +310,11 @@ class Schemat(object):
         self.hf = HtmlFormat()
         
     def karta(self,kursor):
-        k = Karta(kursor.insertTable(35,60,self.hf),self._wsp)
+        k = Karta(kursor.insertTable(36,60,self.hf),self._wsp)
         for p in self._pola:
             k.scal(p[0],p[1],p[2],p[3])
             if p[4] is not None:
-                k.setTxt(p[0],p[1],p[4])
+                k.setTxt(p[0],p[1],p[4],tlo=Qt.yellow,font=Karta.BOLD)
         return k
 
 class GeneratorKeza(object):   
@@ -341,7 +350,7 @@ class GeneratorKeza(object):
         pkz.setDane(md)
         wf = WykazFaktow(str(md['stanowisko']), self._con, self._owyk, self._jwyk, self._fwyk)
         for i in range(len(wf)):
-            if i < 6:
+            if i < 7:
                 f = _prepFk(i+1,wf.mapa(i))
                 pkz.setDane(f)
         self._txtCur.movePosition(QTextCursor.End)

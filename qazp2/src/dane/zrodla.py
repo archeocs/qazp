@@ -95,50 +95,6 @@ def szukaj_miejsca(sql):
 
 def szukaj_trasy(sql):
     return _szukaj_warstwa(sql,'trasy')
-#==================== do usuniecia ===========================================================
-# 
-# class FaktyWykaz(object):
-#    """ Klasa wspomagajaca zarzadzanie wykazami do edycji faktow kulturowych - jednostek kulturowych
-#        i funkcji 
-#        
-#        Kazdy rekord wykazu jest zbudowny z 3 atrybutow: kodu, pelnej nazwy i jej skrotu
-#        """
-#    def __init__(self,tab,kryt):
-#        self.seljed = "select kod, nazwa, skrot from %s where %s=? order by nazwa" % (tab, kryt)
-#        self._kody, self._info = [], []
-# 
-#    def wybor(self,con,okr):
-#        """ Pobiera z wykazu podany zakres danych """
-#        self._kody, self._info=[],[]
-#        for j in con.wszystkie(self.seljed,[okr]):
-#            self._kody.append(j[0])
-#            self._info.append(j[1:])
-#    
-#    def __getitem__(self, i):
-#        return self._info[i][0]
-#        
-#    def __len__(self):
-#        return len(self._kody)
-#    
-#    def indeks(self,kod):
-#        """ Zwraca indeks (kolejnosc) danego kodu w utworzonym wykazie """
-#        if kod in self._kody:
-#            return self._kody.index(kod)
-#        return 0
-#        
-#    def nazwa(self, kod):
-#        """ Zwraca nazwe w wykazie ktora jest przypisana do podanego kodu """
-#        return self._info[self._kody.index(kod)][0].decode('utf-8')
-#    
-#    def skrot(self, kod):
-#        """ Zwraca skrot w wykazie, ktory jest przypisany do podanego kodu"""
-#        return self._info[self._kody.index(kod)][1]
-#        
-#    def kod(self,i):
-#        if 0 <= i < len(self._kody):
-#            return self._kody[i]
-#        return None
-#===============================================================================
 
 class Wykaz(object):
 

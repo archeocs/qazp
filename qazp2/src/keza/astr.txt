@@ -218,96 +218,102 @@
 21;24;10;1;k:chrono6;
 31;24;29;1;k:opis6;
 
+0;25;1;1;k:nr7;
+1;25;10;1;k:fun7;
+11;25;10;1;k:kult7;
+21;25;10;1;k:chrono7;
+31;25;29;1;k:opis7;
+
 # ==========================
-0;25;1;1;6;
-1;25;11;1;OPIS OBSZARU STANOW.;
-0;26;5;1;obser. utrudniona;
-5;26;1;1;k:obs_utrudniona;
-6;26;5;1;obser. bez przeszkód;
-11;26;1;1;k:obs_bez_przeszkod;
-0;27;5;1;pole otwarte;
-5;27;1;1;k:obs_pole_otwarte;
-6;27;5;1;pole zamknięte;
-11;27;1;1;k:obs_pole_zamkniete;
-0;28;6;1;nasycenie znlez.;
-6;28;5;1;równomierne;
-11;28;1;1;k:obs_nasyc_rozkl_rownomierne;
-0;29;5;1;jednocentryczne;
-5;29;1;1;k:nasyc_typ_jednocentr;
-6;29;5;1;wielocentryczne;
-11;29;1;1;k:nasyc_typ_wielocentr;
-0;30;12;1;powierzchnia stanowiska;
-0;31;2;1;-1 ar;
-2;31;2;1;-0.5 ha;
-4;31;2;1;-1 ha;
-6;31;2;1;-5 ha;
-8;31;2;1;-15 ha;
-10;31;2;1;>15ha;
-0;32;2;1;k:obs_pow_ar1;
-2;32;2;1;k:obs_pow_ha05;
-4;32;2;1;k:obs_pow_ha1;
-6;32;2;1;k:obs_pow_ha5;
-8;32;2;1;k:obs_pow_ha15;
-10;32;2;1;k:obs_pow_ha15+; # > 15 ha // 162
-0;33;12;1;gęstość występowania znalezisk;
-0;34;3;1;mała;
-3;34;1;1;k:obs_gest_mala;
-4;34;3;1;średnia;
-7;34;1;1;k:obs_gest_sre;
-8;34;3;1;duża;
-11;34;1;1;k:obs_gest_duza;
+0;26;1;1;6;
+1;26;11;1;OPIS OBSZARU STANOW.;
+0;27;5;1;obser. utrudniona;
+5;27;1;1;k:obs_utrudniona;
+6;27;5;1;obser. bez przeszkód;
+11;27;1;1;k:obs_bez_przeszkod;
+0;28;5;1;pole otwarte;
+5;28;1;1;k:obs_pole_otwarte;
+6;28;5;1;pole zamknięte;
+11;28;1;1;k:obs_pole_zamkniete;
+0;29;6;1;nasycenie znlez.;
+6;29;5;1;równomierne;
+11;29;1;1;k:obs_nasyc_rozkl_rownomierne;
+0;30;5;1;jednocentryczne;
+5;30;1;1;k:nasyc_typ_jednocentr;
+6;30;5;1;wielocentryczne;
+11;30;1;1;k:nasyc_typ_wielocentr;
+0;31;12;1;powierzchnia stanowiska;
+0;32;2;1;-1 ar;
+2;32;2;1;-0.5 ha;
+4;32;2;1;-1 ha;
+6;32;2;1;-5 ha;
+8;32;2;1;-15 ha;
+10;32;2;1;>15ha;
+0;33;2;1;k:obs_pow_ar1;
+2;33;2;1;k:obs_pow_ha05;
+4;33;2;1;k:obs_pow_ha1;
+6;33;2;1;k:obs_pow_ha5;
+8;33;2;1;k:obs_pow_ha15;
+10;33;2;1;k:obs_pow_ha15+; # > 15 ha // 162
+0;34;12;1;gęstość występowania znalezisk;
+0;35;3;1;mała;
+3;35;1;1;k:obs_gest_mala;
+4;35;3;1;średnia;
+7;35;1;1;k:obs_gest_sre;
+8;35;3;1;duża;
+11;35;1;1;k:obs_gest_duza;
 
 # ===================
-12;25;1;1;7;
-13;25;11;1;ZAGROŻENIA;
-12;26;12;9;k:opis_zagrozenia;
+12;26;1;1;7;
+13;26;11;1;ZAGROŻENIA;
+12;27;12;9;k:opis_zagrozenia;
 
 #=============================
-24;25;1;1;8;
-25;25;11;1;WNIOSKI KONSERWAT.;
-24;26;11;1;szczegółowa inwentaryzacja;
-35;26;1;1;k:inwentaryzacja;
-24;27;11;1;badania wykopaliskowe;
-35;27;1;1;k:wykopaliska;
-24;28;11;1;interwencja administracyjna;
-35;28;1;1;k:interwencja;
+24;26;1;1;8;
+25;26;11;1;WNIOSKI KONSERWAT.;
+24;27;11;1;szczegółowa inwentaryzacja;
+35;27;1;1;k:inwentaryzacja;
+24;28;11;1;badania wykopaliskowe;
+35;28;1;1;k:wykopaliska;
+24;29;11;1;interwencja administracyjna;
+35;29;1;1;k:interwencja;
 
 # =====================
-36;25;1;1;10;
-37;25;11;1;OPRACOWANIE KEZA;
-36;26;6;1;data dd\mm\rrrr;
-42;26;6;1;k:data;
-36;27;12;1;autor karty;
-36;28;12;1;k:autor;
-36;29;12;1;określił chronologię;
-36;30;12;3;k:chronologia;
-36;33;12;1;sprawdził - konsultant AZP;
-36;34;12;1;k:konsultant;
+36;26;1;1;10;
+37;26;11;1;OPRACOWANIE KEZA;
+36;27;6;1;data dd/mm/rrrr;
+42;27;6;1;k:data;
+36;28;12;1;autor karty;
+36;29;12;1;k:autor;
+36;30;12;1;określił chronologię;
+36;31;12;3;k:chronologia;
+36;34;12;1;sprawdził - konsultant AZP;
+36;35;12;1;k:konsultant;
 
 # ======================
-48;25;1;1;11;
-49;25;11;1;WERYFIKACJA KONSERW.;
-48;26;6;2;akceptacja WKZ;
-54;26;6;2;k:wer_wkz;
-48;28;6;2;miejscowość,data;
-54;28;6;2;k:miej_dt;
+48;26;1;1;11;
+49;26;11;1;WERYFIKACJA KONSERW.;
+48;27;6;2;akceptacja WKZ;
+54;27;6;2;k:wer_wkz;
+48;29;6;2;miejscowość,data;
+54;29;6;2;k:miej_dt;
 
 # ==========
-24;29;1;1;9;
-25;29;11;1;AKTUALNA OCHRONA;
-24;30;6;1;nr rejestru zabytków;
-30;30;6;1;k:nr_krz;
-24;31;6;1;data wpisu do rejestru;
-30;31;6;1;k:data_krz;
-24;32;6;1;park kulturowy;
-30;32;6;1;k:park_kult;   
-24;33;12;1;plan zagospodarowania przestrzennego;
-24;34;12;1;k:plan_zp;
+24;30;1;1;9;
+25;30;11;1;AKTUALNA OCHRONA;
+24;31;6;1;nr rejestru zabytków;
+30;31;6;1;k:nr_krz;
+24;32;6;1;data wpisu do rejestru;
+30;32;6;1;k:data_krz;
+24;33;6;1;park kulturowy;
+30;33;6;1;k:park_kult;   
+24;34;12;1;plan zagospodarowania przestrzennego;
+24;35;12;1;k:plan_zp;
 
 #====================
-48;30;1;1;12;
-49;30;11;1;ZBIORY I NR INWENT.;
-48;31;6;1;miej. przechowywania;
-54;31;6;1;nr inwentarza;
-48;32;6;3;k:magazyn;
-54;32;6;3;k:nr_inwentarza;
+48;31;1;1;12;
+49;31;11;1;ZBIORY I NR INWENT.;
+48;32;6;1;miej. przechowywania;
+54;32;6;1;nr inwentarza;
+48;33;6;3;k:magazyn;
+54;33;6;3;k:nr_inwentarza;

@@ -194,7 +194,7 @@ def fdb(ident,war,tab):
         return 'select nazwa from '+tab+' where id='+sid
       
 class StanowiskoWidok(PropWidok):
-    vrd = [('P',u'Powierzchniowe'),('W',u'Weryfikacja'),('L',u'Lotnicze')]
+    vrd = [('P',u'Powierzchniowe'),('W',u'Weryfikacja'),('L',u'Luźne')]
     wrd = partial(conw,slow=dict(vrd))
     def __init__(self,qgsWarstwa,dane=None,parent=None):
         PropWidok.__init__(self,parent)
@@ -284,18 +284,19 @@ class EkspozycjaWidok(PropWidok):
             self.dodTn(x)
             
 class ZagrozenieWidok(PropWidok):
-    vp = [('L',u'Ludzie'),('N',u'Natura')]
-    wp = partial(conw,slow=dict(vp))
-    vu = [('S',u'Społeczny'),('P',u'Prywatny')]
-    wu = partial(conw,slow=dict(vu))
+    #vp = [('L',u'Ludzie'),('N',u'Natura')]
+    #wp = partial(conw,slow=dict(vp))
+    #vu = [('S',u'Społeczny'),('P',u'Prywatny')]
+    #wu = partial(conw,slow=dict(vu))
     vc = [('S',u'Stałe'),('D',u'Doraźne')]
-    wc = partial(conw,slow=dict(vu))
+    wc = partial(conw,slow=dict(vc))
     def __init__(self,dane=None,parent=None):
         PropWidok.__init__(self,parent)
-        opt=[(u'Występowanie','wystepowanie',self.we),(u'Czas','czas',self.wc),(u'Przyczyna','przyczyna',self.wp),(u'Użytkownik','uzytkownik',self.wu),
-            (u'Uwagi','uwagi',self.nic)]
+        opt=[(u'Występowanie','wystepowanie',self.we),(u'Czas','czas',self.wc),(u'Przyczyna:Ludzie','przyczyna_ludzie',self.wb),
+             (u'Przyczyna:Natura','przyczyna_natura',self.wb), (u'Użytkownik społeczny','uzytkownik_spoleczny',self.wb),
+             (u'Użytkownik prywatny','uzytkownik_prywatny',self.wb),      (u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
-        self.dodajOpt(0,self.ve).dodajOpt(1,self.vc).dodajOpt(2,self.vp).dodajOpt(3,self.vu)
+        self.dodajOpt(0,self.ve).dodajOpt(1,self.vc).dodajOpt(2,self.vb).dodajOpt(3,self.vb).dodajOpt(4,self.vb).dodajOpt(5,self.vb)
         
 class WnioskiWidok(PropWidok):
     def __init__(self,dane=None,parent=None):

@@ -187,7 +187,8 @@ GLEBA_ATR=['id','luzna','zwiezla','torf_bag','kamienistosc','uwagi']
 
 OBSZAR_ATR = ['id','obserwacja','pole','nasyc_rozklad','nasyc_typ','gestosc_znal','powierzchnia','uwagi']
 
-ZAGROZENIA_ATR=['id','wystepowanie','czas','przyczyna','uzytkownik','uwagi']
+ZAGROZENIA_ATR=['id','wystepowanie','czas','przyczyna_ludzie', 'przyczyna_natura', 'uzytkownik_spoleczny', 
+                'uzytkownik_prywatny','uwagi']
 
 WNIOSKI_ATR=['id','wartosc','inwentaryzacja','wykopaliska','interwencja','uwagi']
 

@@ -124,7 +124,7 @@ CREATE TABLE WNIOSKI(
 CREATE TABLE ZAGROZENIA(
     id integer not null,
     stanowisko integer not null,
-    wystepowanie varchar(1) not null, -- istnieje / nie istnieje
+    wystepowanie varchar(1), -- istnieje / nie istnieje
     czas varchar(1), -- stale / dorazne
     przyczyna_ludzie varchar(1) check (przyczyna_ludzie in ('T','N')),
     przyczyna_natura varchar(1) check (przyczyna_natura in ('T','N')),

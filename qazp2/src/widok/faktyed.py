@@ -58,7 +58,7 @@ class ListaFaktow(QAbstractTableModel):
         if orientacja == Qt.Vertical:
             return None
         if rola == Qt.DisplayRole:
-            if sekcja < 5:
+            if sekcja < 7:
                 return self.NAGLOWKI[sekcja]
         return QVariant()
     
