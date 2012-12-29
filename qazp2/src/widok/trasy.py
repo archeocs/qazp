@@ -36,7 +36,7 @@ from dane.zrodla import rejestr_map, get_warstwa, gtrasy, szukaj_trasy
 from lib.gps import GpxPunktyLista,distr, TrackPoints
 from lib.qgsop import usun, zmien,dodaj
 from widok.proped import PropWidok, conw, PropFrame
-from decorator import partial
+from functools import partial
 from dane.model import TRASY_ATR
 
 
