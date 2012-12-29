@@ -146,15 +146,15 @@ def _prepObser(m):
     elif gz == 'D':
         m['obs_gest_duza'] = 'x'
     pw = m.pop('powierzchnia')
-    if pw < 0.1:
+    if pw < 0.5:
         m['obs_pow_ar1'] = 'x'
-    elif pw < 0.5:
-        m['obs_pow_ha05'] = 'x'
     elif pw < 1:
-        m['obs_pow_ha1'] = 'x'
+        m['obs_pow_ha05'] = 'x'
     elif pw < 5:
-        m['obs_pow_ha5'] = 'x'
+        m['obs_pow_ha1'] = 'x'
     elif pw < 15:
+        m['obs_pow_ha5'] = 'x'
+    elif pw < 16:
         m['obs_pow_ha15'] = 'x'
     else:
         m['obs_pow_ha15+'] = 'x'
