@@ -64,7 +64,7 @@ class StanowiskaFrame(GFrame):
     
     def akcja_zmien(self):
         ww = self.wybrany_wiersz()[1]
-        ed = Edytor(self.warstwa,ww,self._win)
+        ed = Edytor(self.warstwa,ww,self._win,funModel=self.zmienWiersz)
         self._win.setWindowTitle('Stanowisko: '+str(ww['obszar'].toString())+'/'+str(ww['nr_obszar'].toString()))
         self._win.dodaj(ed)
         

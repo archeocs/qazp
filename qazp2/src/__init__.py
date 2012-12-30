@@ -38,10 +38,10 @@ def description():
     return "qazp2"
 
 def version():
-    return "0.10.4"
+    return "0.11"
 
 def qgisMinimumVersion():
-    return "1.6"
+    return "1.7"
 
 def authorName():
     return u"Milosz Piglas"

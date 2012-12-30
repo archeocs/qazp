@@ -29,13 +29,14 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QAction, QApplication,QMainWindow,QStackedWidget, QMessageBox
+from PyQt4.QtGui import QAction, QApplication,QMainWindow,QStackedWidget, QMessageBox,\
+                        QFileDialog
 from PyQt4.QtCore import QObject, SIGNAL
 from widok import trasy,miejsca,stanowiska, wykazy
 from qgis.core import QgsMapLayerRegistry
 from os.path import abspath
 from dane.zrodla import get_warstwa, getPolaczenie2
-from lib.uzytki import dostosujSchemat
+from lib.uzytki import dostosujSchemat, wykonajPolecenie
 
 class SchematAkcja(QAction):
     def __init__(self,iface,window):
@@ -46,7 +47,7 @@ class SchematAkcja(QAction):
         
     def wykonaj(self):
         warstwa = get_warstwa('stanowiska')
-        if trasy is None:
+        if warstwa is None:
             QMessageBox.warning(self._win,u'Dostosuj schemat',u'Przed wyszukiwaniem należy otworzyć warstwę "stanowiska"')
             return 
         pytanie = QMessageBox.question(self._win, u'Dostosuj schemat', u'Czy została wykonana kopia zapasowa bazy?\n'\
@@ -56,6 +57,46 @@ class SchematAkcja(QAction):
             con = getPolaczenie2(warstwa)
             if dostosujSchemat(con):
                 self._win.statusBar().showMessage("Schemat zmieniony")
+            else:
+                self._win.statusBar().showMessage("Niepowodzenie")
+            con.zakoncz()
+
+class SkryptAkcja(QAction):
+    def __init__(self,iface,window):
+        QAction.__init__(self,'Wykonaj skrypt',window)
+        #QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
+        self._win = window
+        self._iface = iface
+    
+    def uruchomSkrypt(self, con, plik):
+        import json
+        f = open(plik)
+        skrypt = json.load(f)
+        for s in skrypt:
+            if wykonajPolecenie(con, s['stmt']) != s['wynik']:
+                con.wycofaj()
+                f.close()
+                return False
+        con.zatwierdz()
+        f.close()
+        return True
+        
+    def wykonaj(self):
+        warstwa = get_warstwa('stanowiska')
+        if warstwa is None:
+            QMessageBox.warning(self._win,u'Wykonaj skrypt',u'Przed wyszukiwaniem należy otworzyć warstwę "stanowiska"')
+            return 
+        fn = QFileDialog.getOpenFileName(self._win, filter='JSQL (*.jsql)')
+        if fn is None or str(fn) == "":
+            return
+        pytanie = QMessageBox.question(self._win, u'Wykonaj skrypt', u'Czy została wykonana kopia zapasowa bazy?\n'\
+                                       u'Czy na pewno chcesz wykonać skrypt?', QMessageBox.Yes | QMessageBox.No, 
+                                       QMessageBox.No)
+        if pytanie == QMessageBox.Yes:
+            con = getPolaczenie2(warstwa)
+            if self.uruchomSkrypt(con, str(fn)):
+                self._win.statusBar().showMessage("Zmiany wprowadzone")
             else:
                 self._win.statusBar().showMessage("Niepowodzenie")
             con.zakoncz()
@@ -74,23 +115,25 @@ class Okno(QMainWindow):
         
     def menu(self):
         miej_menu = self.menuBar().addMenu('Miejsca')
-        miej_menu.addAction(miejsca.WyszukajAkcja(self._iface,self))
-        miej_menu.addAction(miejsca.ImportGpsAkcja(self._iface,self))
-        miej_menu.addAction(miejsca.TestUri(self._iface,self))
+        miej_menu.addAction(miejsca.WyszukajAkcja(self._iface, self))
+        miej_menu.addAction(miejsca.ImportGpsAkcja(self._iface, self))
+        miej_menu.addAction(miejsca.TestUri(self._iface, self))
         trasy_menu = self.menuBar().addMenu('Trasy')
-        trasy_menu.addAction(trasy.WyszukajAkcja(self._iface,self))
-        trasy_menu.addAction(trasy.ImportGpsAkcja(self._iface,self))
+        trasy_menu.addAction(trasy.WyszukajAkcja(self._iface, self))
+        trasy_menu.addAction(trasy.ImportGpsAkcja(self._iface, self))
         stan_menu = self.menuBar().addMenu('Stanowiska')
-        stan_menu.addAction(stanowiska.WyszukajAkcja(self._iface,self))
-        stan_menu.addAction(stanowiska.WyszukajNrAzpAkcja(self._iface,self))
-	stan_menu.addAction(stanowiska.PokazujZaznAkcja(self._iface,self))
+        stan_menu.addAction(stanowiska.WyszukajAkcja(self._iface, self))
+        stan_menu.addAction(stanowiska.WyszukajNrAzpAkcja(self._iface, self))
+        #stan_menu.addAction(stanowiska.PolaczSql(self._iface,self))
+        stan_menu.addAction(stanowiska.PokazujZaznAkcja(self._iface, self))
         wykaz_menu = self.menuBar().addMenu('Wykazy')
-        wykaz_menu.addAction(wykazy.WykazAkcja(u'Miejscowości','miejscowosci',self._iface,self))
-        wykaz_menu.addAction(wykazy.WykazAkcja(u'Gminy','gminy',self._iface,self))
-        wykaz_menu.addAction(wykazy.WykazAkcja(u'Powiaty','powiaty',self._iface,self))
-        wykaz_menu.addAction(wykazy.WykazAkcja(u'Województwa','wojewodztwa',self._iface,self))
+        wykaz_menu.addAction(wykazy.WykazAkcja(u'Miejscowości','miejscowosci', self._iface, self))
+        wykaz_menu.addAction(wykazy.WykazAkcja(u'Gminy','gminy', self._iface, self))
+        wykaz_menu.addAction(wykazy.WykazAkcja(u'Powiaty','powiaty', self._iface, self))
+        wykaz_menu.addAction(wykazy.WykazAkcja(u'Województwa','wojewodztwa', self._iface, self))
         admin_menu = self.menuBar().addMenu('Administracja')
-        admin_menu.addAction(SchematAkcja(self._iface,self))
+        admin_menu.addAction(SchematAkcja(self._iface, self))
+        admin_menu.addAction(SkryptAkcja(self._iface, self))
         
     
     zaznWgt = None

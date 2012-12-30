@@ -118,7 +118,7 @@ class GModel(AModel):
     def __init__(self,kolejnosc,feature):
         AModel.__init__(self,{})
         ma = feature.attributeMap()
-        if len(ma) != len(kolejnosc):
+        if len(ma) < len(kolejnosc):
             raise Exception("Liczba elementow na liscie %d nie zgadza sie z liczba atrybutow %d"%(len(kolejnosc),len(ma)))
         for (ki, k) in enumerate(kolejnosc):
             self[k] = ma[ki]

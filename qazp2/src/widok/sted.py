@@ -29,7 +29,7 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from PyQt4.QtGui import QDialogButtonBox, QFrame, QGridLayout,QWidget,QVBoxLayout,QHBoxLayout,\
-                        QLabel, QPushButton, QFileDialog, QPixmap
+                        QLabel, QPushButton, QFileDialog, QPixmap, QShortcut, QKeySequence
 from PyQt4.QtCore import Qt, QVariant
 from functools import partial
 from lib.qgsop import setMapa,zmien
@@ -45,9 +45,8 @@ from lib.uzytki import sprSchemat
 
 
 class Edytor(QFrame):
-    def __init__(self,qgsWarstwa,model,win,parent=None):
-        QFrame.__init__(self,parent)
-        #logging.basicConfig(filename='logqazp.txt', level=logging.INFO)
+    def __init__(self, qgsWarstwa, model, win, funModel=None, parent=None):
+        QFrame.__init__(self, parent)
         self._win = win
         self._model = model
         self._war = qgsWarstwa
@@ -70,23 +69,42 @@ class Edytor(QFrame):
         bb = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Close, parent=self)
         self.grid.addWidget(bb,1,0)
         self.on = 'stanowisko'
-        #cent = model.feature().geometry().centroid().asPoint().toDegreesMinutesSeconds(1)
-        #self._win.statusBar().showMessage(cent)
         self.grid.addWidget(StanowiskoWidok(self._war,model),0,0) # zamiast informacje o stanowisku
         self.grid.setRowMinimumHeight(0,150)
         self.grid.setColumnMinimumWidth(0,150)
         pbb.clicked.connect(self.klik_pbtn)
         bb.accepted.connect(self.klikZapisz)
         bb.rejected.connect(self.klikZamknij)
+        self._funModel = funModel
+        if self._funModel is not None:
+            bb.addButton(u'Poprzednie (Ctrl+P)', QDialogButtonBox.ActionRole).clicked.connect(self.klikPoprzedni)
+            QShortcut(QKeySequence(Qt.CTRL+Qt.Key_P),self._win).activated.connect(self.klikPoprzedni)
+            bb.addButton(u'Następne (Ctrl+N)', QDialogButtonBox.ActionRole).clicked.connect(self.klikNastepny)
+            QShortcut(QKeySequence(Qt.CTRL+Qt.Key_N),self._win).activated.connect(self.klikNastepny)
+    
+    def _zmienModel(self, model):
+        self._model = model
+        self.zmienPanel(self.on)
+        self._win.setWindowTitle('Stanowisko: '+str(model['obszar'].toString())+'/'+str(model['nr_obszar'].toString()))
+            
+    def klikPoprzedni(self):
+        m = self._funModel(-1)
+        if m is not None:
+            self._zmienModel(m)
+            
+    def klikNastepny(self):   
+        m = self._funModel(1)
+        if m is not None:
+            self._zmienModel(m)
         
-    def klik_pbtn(self,btn):
+    def zmienPanel(self, panel):
         biez = self.grid.itemAtPosition(0,0).widget()
         if self.on == 'fakty':
             biez.wycofaj() 
         biez.setParent(None)
         self.grid.removeWidget(biez)
         del biez
-        self.on = str(btn.objectName())
+        self.on = panel #str(btn.objectName())
         if self.on == 'fizgeo':
             self.grid.addWidget(FizgWidok(daneFizg(str(self._model['id'].toString()),self._war)),0,0) 
         elif self.on == 'teren':
@@ -115,7 +133,10 @@ class Edytor(QFrame):
                 self.grid.addWidget(MapaWidok(str(self._model['id'].toString()),self._war),0,0)
             else:
                 self._win.statusBar().showMessage('Nieaktualny schemat bazy danych')
-            con.zakoncz()
+            con.zakoncz() 
+        
+    def klik_pbtn(self,btn):
+        self.zmienPanel(str(btn.objectName()))
             
     def klikZapisz(self):
         panel = self.grid.itemAtPosition(0,0).widget()

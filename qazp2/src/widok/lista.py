@@ -28,7 +28,8 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QFrame, QVBoxLayout,QTableView,QGroupBox,QHBoxLayout,QPushButton,QButtonGroup,QStyledItemDelegate
+from PyQt4.QtGui import QFrame, QVBoxLayout,QTableView,QGroupBox,QHBoxLayout,QPushButton,QButtonGroup,\
+                        QStyledItemDelegate,QShortcut,QKeySequence
 from PyQt4.QtCore import QAbstractTableModel, QVariant, SIGNAL
 from PyQt4.QtCore import Qt
 
@@ -104,8 +105,8 @@ class GFrame(QFrame):
     def __init__(self,win,gobs=[],parent=None):
         QFrame.__init__(self,parent)
         self._gobs = gobs
-        self.init_frame()
         self._win = win
+        self.init_frame()
         
     def init_frame(self):
         vbox = QVBoxLayout(self)
@@ -119,39 +120,49 @@ class GFrame(QFrame):
         
         btn_box = QGroupBox(self)
         hbox = QHBoxLayout(btn_box)
-        btn_ok = QPushButton('OK')
-        btn_ok.setObjectName('btn_ok')
-        btn_zmien = QPushButton(u'Zmien')
+        btn_zamknij = QPushButton('Zamknij')
+        btn_zamknij.setObjectName('btn_zamknij')
+        btn_zmien = QPushButton(u'Edytuj (Ctrl+J)')
         btn_zmien.setObjectName('btn_zmien')
-        btn_anul = QPushButton('Anuluj')
-        btn_anul.setObjectName('btn_anul')
+        #btn_anul = QPushButton('Anuluj')
+        #btn_anul.setObjectName('btn_anul')
         btn_wysw = QPushButton('Wyswietl')
         btn_wysw.setObjectName('btn_wysw')
         btn_usun = QPushButton('Usun')
         btn_usun.setObjectName('btn_usun')
         btn_drukuj = QPushButton('Drukuj')
         btn_drukuj.setObjectName('btn_drukuj')
-        hbox.addWidget(btn_ok)
+        hbox.addWidget(btn_zamknij)
         hbox.addWidget(btn_zmien)
         hbox.addWidget(btn_usun)
         hbox.addWidget(btn_wysw)
-        hbox.addWidget(btn_anul)
+        #hbox.addWidget(btn_anul)
         hbox.addWidget(btn_drukuj)
         btn_box.setLayout(hbox)      
         vbox.addWidget(btn_box)
         
         grupa = QButtonGroup(btn_box)
-        grupa.addButton(btn_ok,1)
-        grupa.addButton(btn_anul,2) 
-        grupa.addButton(btn_zmien,3)
-        grupa.addButton(btn_wysw,4)
-        grupa.addButton(btn_usun,5)
-        grupa.addButton(btn_drukuj,6)
+        grupa.addButton(btn_zamknij,1)
+        #grupa.addButton(btn_anul,2) 
+        grupa.addButton(btn_zmien,2)
+        grupa.addButton(btn_wysw,3)
+        grupa.addButton(btn_usun,4)
+        grupa.addButton(btn_drukuj,5)
+        #grupa.buttonPressed.connect(self.btn_klik)
         self.connect(grupa, SIGNAL('buttonPressed(int)'), self.btn_klik)
+        QShortcut(QKeySequence(Qt.CTRL+Qt.Key_J),self._win).activated.connect(self.akcja_zmien)
+        
         
     def wybrany_wiersz(self):
         ci = self._tab.currentIndex()
-        return (ci,self._gobs[ci.row()])
+        self._wiersz = ci.row()
+        return (ci,self._gobs[self._wiersz])
+    
+    def zmienWiersz(self,skok):
+        self._wiersz+=skok
+        if 0 <= self._wiersz < len(self._gobs):
+            return self._gobs[self._wiersz]
+        return None
     
     def wszystkie(self):
         return self._gobs
@@ -159,15 +170,15 @@ class GFrame(QFrame):
     def btn_klik(self,id):
         if id == 1:
             self._akcjaOk()
+        #elif id == 2:
+        #    self._akcjaAnul()
         elif id == 2:
-            self._akcjaAnul()
-        elif id == 3:
             self.akcja_zmien()
-        elif id == 4:
+        elif id == 3:
             self.akcja_wyswietl()
-        elif id == 5:
+        elif id == 4:
             self.akcja_usun()
-        elif id == 6:
+        elif id == 5:
             self._akcjaDrukuj()
     def utworz_model(self,gobs):
         raise Exception("GFrame.utworz_model: brak implementacji") 

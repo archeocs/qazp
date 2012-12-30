@@ -77,6 +77,9 @@ def dodajMedia(con):
             """
     con.prep(crTrig).wykonaj(zatwierdz=False)
 
+def wykonajPolecenie(con, stmt, zatwierdz=False):
+    return con.prep(stmt).wykonaj(zatwierdz=zatwierdz)
+
 _BIEZ_SCHEMAT = '0001' # ostatnia wersja schematu bazy
 
 def dostosujSchemat(con):
