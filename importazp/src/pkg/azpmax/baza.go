@@ -78,7 +78,7 @@ func initWykaz(nazwa string) (wyk *wykaz, we error) {
 
 func initStmt() (se error) {
     stps, se = azpDb.Prepare("insert into stanowiska(id, obszar, nr_obszar, miejscowosc, nr_miejscowosc, gmina, powiat, wojewodztwo, data, autor, rodzaj_badan, uwagi, wspolrzedne) values (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, st_polygonfromtext(?,2180))")
-    geops, se = wspDb.Prepare("select astext(wspolrzedne) from stanowiska where azp_nr_ark=? and nr_stan_ob=?")
+    geops, se = wspDb.Prepare("select astext(wspolrzedne) from stanowiska where obszar=? and nr_obszar=?")
     fgps, se = azpDb.Prepare("INSERT INTO fizgeo_dane(id, stanowisko, nadmorska, w_morzu, plaza, mierzeja, skarpa, wal_wydmowy, duze_doliny, w_wodzie, ter_denna, ter_nadzalewowa, ter_wyzsze, brzeg_wysoczyzny, male_doliny, dno_doliny, stok_doliny, krawedz_doliny, poza_dolinami, rownina, obsz_falisty, obsz_pagorkowaty, obsz_gorzysty, uwagi) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  ?, ?)")
     ekps, se = azpDb.Prepare("INSERT INTO ekspozycja_dane VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
     obps, se = azpDb.Prepare("insert into obszar_dane(id, stanowisko, obserwacja, pole, nasyc_rozklad, nasyc_typ, powierzchnia, gestosc_znal, uwagi) values(?, ?, ?, ?, ?,  ?, ?, ?, ?)")

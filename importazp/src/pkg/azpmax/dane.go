@@ -15,6 +15,7 @@ type wiersz struct {
     miej string
     gm string
     woj string
+    nwoj string
     powiat string
     obsz string
     nrobsz string

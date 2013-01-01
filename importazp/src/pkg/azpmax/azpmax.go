@@ -7,6 +7,7 @@ import (
     "strings"
     "fmt"
     "strconv"
+    "time"
   //  "database/sql"
     "math"
     )
@@ -41,7 +42,7 @@ func (dane *csv) Nastepny() (tabs []string, next bool) {
 }
 
 func NewWiersz(tabs []string) (cw wiersz) {
-    cw = wiersz{miej:trim(tabs[0]), gm:trim(tabs[1]), woj:trim(tabs[2]), obsz:trim(tabs[5]), nrobsz:trim(tabs[7]), nrmiej:trim(tabs[6]), nazlok:trim(tabs[9]), rodzbad:trim(tabs[10]), databad:trim(tabs[38]), autor:trim(tabs[39]), region:trim(tabs[12]), jedfiz:trim(tabs[13]), rodzeks:trim(tabs[14]), wyseks:trim(tabs[16]), kiereks:trim(tabs[18]), stopeks:trim(tabs[17]), forszczeg:trim(tabs[15]), doster:trim(tabs[22]), blizter:trim(tabs[23]), obser:trim(tabs[24]), poleobsz:trim(tabs[25]), nasycrozk:trim(tabs[26]), nasyctyp:trim(tabs[27]), obszpow:trim(tabs[28]), gest:trim(tabs[29]), zagwys:trim(tabs[30]), zagczas:trim(tabs[31]), zagprzy:trim(tabs[32]), zaguz:trim(tabs[33]), zaguw:trim(tabs[34]), wart:trim(tabs[35]), wnio:trim(tabs[36]), wniodod:trim(tabs[37]), chrono:trim(tabs[40]), konsul:trim(tabs[41]), magazyn:trim(tabs[42]), losy:trim(tabs[43]), hisbad:trim(tabs[44]), nrinw:trim(tabs[11]), liter:trim(tabs[45]), godlo:trim(tabs[46]), uwagi:trim(tabs[50]), gleba:trim(tabs[19]), kam:trim(tabs[20]), glespec:trim(tabs[21]), zrodla:trim(tabs[49])}
+    cw = wiersz{miej:trim(tabs[0]), gm:trim(tabs[1]), woj:trim(tabs[2]), obsz:trim(tabs[5]), nrobsz:trim(tabs[7]), nrmiej:trim(tabs[6]), nazlok:trim(tabs[9]), rodzbad:trim(tabs[10]), databad:trim(tabs[38]), autor:trim(tabs[39]), region:trim(tabs[12]), jedfiz:trim(tabs[13]), rodzeks:trim(tabs[14]), wyseks:trim(tabs[16]), kiereks:trim(tabs[18]), stopeks:trim(tabs[17]), forszczeg:trim(tabs[15]), doster:trim(tabs[22]), blizter:trim(tabs[23]), obser:trim(tabs[24]), poleobsz:trim(tabs[25]), nasycrozk:trim(tabs[26]), nasyctyp:trim(tabs[27]), obszpow:trim(tabs[28]), gest:trim(tabs[29]), zagwys:trim(tabs[30]), zagczas:trim(tabs[31]), zagprzy:trim(tabs[32]), zaguz:trim(tabs[33]), zaguw:trim(tabs[34]), wart:trim(tabs[35]), wnio:trim(tabs[36]), wniodod:trim(tabs[37]), chrono:trim(tabs[40]), konsul:trim(tabs[41]), magazyn:trim(tabs[42]), losy:trim(tabs[43]), hisbad:trim(tabs[44]), nrinw:trim(tabs[11]), liter:trim(tabs[45]), godlo:trim(tabs[46]), uwagi:trim(tabs[50]), gleba:trim(tabs[19]), kam:trim(tabs[20]), glespec:trim(tabs[21]), zrodla:trim(tabs[49]), nwoj:trim(tabs[3]), powiat:trim(tabs[4])}
     return
 }
 
@@ -77,11 +78,27 @@ func tb(s string) []byte {
     return []byte(s)
 }
 
+const (
+    dtfmt string = "02/01/06"
+    dbdtfmt string = "2006-01-02"
+)
+
 func (w wiersz) genst() (st stanowisko) {
     st = stanowisko{obszar:w.obsz, nrObszar:w.nrobsz, miejscowosc:mwyk.ident(w.miej), 
                         gmina:gwyk.ident(w.gm), powiat: pwyk.ident(w.powiat), 
-                        wojewodztwo:wwyk.ident(w.woj), rodzBad:dekodrodz(w.rodzbad),
-                        autor:w.autor, data:w.databad, nrMiej:w.nrmiej, id:nastId("stanowiska"), uwagi:w.uwagi}
+                        /*wojewodztwo:wwyk.ident(w.woj),*/ rodzBad:dekodrodz(w.rodzbad),
+                        autor:w.autor, /*data:w.databad,*/ nrMiej:w.nrmiej, id:nastId("stanowiska"), uwagi:w.uwagi}
+    if w.nwoj != "" {
+        st.wojewodztwo = wwyk.ident(w.nwoj)
+    } else {
+        st.wojewodztwo = wwyk.ident(w.woj)
+    }
+    t, e := time.Parse(dtfmt, "01/"+w.databad)
+    if e != nil {
+        panic(e.Error())
+    } else {
+        st.data = t.Format(dbdtfmt) 
+    }
     st.geom = stwsp(st.obszar, st.nrObszar)
     return
 }
@@ -363,33 +380,6 @@ func prepInfo(info string, rel bool) (pi []interface{}) {
     return
 }
 
-/*
-String ns = ss.replace('*', ' ').replace(' ', ' ').trim();
-		if (ns.startsWith("?") || ns.endsWith("?")) {
-			epew = 0.5;
-			ns = ns.replace('?', ' ').trim();
-		}
-		ns = ns.replace('?', ' ').trim();
-		if (ns.isEmpty()) {
-			epew = 0;
-			return;
-		}
-		if (ns.contains("-")) {
-			String[] ab = ns.split("-");
-			ep1 = ab[0];
-			ep2 = ab[1];
-			erel="Z";
-			//System.out.println(this);
-		}
-		else if (ns.contains("/")) {
-			String[] ab = ns.split("/");
-			ep1 = ab[0];
-			ep2 = ab[1];
-			erel="P";
-			//System.out.println(this);
-		} else
-			ep1 = ns;*/
-
 func dekodfk(f fkwiersz) (nf fkdane) {
     nf = fkdane{}
     pf := prepInfo(f.fun, false)
@@ -424,7 +414,7 @@ func dodajFakty(fk []fkwiersz, st int) {
 
 func main() {
     c := 0
-    ie := initDb("pierwsze.db", "azp2.db")
+    ie := initDb("kartoteki/sbaza.db", "azp2.db")
     ie = initStmt()
     if ie != nil {
         fmt.Println(ie.Error())
@@ -445,8 +435,8 @@ func main() {
     if ie != nil {
         fmt.Println(ie.Error())
     }    
-    fakty := initFakty("/home/milosz/archeocs/import_azpmax/pierwsze_csv/wszy2.csv")
-    dcsv, e := NewCsv("/home/milosz/archeocs/import_azpmax/pierwsze_csv/dane5127.csv")
+    fakty := initFakty("/home/milosz/archeocs/import_azpmax/kartoteki/sfakty.csv")
+    dcsv, e := NewCsv("/home/milosz/archeocs/import_azpmax/kartoteki/sdane2.csv")
     if e != nil {
         fmt.Println(e.Error())
     } else {
