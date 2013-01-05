@@ -253,7 +253,6 @@ class ObszarWidok(PropWidok):
                 (u'Powierzchnia','powierzchnia',self.nic),(u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
         self.dodajOpt(0,self.vo).dodajOpt(1,self.vp).dodajOpt(2,self.vnr).dodajOpt(3,self.vnt).dodajOpt(4,self.vr)
-        #self.setDelegat([(u'Otwarte','O'),(u'Zamknięte','Z')],100)
         
 class FizgWidok(PropWidok):
     
@@ -373,11 +372,16 @@ class MapaWidok(QWidget):
     def _dodajImg(self):
         if self._mapaId > 0:
             return
-        plik = QFileDialog.getOpenFileName(parent=self, filter='PNG (*.png)')
+        plik = QFileDialog.getOpenFileName(parent=self, filter='Grafika (*.png *.jpg *.bmp *.tiff *.gif *.jpeg)')
         if plik is None:
             return
         syg = 'MAPA/%d'%self._st
-        if zapiszMapa(str(plik), self._st, syg, self._con):
+        p = str(plik)
+        fi = p.index('.')
+        format = None
+        if fi > 0 and fi < len(p)-1:
+            format = p[fi+1:].upper()
+        if zapiszMapa(p, self._st, syg, self._con,format):
             self._odswiezImg() 
     
     def _usunImg(self):

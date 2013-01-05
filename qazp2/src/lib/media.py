@@ -40,15 +40,15 @@ def odczyt(ident, con, nout=None):
     bajty = QByteArray.fromRawData(w[0])
     return QImage.fromData(bajty)
 
-def zapiszMapa(plik, st, syg, con):
+def zapiszMapa(plik, st, syg, con, format=None):
     mx = con.getMax('media','id')+1
     stmt = con.prep("insert into media(id, sygnatura, plik, format, tabela, dane) values(?, ?, ?, ?, 'S', ?)")
     s2 = con.prep('insert into st_media(medium, stanowisko,typ) values(?,?,?)')
     img = QImage(plik)
     buf = QBuffer()
     buf.open(QIODevice.WriteOnly)
-    if img.save(buf, 'PNG'):
-        if stmt.wykonaj([mx, syg, basename(plik), 'PNG', buffer(buf.buffer().data())], False) != 1:
+    if img.save(buf, format):
+        if stmt.wykonaj([mx, syg, basename(plik), format, buffer(buf.buffer().data())], False) != 1:
             con.wycofaj()
             return False
         if s2.wykonaj([mx,st,'M'],False) != 1:

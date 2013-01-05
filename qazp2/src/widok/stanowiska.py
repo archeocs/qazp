@@ -122,7 +122,17 @@ class WyszukajNrAzpAkcja(QAction):
         dialog = NrAzpDialog(self._win)
         if dialog.exec_() != QDialog.Accepted:
             return
-        warunek = "obszar='%(obszar)s' and nr_obszar='%(nr_obszar)s'" % dialog.getDane()
+        dane = dialog.getDane()
+        warunek = "obszar='%(obszar)s' and nr_obszar='%(nr_obszar)s'" % dane
+        if dane['data_od'] != '':
+            szukDt = '1900-01-01'
+            if len(dane['data_od']) == 4:
+                szukDt = '%s-01-01'%dane['data_od']
+            elif len(dane['data_od']) == 7:
+                szukDt = '%s-01'%dane['data_od']
+            elif len(dane['data_od']) == 10:
+                szukDt = dane['data_od']
+            warunek += " and data >= '%s'"%szukDt
         warstwa = szukaj_stanowiska(unicode(warunek))
         mf = StanowiskaFrame(warstwa,gstanowiska(warstwa),self._iface,self._win)
         self._win.dodaj(mf)

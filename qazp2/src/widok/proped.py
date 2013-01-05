@@ -34,6 +34,7 @@ from PyQt4.QtCore import QVariant, QAbstractTableModel, Qt
 from functools import partial
 from dane.zrodla import getPolaczenie2
 from lib.qgsop import setMapa, zmien
+import logging
 
 def conw(w,slow):
     if isinstance(w, QVariant):
@@ -133,6 +134,7 @@ class PropLista(QAbstractTableModel):
         if rola == Qt.EditRole and c == 1:
             self._dane[self._opt[r][1]] = wartosc
             self._wid.pop(self._opt[r][1],'')
+            logging.info("Wstawiona wartosc: "+str(wartosc.toString())+"$")
             return True
         return False
             #self.dataChanged(indeks,indeks)
@@ -216,7 +218,7 @@ class PropWidok(QTableView):
         
     def wartosci(self):
         return self.konwert(self._dane)
-    
+        
     def nic(self,w):
         return w
     
@@ -237,7 +239,9 @@ class PropFrame(QFrame):
         
     def _zapisz(self, atr):
         obj = self._dane.feature()
-        setMapa(obj, self._widok.wartosci(), atr)
+        wart = self._widok.wartosci()
+        setMapa(obj, wart, atr)
+        logging.info("Zapisuje wartosci "+wart)
         if zmien(self._war,obj):
             self._win.statusBar().showMessage('Zapisano zmiany')
         else:

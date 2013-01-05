@@ -141,7 +141,7 @@ class WykazFaktow(object):
     
     def usun(self,i):
         if i >= len(self._fk):
-            pass
+            return 
         f = self._fk[i]
         if f['id'] < 0:
             self._fk.pop(i)
@@ -152,7 +152,7 @@ class WykazFaktow(object):
     
     def zmien(self,i):
         if i >= len(self._fk):
-            pass
+            return False
         f = self._fk[i]
         if f['id'] < 0:
             f['id'] = self._mxFk.jeden()[0]+1
@@ -164,6 +164,7 @@ class WykazFaktow(object):
             if r != 1:
                 raise Exception('Nieudana zmiana faktu')
         self.odswiez()
+        return True
         
     def jedWidok(self, i):
         f = self._fk[i]

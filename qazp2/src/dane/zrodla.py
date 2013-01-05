@@ -35,6 +35,7 @@ from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR,STANOWISKA_ATR, AModel,\
     JEDFIZG_ATR,  EKSPOZYCJA_ATR, TEREN_ATR, OBSZAR_ATR, ZAGROZENIA_ATR,\
     WNIOSKI_ATR, GLEBA_ATR, AKTUALNOSCI_ATR, KARTA_ATR
 from micon import Polaczenie  
+import logging
 def rejestr_map():
     """ Zwraca rejestr map z QGIS """
     return QgsMapLayerRegistry.instance()
@@ -204,7 +205,7 @@ def decbin(kier):
 
 def bindec(kier):
     if len(kier) == 0:
-        return 0
+        return (True,0)
     tb = kier.upper().replace(';',',').replace(' ',',').replace(':',',').split(',')
     dkier = 0
     for t in tb:
@@ -268,10 +269,12 @@ def updtSql(stid, qgsWarstwa, atr, tab,tdane=[]):
         pr = _genParam(atr,d)
         pr['id'] = int(pr['id'])
         if pr['id'] > 0:
+            logging.info("ZMIENIAM %s wartosci: %s"%(tab,str(pr)))
             us.wykonaj(pr, False)
             uzyty = 2000+len(tdane)
         else:
             pr['id'] = p.jeden('select coalesce(max(id),0) from '+tab)[0]+1
+            logging.info("DODAJE %s wartosci: %s"%(tab,str(pr)))
             ins.wykonaj(pr, False)
             uzyty = 3000+len(tdane)
     p.zatwierdz()
