@@ -1,9 +1,0 @@
-[genral]
-name=QAZP2
-qgisMinimumVersion=1.7
-description=Archeologiczne Zdjecie Polski w QuantumGIS
-version=0.11.2
-author=Milosz Piglas
-email=milosz@archeocs.com
-tags=azp,qgis,spatialite,postgis,archeologia
-homepage=http://code.google.com/p/qazp

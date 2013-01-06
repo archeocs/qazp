@@ -34,7 +34,7 @@ from widok.lista import GTabModel2, GFrame
 from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie2,\
     rejestr_map, stLista
 from widok.sted import Edytor
-from lib.keza import GeneratorKeza
+from lib.keza import  KezaDruk
 from widok.dialog import NrAzpDialog
 
 def tab_model(obiekty,parent=None):
@@ -69,21 +69,16 @@ class StanowiskaFrame(GFrame):
         self._win.dodaj(ed)
         
     def _akcjaDrukuj(self):
-        gen = GeneratorKeza(getPolaczenie2(self.warstwa))
+        kd = KezaDruk(getPolaczenie2(self.warstwa))
         plik = QFileDialog.getSaveFileName(parent=self, filter='PNG (*.pdf)')
         pd = QProgressDialog("Przygotowuje wydruk", "Cancel", 0, len(self._gobs)+1);
         pd.setWindowModality(Qt.WindowModal);
-        c = 0
+        sts = []
         for st in self.wszystkie():
-            c+=1
-            pd.setValue(c)
-            pd.setLabelText(u'Stanowisko %s/%s'%(unicode(st['obszar'].toString()),unicode(st['nr_obszar'].toString())))
-            sid = st['id'].toInt()[0]
             cent = st.wspolrzedne().centroid().asPoint()
-            wsp = {'x':round(cent.x(),2), 'y':round(cent.y(),2)}
-            gen.dodajKarte(sid,wsp)
-        gen.zapisz(str(plik))
-        pd.setValue(len(self._gobs)+1)
+            sts.append((st['id'].toInt()[0], unicode(st['obszar'].toString()), unicode(st['nr_obszar'].toString()),
+                        round(cent.x(),2), round(cent.y(),2)))
+        kd.drukuj(plik, sts, pd)
         QMessageBox.information(self,'Drukowanie','Karty wygenerowane')
 
 class WyszukajAkcja(QAction):

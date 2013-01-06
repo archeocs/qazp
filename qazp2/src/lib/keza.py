@@ -213,77 +213,13 @@ def _prepImg(con, m):
     print r[0], m['stanowisko']
     return odczyt(r[0], con)
 
-class Karta(object):
+class Schemat2(object):
     
     NORM = QFont('Times',8,QFont.Normal)
-    BOLD = QFont('Times',6,QFont.DemiBold)
-    
-    def __init__(self,tab,kwsp):
-        self._tab = tab
-        self._kwsp = kwsp
-        
-    def scal(self,x,y,szer,wys):
-        self._tab.mergeCells(y,x,wys,szer)
-    
-    def setTxt(self, x, y, txt, font=NORM, tlo=Qt.white, wyr=QTextCharFormat.AlignNormal):
-        kom = self._tab.cellAt(y, x)
-        fmt = kom.format()
-        fmt.setFont(font)
-        fmt.setBackground(tlo)
-        fmt.setVerticalAlignment(wyr)
-        kom.setFormat(fmt)
-        kom.firstCursorPosition().insertText(txt)
-    
-    def setImg(self, x, y, qimg):
-        print 'set img'
-        dx,dy = qimg.dotsPerMeterX(), qimg.dotsPerMeterY()
-        nw = (12 * dx) / 100 # nowa szerokosc wg wzor szer w cm / (100 / dx )
-        nh = (12 * dy) / 100
-        qimg = qimg.scaled(nw,nh,Qt.KeepAspectRatio)
-        self._tab.cellAt(y, x).firstCursorPosition().insertImage(qimg)
-    
-    def setDane(self,md):
-        for (k,v) in md.iteritems():
-            self[k] = v
-        
-    def __setitem__(self,k,v):
-        if not self._kwsp.has_key(k):
-            return
-        elif v is None:
-            return
-        if isinstance(v,unicode):
-            w = self._kwsp[k]
-            self.setTxt(w[0],w[1],v)
-        elif isinstance(v,(str,int,float)):
-            w = self._kwsp[k]
-            self.setTxt(w[0],w[1],unicode(v))
-        elif isinstance(v,QImage):
-            w = self._kwsp[k]
-            self.setImg(w[0],w[1],v)
-        else:
-            raise Exception('nieprawidlowy typ '+str(type(v)))
-
-class HtmlFormat(QTextTableFormat):
-    
-    def __init__(self):
-        QTextTableFormat.__init__(self)
-        self.setPageBreakPolicy(QTextFormat.PageBreak_AlwaysAfter)
-        self.setWidth(QTextLength(QTextLength.PercentageLength,100))
-        self.setHeight(QTextLength(QTextLength.PercentageLength,100))
-        self.setCellPadding(1)
-        self.setBorderStyle(QTextFrameFormat.BorderStyle_Solid) 
-
-class Schemat(object):
+    BOLD = QFont('Times',7,QFont.DemiBold)
     
     def __init__(self, plik):
-        # definicja rozmieszczenia komorek w tabeli.
-        # kazdy element listy to krotka (x, y, szer, wys, wartosc)
-        # punkt 0,0 - gorny lewy naroznik tabeli
-        # puste pole 'wartosc' oznacza pole do edycji, ktore mozna uzupelnic,
-        # przez wskazanie na karcie klucza
         self._pola = []
-        # klucze pol do edycji
-        self._wsp = {}
         sp = open(plik, 'r')
         for w in sp.readlines():
             if w.startswith('#'):
@@ -294,72 +230,93 @@ class Schemat(object):
             if 1 <  len(tw) < 6:
                 sp.close()
                 raise Exception('zly schemat') # nieprawidlowy schemat
-            #print tw
             x,y,s,w = int(tw[0]), int(tw[1]), int(tw[2]), int(tw[3]) 
             v = tw[4].strip().decode('utf-8')
-            if v.startswith('k:'):
-                k = v[2:]
-                if self._wsp.has_key(k):
-                    sp.close()
-                    raise Exception('zly schemat') # powtorzenie klucza
-                self._wsp[k] = (x,y)
-                self._pola.append((x,y,s,w,None))
-            else:
-                self._pola.append((x,y,s,w,v))
+            self._pola.append((x, y, s, w, v))
         sp.close()
-        self.hf = HtmlFormat()
-        
-    def karta(self,kursor):
-        k = Karta(kursor.insertTable(36,60,self.hf),self._wsp)
-        for p in self._pola:
-            k.scal(p[0],p[1],p[2],p[3])
-            if p[4] is not None:
-                k.setTxt(p[0],p[1],p[4],tlo=Qt.yellow,font=Karta.BOLD)
-        return k
-
-class GeneratorKeza(object):   
+   
+    def mkrect(self, kw, kh, p):
+        rx, ry = kw * p[0], kh * p[1]
+        rw, rh = kw * p[2], kh * p[3]
+        return QRect(rx, ry, rw, rh)
     
-    pstr = Schemat(abspath(__file__+'/../../keza/astr.txt'))
-    dstr = Schemat(abspath(__file__+'/../../keza/bstr.txt'))
+    def druk(self, pt, dane={}):
+        kw, kh = pt.device().width()/60, pt.device().height()/36    
+        etb = QBrush(Qt.yellow)
+        wab = QBrush(Qt.white)
+        for p in self._pola:
+            if not p[4].startswith('k:'): # etykieta
+                pt.setBrush(etb)
+                r = self.mkrect(kw, kh, p)
+                pt.drawRect(r)
+                pt.setFont(self.BOLD)
+                tr = QRectF(r.x()+3, r.y()+3, r.width()-3, r.height()-3)
+                topt = QTextOption(Qt.AlignCenter)
+                topt.setWrapMode(QTextOption.WordWrap)
+                pt.drawText(tr, p[4], topt) 
+            else: # wartosc
+                pt.setBrush(wab)
+                r = self.mkrect(kw, kh, p)
+                pt.drawRect(r)
+                k = p[4][2:]
+                if dane.has_key(k) and dane[k] is not None:
+                    pt.setFont(self.NORM)
+                    tr = QRectF(r.x()+2, r.y()+2, r.width()-2, r.height()-2)
+                    topt = QTextOption(Qt.AlignCenter)
+                    topt.setWrapMode(QTextOption.WordWrap)
+                    if not isinstance(dane[k], QImage):
+                        pt.drawText(tr, dane[k], topt)
+                    else:
+                        pt.drawImage(tr, dane[k], tr)
+
+class KezaDruk(object):
     
     def __init__(self, con):
         self._con = con
+        #self._sts = sts
         self._daneStmt = prepSt(con)
         self._owyk, self._jwyk, self._fwyk = okrWykaz(con), jedWykaz(con), funWykaz(con) 
-        self._doc = QTextDocument()
-        self._txtCur = QTextCursor(self._doc)
-        self._klicz = 0
     
-    def zapisz(self, plik):
-        dev = QPrinter()
-        dev.setOutputFormat(QPrinter.PdfFormat)
-        dev.setOrientation(QPrinter.Landscape)
-        dev.setOutputFileName(plik)
-        dev.setPageMargins(5,5,5,5,QPrinter.Millimeter)
-        self._doc.print_(dev)
-        return self._klicz
-    
-    def dodajKarte(self, stid, wsp={}):
-        pkz = self.pstr.karta(self._txtCur)
-        md = getDane(self._daneStmt, stid)
+    def _prepDane(self, st):
+        md = getDane(self._daneStmt, st)
         _prepLog(md)
         _prepObser(md)
         _prepZagr(md)
         _prepRodz(md)
         _prepTer(md)
-        pkz.setDane(md)
+        md['mapa_img'] = _prepImg(self._con, md)
         wf = WykazFaktow(str(md['stanowisko']), self._con, self._owyk, self._jwyk, self._fwyk)
         for i in range(len(wf)):
             if i < 7:
-                f = _prepFk(i+1,wf.mapa(i))
-                pkz.setDane(f)
-        self._txtCur.movePosition(QTextCursor.End)
-        dkz = self.dstr.karta(self._txtCur)
-        img = _prepImg(self._con,md)
-        if img is not None:
-            dkz['mapa_img'] = img
-        md['wsp_x'] = str(wsp['x'])
-        md['wsp_y'] = str(wsp['y'])
-        dkz.setDane(md)
-        self._txtCur.movePosition(QTextCursor.End)
-        self._klicz += 1
+                for (k, v) in _prepFk(i+1,wf.mapa(i)).iteritems():
+                    md[k] = v
+        md['historia'] = md['historia']+' '+md['uwagi']
+        return md
+    
+    def drukuj(self, plik, sts, postep):
+        dev = QPrinter()
+        dev.setOutputFormat(QPrinter.PdfFormat)
+        dev.setOrientation(QPrinter.Landscape)
+        dev.setOutputFileName(plik)
+        dev.setPaperSize(QPrinter.A4)
+        dev.setPageMargins(5,5,5,5,QPrinter.Millimeter)
+        pt = QPainter()
+        pt.begin(dev)
+        pt.setPen(QPen(Qt.black, 1))
+        astr = Schemat2(abspath(__file__+'/../../keza/astr.txt'))
+        bstr = Schemat2(abspath(__file__+'/../../keza/bstr.txt'))
+        c = 0
+        for s in sts:
+            md = self._prepDane(s[0])
+            md['wsp_x'] = str(s[3])
+            md['wsp_y'] = str(s[4])
+            c += 1
+            postep.setValue(c)
+            postep.setLabelText(u'Stanowisko %s/%s'%(s[1], s[2]))
+            astr.druk(pt, md)
+            dev.newPage()
+            bstr.druk(pt, md)
+            if c < len(sts):
+                dev.newPage()
+        postep.setValue(len(sts))
+        pt.end()
