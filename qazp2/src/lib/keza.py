@@ -146,15 +146,15 @@ def _prepObser(m):
     elif gz == 'D':
         m['obs_gest_duza'] = 'x'
     pw = m.pop('powierzchnia')
-    if pw < 0.5:
+    if pw <= 0.01:
         m['obs_pow_ar1'] = 'x'
-    elif pw < 1:
+    elif pw <= 0.5:
         m['obs_pow_ha05'] = 'x'
-    elif pw < 5:
+    elif pw <= 1:
         m['obs_pow_ha1'] = 'x'
-    elif pw < 15:
+    elif pw <= 5:
         m['obs_pow_ha5'] = 'x'
-    elif pw < 16:
+    elif pw <= 15:
         m['obs_pow_ha15'] = 'x'
     else:
         m['obs_pow_ha15+'] = 'x'
@@ -198,9 +198,9 @@ def _prepTer(m):
         
 def _prepFk(nr,m):
     opis = u''
-    if m['masowy'] != '':
+    if m['masowy'] is not None and m['masowy'] != '':
         opis += u'masowy: %s;'%m['masowy']
-    if m['wydzielony'] != '':
+    if m['wydzielony'] is not None and m['wydzielony'] != '':
         opis += u'wydzielone: %s'%m['wydzielony']
     return {'nr%d'%nr:str(nr), 'fun%d'%nr:m['funkcja'], 'kult%d'%nr:m['kultura'], 'chrono%d'%nr:m['chronologia'],
             'opis%d'%nr:opis}
