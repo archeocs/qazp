@@ -39,10 +39,12 @@ class KodyWykaz(object):
 
     def __init__(self,con,tab,atr=['kod','nazwa','skrot']):
         self._TAB = tab
-        ps = con.prep('select '+','.join(atr)+' from '+self._TAB+' order by nazwa')
+        ps = con.prep('select '+','.join(atr)+' from '+self._TAB+' order by nazwa asc')
         self._kody = {}
+        self._porzadek = [] # lista kodow w celu utrzymania porzadku, gdy tworzona jest lista nazw
         for tk in ps.wszystkie(f=partial(mapaFk,t=atr)):
             self._kody[tk['kod']] = tk
+            self._porzadek.append(tk['kod'])
     
     def widok(self, k):
         if k is None:
@@ -53,9 +55,13 @@ class KodyWykaz(object):
         return self._kody[k]['skrot']
     
     def listaKat(self,pref):
-        for (k,v) in self._kody.iteritems():
+        for k in self._porzadek:
+            v = self._kody[k]
             if k is not None and k.startswith(pref) and v['nazwa'] is not None:
-                yield (v['kod'], v['nazwa'])
+                yield(v['kod'], v['nazwa'])
+        #for (k,v) in self._kody.iteritems():
+        #    if k is not None and k.startswith(pref) and v['nazwa'] is not None:
+        #        yield (v['kod'], v['nazwa'])
                 
     def nazwa(self,k):
         r = self._kody.get(k,None)

@@ -134,7 +134,7 @@ class PropLista(QAbstractTableModel):
         if rola == Qt.EditRole and c == 1:
             self._dane[self._opt[r][1]] = wartosc
             self._wid.pop(self._opt[r][1],'')
-            logging.info("Wstawiona wartosc: "+str(wartosc.toString())+"$")
+            #logging.info("Wstawiona wartosc: "+unicode(wartosc.toString())+"$")
             return True
         return False
             #self.dataChanged(indeks,indeks)
@@ -241,7 +241,7 @@ class PropFrame(QFrame):
         obj = self._dane.feature()
         wart = self._widok.wartosci()
         setMapa(obj, wart, atr)
-        logging.info("Zapisuje wartosci "+wart)
+        #logging.info("Zapisuje wartosci "+wart)
         if zmien(self._war,obj):
             self._win.statusBar().showMessage('Zapisano zmiany')
         else:

@@ -233,7 +233,7 @@ def daneGleba(st,qgsWarstwa):
 
 def daneObszar(st,qgsWarstwa):
     wys = wyszukajSql(st,qgsWarstwa,OBSZAR_ATR,'OBSZAR_DANE')
-    wys['powierzchnia'] = wys.get('powierzchnia',0)
+    wys['powierzchnia'] = float(str(wys.get('powierzchnia',0)).replace(',','.'))
     return AModel(wys)
 
 def daneZagr(st,qgsWarstwa):
@@ -302,7 +302,12 @@ def updtGleba(st,qgsWarstwa,tdane=[]):
     return updtSql(st,qgsWarstwa,GLEBA_ATR,'GLEBA_DANE',tdane)
 
 def updtObszar(st,qgsWarstwa,tdane=[]):
-    return updtSql(st,qgsWarstwa,OBSZAR_ATR,'OBSZAR_DANE',tdane)
+    td = []
+    td.extend(tdane)
+    for d in td:
+        if d['powierzchnia'] != None:
+            d['powierzchnia'] = float(str(d['powierzchnia']).replace(',','.'))
+    return updtSql(st,qgsWarstwa,OBSZAR_ATR,'OBSZAR_DANE',td)
 
 def updtZagr(st,qgsWarstwa,tdane=[]):
     return updtSql(st,qgsWarstwa,ZAGROZENIA_ATR,'ZAGROZENIA',tdane)
