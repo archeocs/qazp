@@ -36,6 +36,7 @@ from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczeni
 from widok.sted import Edytor
 from lib.keza import  KezaDruk
 from widok.dialog import NrAzpDialog
+from lib.qgsop import usun
 
 def tab_model(obiekty,parent=None):
     return GTabModel2([('Ident','id'),('Obszar','obszar'),('Nr na obszarze','nr_obszar'),('Rodzaj','rodzaj_badan')
@@ -75,11 +76,25 @@ class StanowiskaFrame(GFrame):
         pd.setWindowModality(Qt.WindowModal);
         sts = []
         for st in self.wszystkie():
-            cent = st.wspolrzedne().centroid().asPoint()
-            sts.append((st['id'].toInt()[0], unicode(st['obszar'].toString()), unicode(st['nr_obszar'].toString()),
-                        round(cent.x(),2), round(cent.y(),2)))
+            cent = st.wspolrzedne().centroid()#.asPoint()
+            if cent is None:
+                raise Exception("Centroid jest NONE "+str(st['id'].toInt()[0]))
+            else:
+                ptc = cent.asPoint()
+                sts.append((st['id'].toInt()[0], unicode(st['obszar'].toString()), unicode(st['nr_obszar'].toString()),
+                            round(ptc.x(),2), round(ptc.y(),2)))
         kd.drukuj(plik, sts, pd)
         QMessageBox.information(self,'Drukowanie','Karty wygenerowane')
+        
+    def akcja_usun(self):
+        ww = self.wybrany_wiersz()
+        odp = QMessageBox.question(self, u'Usuwanie stanowiska', u'Czy na pewno chcesz usunąć stanowisko %d'%ww[1]['id'].toInt()[0],
+                                   QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if odp != QMessageBox.Yes:
+            return
+        if usun(self.warstwa, ww[1].feature()):
+            self.getModel().removeRow(ww[0].row())
+            self._win.statusBar().showMessage(u'Stanowisko usunięte')
 
 class WyszukajAkcja(QAction):
     

@@ -30,7 +30,7 @@
 
 from PyQt4.QtGui import QFrame, QVBoxLayout,QTableView,QGroupBox,QHBoxLayout,QPushButton,QButtonGroup,\
                         QStyledItemDelegate,QShortcut,QKeySequence
-from PyQt4.QtCore import QAbstractTableModel, QVariant, SIGNAL
+from PyQt4.QtCore import QAbstractTableModel, QVariant, SIGNAL, QModelIndex
 from PyQt4.QtCore import Qt
 
 class GTabModel(QAbstractTableModel):
@@ -65,7 +65,7 @@ class GTabModel(QAbstractTableModel):
         if rola == Qt.DisplayRole:
             #print self._nag[sekcja], sekcja
             return QVariant(self._nag[sekcja])
-        
+                
 class GTabModel2(QAbstractTableModel):
     
     def __init__(self,nag,dane=[],parent=None): # nag = [(Naglowek,klucz),...]
@@ -99,6 +99,16 @@ class GTabModel2(QAbstractTableModel):
         if rola == Qt.DisplayRole:
             #print self._nag[sekcja], sekcja
             return QVariant(self._nag[sekcja][0])
+        
+    def removeRows(self, row, count, parent=QModelIndex):
+        ost = row+count-1
+        if ost > len(self._dane)-1:
+            ost = len(self._dane)-1
+        self.beginRemoveRows(parent, row, ost)
+        for x in range(ost-row+1):
+            self._dane.pop(row)
+        self.endRemoveRows()
+        return True
 
 class GFrame(QFrame):
     
@@ -151,7 +161,9 @@ class GFrame(QFrame):
         #grupa.buttonPressed.connect(self.btn_klik)
         self.connect(grupa, SIGNAL('buttonPressed(int)'), self.btn_klik)
         QShortcut(QKeySequence(Qt.CTRL+Qt.Key_J),self._win).activated.connect(self.akcja_zmien)
-        
+    
+    def getModel(self):
+        return self._tab.model()    
         
     def wybrany_wiersz(self):
         ci = self._tab.currentIndex()
