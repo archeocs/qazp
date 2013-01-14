@@ -55,7 +55,7 @@ KOLEJNOSC = ['obszar', 'nr_obszar', 'miej', 'nr_miejscowosc', 'gm',
                 'kotlinki_zagleb', 'jaskinie', 'rozmiar', 'stopien', 
                 'kierunek', 'euwagi', 'luzna', 'zwiezla', 'ug_torfbag', 
                 'specjalistyczne','kamienistosc', 'nr_krz', 'data_krz', 
-                'park_kult', 'plan_zp', 'magazyn', 'nr_inwentarza', 
+                'park_kult', 'plan_zp', 'magazyn', 'nr_inwentarza', 'wlasciciel', 
                 'nazwa_lok', 'dalsze_losy', 'historia','metryka_hist', 
                 'literatura', 'dzialka_geodezyjna', 'egb', 'chronologia', 
                 'konsultant', 'kuwagi','stanowisko']
@@ -82,7 +82,7 @@ def prepSt(con):
     e.wyniesienia_okrezne, e.osloniety, e.podst_stoku, e.doliny_niecki, e.kotlinki_zagleb,
     e.jaskinie, e.rozmiar, e.stopien, e.kierunek, e.uwagi as euwagi,
     gd.luzna, gd.zwiezla, gd.torf_bag as ug_torfbag, gd.uwagi as specjalistyczne, kamienistosc,
-    a.nr_krz, a.data_krz, a.park as park_kult, a.plan as plan_zp, a.magazyn, a.nr_inwentarza,
+    a.nr_krz, a.data_krz, a.park as park_kult, a.plan as plan_zp, a.magazyn, a.nr_inwentarza, a.wlasciciel,
     k.nazwa_lok, k.dalsze_losy, k.dzieje_badan as historia, k.metryka_hist, k.literatura,
     k.dzialka_geodezyjna, k.egb, k.chronologia, k.konsultant, k.uwagi as kuwagi,
     s.id as stanowisko
@@ -205,6 +205,13 @@ def _prepFk(nr,m):
     return {'nr%d'%nr:str(nr), 'fun%d'%nr:m['funkcja'], 'kult%d'%nr:m['kultura'], 'chrono%d'%nr:m['chronologia'],
             'opis%d'%nr:opis}
 
+def _prepAkt(m):
+    if m['wlasciciel'] is None or m['wlasciciel'].strip() == '':
+        if m['prywatny'] == 'x':
+            m['wlasciciel'] = 'PRYWATNY'
+        elif m['spoleczny'] == 'x':
+            m['wlasciciel'] = u'SPOŁECZNY'
+        
 def _prepImg(con, m):
     ps = con.prep('select s.medium from st_media s join media m on s.medium = m.id where s.stanowisko=?')
     r = ps.jeden([m['stanowisko']])
@@ -284,6 +291,7 @@ class KezaDruk(object):
         _prepZagr(md)
         _prepRodz(md)
         _prepTer(md)
+        _prepAkt(md)
         md['mapa_img'] = _prepImg(self._con, md)
         wf = WykazFaktow(str(md['stanowisko']), self._con, self._owyk, self._jwyk, self._fwyk)
         for i in range(len(wf)):

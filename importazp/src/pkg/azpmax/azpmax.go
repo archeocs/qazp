@@ -38,7 +38,19 @@ import (
     "strconv"
     "time"
     "math"
+    "errors"
+    "flag"
     )
+
+const (
+    dtfmt string = "02/01/06"
+    dbdtfmt string = "2006-01-02"
+)
+
+var (
+	maxZam = map[string]string {"A0":"U", "A1":"B", "A":"", "B0":"O", "B1":"Z", "B":"", "C0":"R", "C1":"N", "C":"", "D0":"J", "D1":"W", "D2":"D", "D":"", "E1":"I", "E0":"N", "E":"", "F1":"D", "F0":"S", "F":"", "GL":"L", "GN":"N", "G":"", "HP":"P", "HS":"S", "H":"", "JM":"M", "JS":"S", "JD":"D", "J":""}
+	faktyPlik, stPlik, bazaPlik, wspPlik string
+)
 
 func NewCsv(sciezka string) (dane *csv, err error) {
     dane = new(csv)
@@ -50,20 +62,15 @@ func NewCsv(sciezka string) (dane *csv, err error) {
 }
 
 
-func (dane *csv) Nastepny() (tabs []string, next bool) {
-    var (
-        linia string
-        re error
-    )
-    if linia, re = dane.rd.ReadString('\n'); re != nil {
+func (dane *csv) Wiersz() (tabs []string, nastepny bool) {
+    if linia, re := dane.rd.ReadString('\n'); re == nil {
+        tabs = strings.Split(linia,"#")
+        nastepny = true
+
+    } else {
         dane.plik.Close()
-        next = false
-        fmt.Println(re.Error())
-        return
-        // return nil, false
+        nastepny = false
     }
-    tabs = strings.Split(linia, "#")
-    next = true
     return
 }
 
@@ -76,7 +83,18 @@ func trim(s string) string {
     return strings.TrimSpace(s)
 }
 
-func dekodrodz(r string) string {
+func stof(s string) (float32, error) {
+    if s == "" {
+        return 0, nil
+    }
+    f, e := strconv.ParseFloat(s, 32)
+    if e != nil {
+        return -1, errors.New("Nieprawidlowy format liczby: "+s)
+    }
+    return float32(f), nil
+}
+
+func dekodRodz(r string) string {
     ur := strings.ToUpper(r)
     if strings.Contains(ur,"W") {
         return "W" 
@@ -94,7 +112,7 @@ func dekodrodz(r string) string {
     return "?"
 }
 
-func stwsp(ob, nrob string) (geom string) {
+func stWsp(ob, nrob string) (geom string) {
     r := geops.QueryRow(ob, nrob)
     r.Scan(&geom)
     return
@@ -104,16 +122,10 @@ func tb(s string) []byte {
     return []byte(s)
 }
 
-const (
-    dtfmt string = "02/01/06"
-    dbdtfmt string = "2006-01-02"
-)
-
-func (w wiersz) genst() (st stanowisko) {
-    st = stanowisko{obszar:w.obsz, nrObszar:w.nrobsz, miejscowosc:mwyk.ident(w.miej), 
-                        gmina:gwyk.ident(w.gm), powiat: pwyk.ident(w.powiat), 
-                        /*wojewodztwo:wwyk.ident(w.woj),*/ rodzBad:dekodrodz(w.rodzbad),
-                        autor:w.autor, /*data:w.databad,*/ nrMiej:w.nrmiej, id:nastId("stanowiska"), uwagi:w.uwagi}
+func (w wiersz) newStanowisko() (stanowisko, error) {
+    st := stanowisko{obszar:w.obsz, nrObszar:w.nrobsz, miejscowosc:mwyk.ident(w.miej), 
+                        gmina:gwyk.ident(w.gm), powiat: pwyk.ident(w.powiat), rodzBad:dekodRodz(w.rodzbad),
+                        autor:w.autor,  nrMiej:w.nrmiej, id:nastId("stanowiska"), uwagi:w.uwagi}
     if w.nwoj != "" {
         st.wojewodztwo = wwyk.ident(w.nwoj)
     } else {
@@ -121,25 +133,29 @@ func (w wiersz) genst() (st stanowisko) {
     }
     t, e := time.Parse(dtfmt, "01/"+w.databad)
     if e != nil {
-        panic(e.Error())
+        return st, e //panic(e.Error())
     } else {
         st.data = t.Format(dbdtfmt) 
     }
-    st.geom = stwsp(st.obszar, st.nrObszar)
-    return
+    st.geom = stWsp(st.obszar, st.nrObszar)
+    return st, nil 
 }
 
-func (w wiersz) genEkspo(st int) (e eksdane) {
+func (w wiersz) newEksdane(st int) (e eksdane) {
     e = eksdane{ stanowisko:st, id:nastId("ekspozycja_dane"), uwagi:w.forszczeg}
-    rodzEks(w.rodzeks, &e)
-    rozmEks(w.wyseks, &e)
-    stopEks(w.stopeks, &e)
-    kierEks(w.kiereks, &e)
+    dekodRodzEks(w.rodzeks, &e)
+    //dekodRozmEks(w.wyseks, &e)
+    dekodStopEks(w.stopeks, &e)
+    dekodKierEks(w.kiereks, &e)
+    f32, ferr := stof(w.wyseks)
+    if ferr != nil {
+        fmt.Println(ferr.Error())
+    } 
+    e.rozmiar = f32
     return
 }
 
-func kierEks(d string, e *eksdane) bool {
-   // fmt.Println("kierunek ",d)
+func dekodKierEks(d string, e *eksdane)  {
     var kiers = map[string]float64 {"A":0, "B":1, "C":2, "D":3, "E":4, "F":5, "G":6, "H":7}
     td := strings.Split(d, "")
     dkier := 0.0
@@ -147,11 +163,9 @@ func kierEks(d string, e *eksdane) bool {
         dkier += math.Pow(2,kiers[td[i]])
     }
     e.kierunek = int(dkier)
-    return true
 }
 
-func stopEks(d string, e *eksdane) bool {
-// fmt.Println("stop ",d)
+func dekodStopEks(d string, e *eksdane) {
     switch d {
         case "1": e.stopien = 0.5
         case "2": e.stopien = 2
@@ -160,25 +174,9 @@ func stopEks(d string, e *eksdane) bool {
         case "5": e.stopien = 16
         default: e.stopien = 0
     }
-    return true
 }
 
-func rozmEks(d string, e *eksdane) bool {
-   // fmt.Println("rozm ",d)
-    if d == "" {
-        return true
-    }
-    v, er := strconv.ParseFloat(d, 32)
-    if er != nil {
-        fmt.Println(er.Error())
-        return false
-    }
-    e.rozmiar = float32(v)
-    return true
-}
-
-func rodzEks(d string, e *eksdane) bool {
-    // fmt.Println("rodz ",d)
+func dekodRodzEks(d string, e *eksdane) {
     td := strings.Split(d, "")
     for i := 0; i < len(td); i++ {
         switch td[i] {
@@ -195,13 +193,11 @@ func rodzEks(d string, e *eksdane) bool {
             case "I": e.jaskinie = "T"
         }
     }
-    return true
 }
 
-func (w wiersz) genFizgeo(st int) (f fizgeo) {
+func (w wiersz) newFizgeo(st int) (f fizgeo) {
     f = fizgeo{uwagi:w.region, stanowisko:st, id:nastId("fizgeo_dane")}
     tj := strings.Split(w.jedfiz, "")
-    //fmt.Println(w.jedfiz, tj)
     for i := 0; i < len(tj); i++ {
         switch tj[i] {
             case "1": f.nadmorska = "T"
@@ -230,35 +226,21 @@ func (w wiersz) genFizgeo(st int) (f fizgeo) {
     return 
 }
 
-var (
-	mb = map[string]string {"A0":"U", "A1":"B", "A":"", "B0":"O", "B1":"Z", "B":"", "C0":"R", "C1":"N", "C":"", "D0":"J", "D1":"W", "D2":"D", "D":"", "E1":"I", "E0":"N", "E":"", "F0":"D", "F1":"S", "F":"", "GL":"L", "GN":"N", "G":"", "HP":"P", "HS":"S", "H":"", "JM":"M", "JS":"S", "JD":"D", "J":""}
-)
-
-func stof(s string) float32 {
-    if s == "" {
-        return 0
-    }
-    f, e := strconv.ParseFloat(s, 32)
-    if e != nil {
-        panic(e.Error())
-    }
-    return float32(f)
-}
-
-func (w wiersz) genObszar(st int) (o obsdane) {
-	o = obsdane{id:nastId("obszar_dane"), stanowisko:st, powierzchnia:stof(w.obszpow), obserwacja:mb["A"+w.obser],
-				pole:mb["B"+w.poleobsz], nasyc_rozklad:mb["C"+w.nasycrozk], nasyc_typ:mb["D"+w.nasyctyp], gestosc_znal:w.gest }
+func (w wiersz) newObsdane(st int) (o obsdane) {
+	o = obsdane{id:nastId("obszar_dane"), stanowisko:st, obserwacja:maxZam["A"+w.obser], pole:maxZam["B"+w.poleobsz], 
+	            nasyc_rozklad:maxZam["C"+w.nasycrozk], nasyc_typ:maxZam["D"+w.nasyctyp], gestosc_znal:w.gest }
+	f32, ferr := stof(w.obszpow)
+	if ferr != nil {
+	    fmt.Println(ferr.Error())
+	    return
+	}
+	o.powierzchnia = f32
 	return
 }
 
-func (w wiersz) genTer(st int) (t terdane) {
+func (w wiersz) newTerdane(st int) (t terdane) {
 	t  = terdane{id:nastId("teren_dane"), stanowisko:st, zabudowany:"N", uwagi:w.blizter}
-	dekodTer(w.doster, &t)
-	return
-}
-
-func dekodTer(ter string, t *terdane) bool {
-	tt := strings.Split(ter, "")
+	tt := strings.Split(w.doster, "")
 	for i:=0; i < len(tt); i++ {
 		switch tt[i] {
 			case "S": t.sred_zabud = "T"
@@ -273,30 +255,24 @@ func dekodTer(ter string, t *terdane) bool {
 			case "8": t.przemyslowy="T"
 		}
 	}
-	return true
-}
-
-func (w wiersz) genWnio(st int) (x wniodane) {
-	x = wniodane{id:nastId("wnioski"), stanowisko:st, wartosc:trim(w.wart), uwagi:trim(w.wniodod)}
-	dekodWnio(w.wnio, &x)
 	return
 }
 
-func dekodWnio(wn string, w *wniodane) bool {
-    ts := strings.Split(wn, "")
+func (w wiersz) newWniodane(st int) (x wniodane) {
+	x = wniodane{id:nastId("wnioski"), stanowisko:st, wartosc:trim(w.wart), uwagi:trim(w.wniodod)}
+	ts := strings.Split(w.wnio, "")
 	for i:=0; i < len(ts); i++ {
 		switch ts[i] {
-			case "1": w.inwentaryzacja="T"
-			case "2": w.interwencja="T"
-			case "3": w.wykopaliska="T"
+			case "1": x.inwentaryzacja="T"
+			case "2": x.interwencja="T"
+			case "3": x.wykopaliska="T"
 		}
 	}
-	return true
+	return
 }
 
-func (w wiersz) genZagr(st int) (z zagdane) {
-	z = zagdane{id:nastId("zagrozenia"), stanowisko:st, uwagi:w.zaguw, wystepowanie:mb["E"+w.zagwys], czas:mb["F"+w.zagczas]}
-	// przyczyna:mb["G"+w.zagprzy], uzytkownik:mb["H"+w.zaguz]} // sprawdz azpmax
+func (w wiersz) newZagdane(st int) (z zagdane) {
+	z = zagdane{id:nastId("zagrozenia"), stanowisko:st, uwagi:w.zaguw, wystepowanie:maxZam["E"+w.zagwys], czas:maxZam["F"+w.zagczas]}
 	if strings.Contains(w.zagprzy,"L") {
 	    z.przyczyna_ludzie = "T"
 	}
@@ -312,19 +288,14 @@ func (w wiersz) genZagr(st int) (z zagdane) {
 	return
 }
 
-func (w wiersz) genAkt(st int) (a aktdane) {
+func (w wiersz) newAktdane(st int) (a aktdane) {
     a = aktdane{id:nastId("aktualnosci"), stanowisko:st, magazyn:w.magazyn, nr_inwentarza:w.nrinw}
     return
 }
 
-func (w wiersz) genGleb(st int) (g gledane) {
-    g = gledane{id:nastId("gleba_dane"), stanowisko:st, kamienistosc:mb["J"+w.kam], uwagi:w.glespec}
-    dekodGleba(w.gleba, &g)
-    return
-}
-
-func dekodGleba(gleba string, g *gledane) {
-    ts := strings.Split(gleba, "")
+func (w wiersz) newGledane(st int) (g gledane) {
+    g = gledane{id:nastId("gleba_dane"), stanowisko:st, kamienistosc:maxZam["J"+w.kam], uwagi:w.glespec}
+    ts := strings.Split(w.gleba, "")
     for i:=0; i < len(ts); i++ {
         switch ts[i] {
             case "1":g.luzna="T"
@@ -332,15 +303,15 @@ func dekodGleba(gleba string, g *gledane) {
             case "3":g.torf_bag="T"
         }
     }
+    return
 }
 
-func (w wiersz) genKarta(st int) (k kardane) {
+func (w wiersz) newKardane(st int) (k kardane) {
     k = kardane{id:nastId("karty"), stanowisko:st, nazwa_lok:w.nazlok, dalsze_losy:w.losy, dzieje_badan:w.hisbad, literatura:w.liter, autorzy:w.autor, chronologia:w.chrono, konsultant:w.konsul, arkusz_mapy:w.godlo, metryka_hist:w.zrodla}
     return
 }
 
 func NewFakt(tabs []string) (fw fkwiersz) {
-    // fmt.Println(len(tabs))
     fw = fkwiersz{fun:trim(tabs[1]), kul:trim(tabs[2]), chro:trim(tabs[3]), mas:trim(tabs[4]), wydz:trim(tabs[5]), azp:trim(tabs[6])}
     return
 }
@@ -357,7 +328,7 @@ func initFakty(plik string) map[stazp][]fkwiersz {
     }
     c := 0
     for {
-        nt, nx := pc.Nastepny()
+        nt, nx := pc.Wiersz()
         if !nx {
             break
         }
@@ -367,8 +338,6 @@ func initFakty(plik string) map[stazp][]fkwiersz {
             fm[sa] = append(fm[sa],nf)
         }
         c+=1
-        //ob := trim(nf.azp[:5])
-        //nob := trim(nf.azp[5:])
     }
     return fm
 }
@@ -438,9 +407,34 @@ func dodajFakty(fk []fkwiersz, st int) {
     fmt.Print(len(fk),", ")
 }
 
+func init() {
+    flag.Usage = func() {
+        fmt.Fprintf(os.Stderr, "Aby uruchomić program %s należy wszyskie parametry podane poniżej:\n", os.Args[0])
+        fmt.Fprintln(os.Stderr, "  -f nazwa_pliku : plik csv z informacjami o faktach kulturowych z azpmax")
+        fmt.Fprintln(os.Stderr, "  -s nazwa_pliku : plik csv z informacjami o stanowiskach z azpmax")
+        fmt.Fprintln(os.Stderr, "  -c nazwa_pliku : plik docelowej bazy")
+        fmt.Fprintln(os.Stderr, "  -w nazwa_pliku : plik bazy ze wspólrzędnymi")
+        
+    }
+    flag.StringVar(&faktyPlik, "f", "","plik csv z informacjami o faktach kulturowych z azpmax")
+    flag.StringVar(&stPlik, "s", "", "plik csv z informacjami o stanowiskach z azpmax")
+    flag.StringVar(&bazaPlik, "c", "", "baza docelowa")
+    flag.StringVar(&wspPlik, "w", "", "baza ze wspolrzednymi")
+}
+
+func main2() {
+    flag.Parse()
+    fmt.Println("w: ",faktyPlik, stPlik, bazaPlik, wspPlik, flag.Parsed())
+}
+
 func main() {
+    flag.Parse()
+    if flag.NFlag() < 4 {
+        flag.Usage()
+        return
+    }
     c := 0
-    ie := initDb("kartoteki/sbaza.db", "azp2.db")
+    ie := initDb(wspPlik, bazaPlik)
     ie = initStmt()
     if ie != nil {
         fmt.Println(ie.Error())
@@ -461,62 +455,38 @@ func main() {
     if ie != nil {
         fmt.Println(ie.Error())
     }    
-    fakty := initFakty("/home/milosz/archeocs/import_azpmax/kartoteki/sfakty.csv")
-    dcsv, e := NewCsv("/home/milosz/archeocs/import_azpmax/kartoteki/sdane2.csv")
+    fakty := initFakty(faktyPlik)
+    dcsv, e := NewCsv(stPlik)
     if e != nil {
         fmt.Println(e.Error())
     } else {
         for {
-            nt, nx := dcsv.Nastepny()
+            nt, nx := dcsv.Wiersz()
             if !nx {
                 break
             } 
             nw := NewWiersz(nt) 
             if c > 0 {
-//                st := nw.genst()
-//                e = dodaj(st,false)
-//                f := nw.genFizgeo(st.id)
-                st := nw.genst()
-                si := stazp{ob:st.obszar, nob:nobs(st.nrObszar)}
-                e := nw.genEkspo(st.id)
-                f := nw.genFizgeo(st.id)
-                o := nw.genObszar(st.id)
-                t := nw.genTer(st.id)
-                w := nw.genWnio(st.id)
-                z := nw.genZagr(st.id)
-                a := nw.genAkt(st.id)
-                g := nw.genGleb(st.id)
-                k := nw.genKarta(st.id)
-                dodaj(stps, st,false)
-                dodaj(fgps, f,true)
-                dodaj(ekps, e,true)   
-                dodaj(obps, o,true)
-                dodaj(teps, t,true)
-                dodaj(wnps, w,true)
-                dodaj(zaps, z,true)      
-                dodaj(akps, a, true)
-                dodaj(gbps, g, true)
-                dodaj(kaps, k, true)  
-                if ft, ok := fakty[si]; !ok {
-                    fmt.Printf("%#v\n",si)
-                    panic("brak faktow")
+                if st, err := nw.newStanowisko(); err == nil {
+                    si := stazp{ob:st.obszar, nob:nobs(st.nrObszar)}
+                    if ft, ok := fakty[si]; !ok {
+                        c+=1
+                        continue 
+                    } else {
+                        dodaj(stps, st, false)
+                        dodajFakty(ft,st.id)
+                    }   
+                    dodaj(fgps, nw.newFizgeo(st.id), true)
+                    dodaj(ekps, nw.newEksdane(st.id), true)   
+                    dodaj(obps, nw.newObsdane(st.id), true)
+                    dodaj(teps, nw.newTerdane(st.id), true)
+                    dodaj(wnps, nw.newWniodane(st.id), true)
+                    dodaj(zaps, nw.newZagdane(st.id), true)      
+                    dodaj(akps, nw.newAktdane(st.id), true)
+                    dodaj(gbps, nw.newGledane(st.id), true)
+                    dodaj(kaps, nw.newKardane(st.id), true)  
                 } else {
-                    dodajFakty(ft,st.id)
-                }     
-                if c % 10 == 0 {
-                    fmt.Println(c)
-                    // fmt.Printf("%#v\n\n",st)
-                    fmt.Printf("%#v\n\n",e)
-                    fmt.Printf("%#v\n\n",f)
-                    fmt.Printf("%#v\n\n",o)
-                    fmt.Printf("%#v\n\n",t)
-                    fmt.Printf("%#v\n\n",w)
-                    fmt.Printf("%#v\n\n",z)
-                    fmt.Printf("%#v\n\n",a)
-                    fmt.Printf("%#v\n\n",g)
-                    fmt.Printf("%#v\n\n",k)
-                    fmt.Printf("%#v\n\n",nw)
-                    fmt.Printf("%#v\n\n",fakty[si])
+                    fmt.Println(err.Error())
                 }
             }
             c+=1
