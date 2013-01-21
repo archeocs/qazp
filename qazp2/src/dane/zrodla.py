@@ -159,9 +159,7 @@ def getPolaczenie2(qgsWarstwa):
     if ndp.upper() == 'SPATIALITE':
         import sqlite3
         return Polaczenie(sqlite3.connect(str(uri.database())),Polaczenie.LITE)
-        #drv = 'QSQLITE'
     elif ndp.upper() == 'POSTGRES':
-        #drv = 'QPSQL'
         import psycopg2
         import psycopg2.extensions
         psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
