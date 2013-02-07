@@ -63,7 +63,6 @@ class GTabModel(QAbstractTableModel):
         if sekcja < 0 or sekcja >= len(self._nag):
             raise Exception("headerData: indeks %d poza zakresem [0,%d]"%(sekcja,len(self._nag)-1))
         if rola == Qt.DisplayRole:
-            #print self._nag[sekcja], sekcja
             return QVariant(self._nag[sekcja])
                 
 class GTabModel2(QAbstractTableModel):
@@ -71,7 +70,9 @@ class GTabModel2(QAbstractTableModel):
     def __init__(self,nag,dane=[],parent=None): # nag = [(Naglowek,klucz),...]
         QAbstractTableModel.__init__(self,parent)
         self._nag = nag
-        self._dane = dane
+        self._origDane = dane
+        self._dane = []
+        self._dane.extend(dane)
         
     def rowCount(self, *args, **kwargs):
         return len(self._dane)
@@ -83,7 +84,6 @@ class GTabModel2(QAbstractTableModel):
         if rola == Qt.DisplayRole:
             r,c = indeks.row(), indeks.column()
             v = self._dane[r][self._nag[c][1]]
-            #v = self._dane[r].wartosc(c)
             if not isinstance(v, QVariant):
                 return QVariant(v).toString()
             else:
@@ -97,7 +97,6 @@ class GTabModel2(QAbstractTableModel):
         if sekcja < 0 or sekcja >= len(self._nag):
             raise Exception("headerData: indeks %d poza zakresem [0,%d]"%(sekcja,len(self._nag)-1))
         if rola == Qt.DisplayRole:
-            #print self._nag[sekcja], sekcja
             return QVariant(self._nag[sekcja][0])
         
     def removeRows(self, row, count, parent=QModelIndex):
@@ -109,6 +108,18 @@ class GTabModel2(QAbstractTableModel):
             self._dane.pop(row)
         self.endRemoveRows()
         return True
+    
+    def setFiltr(self, daneFiltr):
+        self.beginResetModel()
+        self._dane = daneFiltr
+        self.endResetModel()
+    
+    def usunFiltr(self):
+        self.beginResetModel()
+        self._dane = []
+        self._dane.extend(self._origDane)
+        self.endResetModel()
+        return self._dane
 
 class GFrame(QFrame):
     
@@ -134,31 +145,30 @@ class GFrame(QFrame):
         btn_zamknij.setObjectName('btn_zamknij')
         btn_zmien = QPushButton(u'Edytuj (Ctrl+J)')
         btn_zmien.setObjectName('btn_zmien')
-        #btn_anul = QPushButton('Anuluj')
-        #btn_anul.setObjectName('btn_anul')
         btn_wysw = QPushButton('Wyswietl')
         btn_wysw.setObjectName('btn_wysw')
         btn_usun = QPushButton('Usun')
         btn_usun.setObjectName('btn_usun')
         btn_drukuj = QPushButton('Drukuj')
         btn_drukuj.setObjectName('btn_drukuj')
+        btn_filtr = QPushButton('Filtruj')
+        btn_filtr.setObjectName('btn_filtr')
         hbox.addWidget(btn_zamknij)
         hbox.addWidget(btn_zmien)
         hbox.addWidget(btn_usun)
         hbox.addWidget(btn_wysw)
-        #hbox.addWidget(btn_anul)
         hbox.addWidget(btn_drukuj)
+        hbox.addWidget(btn_filtr)
         btn_box.setLayout(hbox)      
         vbox.addWidget(btn_box)
         
         grupa = QButtonGroup(btn_box)
-        grupa.addButton(btn_zamknij,1)
-        #grupa.addButton(btn_anul,2) 
-        grupa.addButton(btn_zmien,2)
-        grupa.addButton(btn_wysw,3)
-        grupa.addButton(btn_usun,4)
-        grupa.addButton(btn_drukuj,5)
-        #grupa.buttonPressed.connect(self.btn_klik)
+        grupa.addButton(btn_zamknij, 1)
+        grupa.addButton(btn_zmien, 2)
+        grupa.addButton(btn_wysw, 3)
+        grupa.addButton(btn_usun, 4)
+        grupa.addButton(btn_drukuj, 5)
+        grupa.addButton(btn_filtr, 6)
         self.connect(grupa, SIGNAL('buttonPressed(int)'), self.btn_klik)
         QShortcut(QKeySequence(Qt.CTRL+Qt.Key_J),self._win).activated.connect(self.akcja_zmien)
     
@@ -178,12 +188,22 @@ class GFrame(QFrame):
     
     def wszystkie(self):
         return self._gobs
+    
+    def setFiltr(self, zbior):
+        ng = []
+        for g in self._gobs:
+            ident = g['id']
+            if isinstance(ident, QVariant):
+                ident = ident.toInt()[0]
+            if ident in zbior:
+                ng.append(g)
+        self._gobs = ng
+        self.getModel().setFiltr(self._gobs) 
+        return len(self._gobs)
         
     def btn_klik(self,id):
         if id == 1:
             self._akcjaOk()
-        #elif id == 2:
-        #    self._akcjaAnul()
         elif id == 2:
             self.akcja_zmien()
         elif id == 3:
@@ -192,6 +212,8 @@ class GFrame(QFrame):
             self.akcja_usun()
         elif id == 5:
             self._akcjaDrukuj()
+        elif id == 6:
+            self._akcjaFiltruj()
     def utworz_model(self,gobs):
         raise Exception("GFrame.utworz_model: brak implementacji") 
     
@@ -204,6 +226,9 @@ class GFrame(QFrame):
         self._win.usun(self)
     
     def _akcjaDrukuj(self):
+        pass
+    
+    def _akcjaFiltruj(self):
         pass
         
     def akcja_zmien(self):

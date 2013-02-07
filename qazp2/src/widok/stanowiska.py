@@ -32,11 +32,13 @@ from PyQt4.QtCore import SIGNAL,QObject,Qt
 from PyQt4.QtGui import QAction,QMessageBox,QInputDialog, QProgressDialog, QFileDialog, QDialog
 from widok.lista import GTabModel2, GFrame
 from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie2,\
-    rejestr_map, stLista
+    rejestr_map, stLista, filtrSql
 from widok.sted import Edytor
 from lib.keza import  KezaDruk
 from widok.dialog import NrAzpDialog
 from lib.qgsop import usun
+from widok.filtred import FiltrWidget
+import logging
 
 def tab_model(obiekty,parent=None):
     return GTabModel2([('Ident','id'),('Obszar','obszar'),('Nr na obszarze','nr_obszar'),('Rodzaj','rodzaj_badan')
@@ -46,19 +48,19 @@ def tab_model(obiekty,parent=None):
 class StanowiskaFrame(GFrame):
     
     warstwa = None
-    def __init__(self,warstwa,listaSt,iface,win,parent=None):
+    def __init__(self, warstwa, listaSt, iface, win, parent=None):
         GFrame.__init__(self,win,listaSt)
         self.setObjectName('stanowiska')
         self.warstwa = warstwa
         self._if = iface
         self._win = win
         self._win.statusBar().showMessage("Wyszukano %s obiektow %s"%(str(self.warstwa.featureCount()),
-                                                                      self.warstwa.dataProvider().dataSourceUri()))
-    
+               self.warstwa.dataProvider().dataSourceUri()))
+        
     def akcja_wyswietl(self):
         if self.warstwa is not None:
             rejestr_map().addMapLayer(self.warstwa)
-            QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+self.warstwa.name())    
+            QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+self.warstwa.name())  
     
     def utworz_model(self, gobs):
         return tab_model(gobs, self)
@@ -85,6 +87,29 @@ class StanowiskaFrame(GFrame):
                             round(ptc.x(),2), round(ptc.y(),2)))
         kd.drukuj(plik, sts, pd)
         QMessageBox.information(self,'Drukowanie','Karty wygenerowane')
+    
+    def _anulujFiltr(self):
+        self._win.usun()
+    
+    def _zastosujFiltr(self, mapa):
+        self._win.usun()
+        fzbior = None
+        for (k, m) in mapa.iteritems():
+            s = filtrSql(getPolaczenie2(self.warstwa), unicode(k), m)
+            logging.info('zbior: '+str(s))
+            if fzbior is None:
+                fzbior = s
+            else:
+                fzbior &= s # roznica zbiorow - interesujace sa tylko powtarzajace sie identyfikatory
+        logging.info('wynik: '+str(fzbior))
+        f = self.setFiltr(fzbior)
+        QMessageBox.information(self,'Filtrowanie','Filtr zastosowany. Wybrano '+str(f))
+    
+    def _akcjaFiltruj(self):
+        fw = FiltrWidget()
+        fw.filtruj.connect(self._zastosujFiltr)
+        fw.anuluj.connect(self._anulujFiltr)
+        self._win.dodaj(fw)
         
     def akcja_usun(self):
         ww = self.wybrany_wiersz()
@@ -146,7 +171,6 @@ class WyszukajNrAzpAkcja(QAction):
         warstwa = szukaj_stanowiska(unicode(warunek))
         mf = StanowiskaFrame(warstwa,gstanowiska(warstwa),self._iface,self._win)
         self._win.dodaj(mf)
-
 
 class PokazujZaznAkcja(QAction):
     

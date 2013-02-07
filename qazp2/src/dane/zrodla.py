@@ -60,6 +60,29 @@ def _gwarstwa(qgs_warstwa,atrybuty):
         else:
             return mt
 
+def sqlListaId(con, sql, params=[]):
+    stmt = con.prep(sql)
+    return set(stmt.wszystkie(params, f=lambda r : r[0]))
+
+def filtrSql(con, tabela, atrs={}):
+    sql = u'select stanowisko from %s where '%tabela
+    params = []
+    c = 0
+    for a, v in atrs.iteritems():
+        if len(v) > 1:
+            war = '%s in (%s) ' % (unicode(a), ','.join(['?' for x in range(len(v))]))
+            for y in v:
+                params.append(unicode(y))
+        else:
+            war = '%s = ? '% unicode(a)
+            params.append(unicode(v[0]))
+        if c > 0:
+            sql += ' and '
+        sql += war
+        c += 1
+    sql += 'order by stanowisko'
+    return sqlListaId(con, sql, params)
+
 def _listaMap(listaObi, atrybuty):
     return [GModel(atrybuty,f) for f in listaObi]
 

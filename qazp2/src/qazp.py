@@ -143,14 +143,14 @@ class Okno(QMainWindow):
             self._stack.removeWidget(self.zaznWgt)
         self.zaznWgt = wgt
         self.dodaj(wgt)
-
+    
     def dodaj(self,wgt):
         self._stack.addWidget(wgt)
         self._stack.setCurrentWidget(wgt)
         
     def usun(self,wgt=None):
         if wgt is None:
-            self._stack.removeWidget(self._stack.count()-1)
+            self._stack.removeWidget(self._stack.currentWidget())
         else:
             self._stack.removeWidget(wgt)
             
