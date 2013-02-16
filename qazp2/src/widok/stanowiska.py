@@ -36,7 +36,7 @@ from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczeni
 from widok.sted import Edytor
 from lib.keza import  KezaDruk
 from widok.dialog import NrAzpDialog
-from lib.qgsop import usun
+from lib.qgsop import usun, tempWarstwa
 from widok.filtred import FiltrWidget
 import logging
 
@@ -58,9 +58,18 @@ class StanowiskaFrame(GFrame):
                self.warstwa.dataProvider().dataSourceUri()))
         
     def akcja_wyswietl(self):
-        if self.warstwa is not None:
-            rejestr_map().addMapLayer(self.warstwa)
-            QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+self.warstwa.name())  
+        atrs = self.warstwa.dataProvider().fields()
+      #  lstAtrs = [atrs[i] for i in range(len(atrs))]
+        #logging.info('atrybuty '+str(lstAtrs)+' '+str(atrs))
+      #  for f in lstAtrs:
+       #     logging.info('f'+' '+str(f.typeName())+' '+str(f.name()))
+        nv = tempWarstwa(self.wszystkie(), "filtr_"+self.warstwa.name(), "Polygon", atrs)
+        nv.setCrs(self.warstwa.crs())
+        if rejestr_map().addMapLayer(nv):
+            QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+nv.name())
+        #if self.warstwa is not None:
+        #    rejestr_map().addMapLayer(self.warstwa)
+        #    QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+self.warstwa.name())  
     
     def utworz_model(self, gobs):
         return tab_model(gobs, self)
@@ -96,12 +105,10 @@ class StanowiskaFrame(GFrame):
         fzbior = None
         for (k, m) in mapa.iteritems():
             s = filtrSql(getPolaczenie2(self.warstwa), unicode(k), m)
-            logging.info('zbior: '+str(s))
             if fzbior is None:
                 fzbior = s
             else:
                 fzbior &= s # roznica zbiorow - interesujace sa tylko powtarzajace sie identyfikatory
-        logging.info('wynik: '+str(fzbior))
         f = self.setFiltr(fzbior)
         QMessageBox.information(self,'Filtrowanie','Filtr zastosowany. Wybrano '+str(f))
     

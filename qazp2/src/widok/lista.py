@@ -214,6 +214,7 @@ class GFrame(QFrame):
             self._akcjaDrukuj()
         elif id == 6:
             self._akcjaFiltruj()
+    
     def utworz_model(self,gobs):
         raise Exception("GFrame.utworz_model: brak implementacji") 
     

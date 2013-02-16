@@ -29,10 +29,10 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from PyQt4.QtCore import QVariant
-from qgis.core import QgsFeature
+from qgis.core import QgsFeature, QgsVectorLayer, QgsField
 from dane.model import MIEJSCA_ATR
 from qgis.core import QgsCoordinateTransform, QgsCoordinateReferenceSystem
-
+import logging
 
 def set_atr(qgs_obiekt,atr,v):
     if atr not in MIEJSCA_ATR:
@@ -84,3 +84,15 @@ def dodaj(qgs_warstwa,atr,qgs_geom,orig_srid=4326,commit=False):
         qgs_warstwa.startEditing()
     return qgs_warstwa.addFeatures([f]) and (not commit or qgs_warstwa.commitChanges())
 
+def tempWarstwa(dane, nazwa, typ, atrybuty):
+    v = QgsVectorLayer(typ, nazwa, 'memory')
+    pr = v.dataProvider()
+    #logging.info(atrybuty)
+    pola = []
+    for i in range(len(atrybuty)):
+        pola.append(QgsField(atrybuty[i].name(), QVariant.String))
+        #logging.info(str(atrybuty[i].name())+' '+str(pola[i].typeName())+' at: '+str(atrybuty[i].typeName())+' '+str(pola[i].type()))
+    tf = [g.feature() for g in dane]
+    pr.addFeatures(tf)
+    v.updateExtents()
+    return v

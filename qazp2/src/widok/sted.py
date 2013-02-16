@@ -297,7 +297,8 @@ class EkspozycjaWidok(PropWidok):
         opt=[(u'Eksponowany','eksponowany',self.wb),(u'Krawędzie, stoki','kraw_stoki',self.wb),(u'Sfałdowania, cyple','sfaldowania_cyple',self.wb),
                 (u'Cyple wybitne','cyple_wybitne',self.wb), (u'Wały, garby','waly_garby',self.wb), (u'Wyniesienia okrężne','wyniesienia_okrezne',self.wb), 
                 (u'Osłonięty','osloniety',self.wb),(u'Podstawa stoku','podst_stoku',self.wb),(u'Doliny, niecki','doliny_niecki',self.wb), 
-                (u'Kotlinki, zagłębienia','kotlinki_zagleb',self.wb), ('Jaskinie','jaskinie',self.wb),(u'Stopień ekspozycji','stopien',self.nic),(u'Rozmiar ekspozycji','rozmiar',self.nic),
+                (u'Kotlinki, zagłębienia','kotlinki_zagleb',self.wb), ('Jaskinie','jaskinie',self.wb),(u'Stopień ekspozycji','stopien',self.nic),
+                (u'Rozmiar ekspozycji','rozmiar',self.nic),
                 (u'Kierunek ekspozycji','kierunek',self.nic),(u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
         for x in range(len(opt)-4):

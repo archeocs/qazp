@@ -32,60 +32,8 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import sys
 
-class Atrybut(object):
+from dane.tabela import *
 
-    def __init__(self, nazwa, dozwolone=None, etykieta=None): # jezeli dowolone == None to znaczy ze kazda wartosc jest dozwolona
-        self._nazwa = nazwa
-        self._dozwolone = dozwolone
-        self._etykieta = etykieta
-    
-    @property    
-    def anazwa(self):
-        return self._nazwa
-    
-    @property
-    def dozwolone(self): # zwraca etykiety dozwolonych wartosci
-        if self._dozwolone is not None:
-            return [d[1] for d in self._dozwolone]
-        return None
-    
-    def kodwar(self, i):
-        return self._dozwolone[i][0]
-    
-    def etwar(self, i):
-        return self._dozwolone[i][1]
-
-    @property    
-    def aetykieta(self):
-        return self._etykieta
-
-    def __unicode__(self):
-        return self._etykieta
-
-def atrsTab(tab):
-    atrs = []
-    for t in tab:
-        atrs.append(Atrybut(t[0], t[1], t[2]))
-    return atrs
-
-class Tabela(object):
-    
-    def __init__(self, nazwa, atrybuty, etykieta=None):
-        self._nazwa = nazwa
-        self._atrs = atrybuty
-        self._etykieta = etykieta
-    
-    @property    
-    def tnazwa(self):
-        return self._nazwa
-    
-    @property
-    def atrs(self):
-        return self._atrs
-
-    @property
-    def tetykieta(self):
-        return self._etykieta
 
 class Filtr(object):
 
@@ -259,19 +207,13 @@ class FiltrWidget(QWidget):
         self._widok.setModel(self._wmodel)
         hbox.addWidget(self._widok)
         ed = Edytor()
-        self._tabele.append(Tabela('wnioski', atrsTab([ 
-                                ('wartosc', [('M', u'Mała'), ('S', u'Średnia'), ('D', u'Duża')], u'Wartość'), 
-                                ('inwentaryzacja', [('T', 'Tak'), ('N', 'Nie')], 'Inwentaryzacja'),
-                                ('interwencja', [('T', 'Tak'), ('N', 'Nie')], 'Interwencja'),
-                                ('wykopaliska', [('T', 'Tak'), ('N', 'Nie')], 'Wykopaliska')]), 
-                                u'Wnioski'))
-        self._tabele.append(Tabela('zagrozenia', atrsTab([
-                                ('wystepowanie', [('I', u'Istnieje'), ('N', u'Nie istnieje')], u'Występowanie'),
-                                ('czas', [('S', u'Stałe'), ('D', u'Doraźne')], u'Czas'),
-                                ('przyczyna_ludzie', [('T', 'Tak'), ('N', 'Nie')], 'Ludzie'),
-                                ('tekst', None, 'Tekst')
-                                ]), 
-                                u'Zagrożenia'))
+        self._tabele.append(fizgeo())
+        self._tabele.append(ekspozycja())
+        self._tabele.append(obszar())
+        self._tabele.append(teren())
+        self._tabele.append(gleba())
+        self._tabele.append(wnioski())
+        self._tabele.append(zagrozenia())
         for t in self._tabele:
             ed.dodajTabele(t)
         hbox.addWidget(ed)
