@@ -86,13 +86,14 @@ def dodaj(qgs_warstwa,atr,qgs_geom,orig_srid=4326,commit=False):
 
 def tempWarstwa(dane, nazwa, typ, atrybuty):
     v = QgsVectorLayer(typ, nazwa, 'memory')
+    v.startEditing()
     pr = v.dataProvider()
-    #logging.info(atrybuty)
     pola = []
     for i in range(len(atrybuty)):
         pola.append(QgsField(atrybuty[i].name(), QVariant.String))
-        #logging.info(str(atrybuty[i].name())+' '+str(pola[i].typeName())+' at: '+str(atrybuty[i].typeName())+' '+str(pola[i].type()))
-    tf = [g.feature() for g in dane]
+    tf = [QgsFeature(g.feature()) for g in dane]
+    pr.addAttributes(pola)
     pr.addFeatures(tf)
+    v.commitChanges()
     v.updateExtents()
     return v

@@ -44,7 +44,6 @@ class WykModel(QAbstractTableModel):
     
     def endResetModel(self):
         self._wybrany = None
-        print 'reset'
         QAbstractTableModel.endResetModel(self)
         
     def ident(self):
@@ -64,7 +63,6 @@ class WykModel(QAbstractTableModel):
     def data(self, indeks, rola = Qt.DisplayRole):
         if rola == Qt.DisplayRole and indeks.column() == 0 and indeks.row() < len(self._wyk):
             self._wybrany = self._wyk[indeks.row()]
-            #print unicode(x.toString())
             return self._wybrany[1]
         return QVariant()
         
@@ -132,7 +130,6 @@ class WykDialog(QFrame):
         
     def _zmWyk(self,et):
         self._mwyk.beginResetModel()
-        print self._wyk.wypelnij(unicode(self._cbstart.currentText()))
         self._mwyk.endResetModel()
         self._edtxt.setText('')
         
@@ -146,7 +143,6 @@ class WykDialog(QFrame):
             n = self._wyk[indeks.row()]
             wid = n[0].toInt()[0]
             wn = unicode(n[1].toString())
-            print wid, wn
         else:
             return
         if not sm.hasSelection() :
@@ -154,7 +150,6 @@ class WykDialog(QFrame):
             return
         odp = QMessageBox.question(self,'Zmiana',u'Czy na pewno chcesz zmienić nazwę '+wn+' na '+self._edtxt.text()+' ?',QMessageBox.Yes | QMessageBox.No)
         if odp != QMessageBox.Yes:
-            print 'przerwano'
             return
         if self._wyk.zmien(wid,unicode(self._edtxt.text())):
             self._mwyk.beginResetModel()
@@ -167,7 +162,6 @@ class WykDialog(QFrame):
     def _dodajNowy(self,arg):
         odp = QMessageBox.question(self,'Dodawanie',u'Czy na pewno chcesz dodać nazwę '+self._edtxt.text()+' ?',QMessageBox.Yes | QMessageBox.No)
         if odp != QMessageBox.Yes:
-            print 'przerwano'
             return
         if self._wyk.dodaj(unicode(self._edtxt.text())):
             self._mwyk.beginResetModel()
@@ -183,7 +177,6 @@ class WykDialog(QFrame):
         if indeks.isValid():
             n = self._wyk[indeks.row()]
             wid = n[0].toInt()[0]
-            print wid, unicode(n[1].toString())
         else:
             return
         if not sm.hasSelection() :
@@ -191,7 +184,6 @@ class WykDialog(QFrame):
             return
         odp = QMessageBox.question(self,'Usuwanie',u'Czy na pewno chcesz usunąć nazwę '+self._edtxt.text()+' ?',QMessageBox.Yes | QMessageBox.No)
         if odp != QMessageBox.Yes:
-            print 'przerwano'
             return
         self._wyk.usun(wid)
         self._mwyk.beginResetModel()
@@ -214,4 +206,22 @@ class WykazAkcja(QAction):
             QMessageBox.warning(self._win,u'Wykazy',u'Wykazy wymagają otwartej warstwy "stanowiska"')
             return 
         self._win.dodaj(WykDialog(getPolaczenie2(st),self._naz,self._win))
+
+class FkWykazAkcja(QAction):
+    def __init__(self,et,nazwa,iface,window):
+        QAction.__init__(self,et,window)
+        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self._win = window
+        self._iface = iface
+        self._naz = nazwa
+        
+    def wykonaj(self):
+        st = get_warstwa('stanowiska')
+        if st is None:
+            QMessageBox.warning(self._win,u'Wykazy',u'Wykazy wymagają otwartej warstwy "stanowiska"')
+            return 
+        else:
+            con = getPolaczenie2(st)
+            con.jeden('select count(*) from '+self._naz)
+        #self._win.dodaj(WykDialog(getPolaczenie2(st),self._naz,self._win))
         

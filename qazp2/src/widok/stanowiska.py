@@ -59,17 +59,10 @@ class StanowiskaFrame(GFrame):
         
     def akcja_wyswietl(self):
         atrs = self.warstwa.dataProvider().fields()
-      #  lstAtrs = [atrs[i] for i in range(len(atrs))]
-        #logging.info('atrybuty '+str(lstAtrs)+' '+str(atrs))
-      #  for f in lstAtrs:
-       #     logging.info('f'+' '+str(f.typeName())+' '+str(f.name()))
         nv = tempWarstwa(self.wszystkie(), "filtr_"+self.warstwa.name(), "Polygon", atrs)
         nv.setCrs(self.warstwa.crs())
         if rejestr_map().addMapLayer(nv):
             QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+nv.name())
-        #if self.warstwa is not None:
-        #    rejestr_map().addMapLayer(self.warstwa)
-        #    QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+self.warstwa.name())  
     
     def utworz_model(self, gobs):
         return tab_model(gobs, self)
