@@ -75,7 +75,7 @@ class StanowiskaFrame(GFrame):
         
     def _akcjaDrukuj(self):
         kd = KezaDruk(getPolaczenie2(self.warstwa))
-        plik = QFileDialog.getSaveFileName(parent=self, filter='PNG (*.pdf)')
+        plik = QFileDialog.getSaveFileName(parent=self, filter='PDF (*.pdf)')
         pd = QProgressDialog("Przygotowuje wydruk", "Cancel", 0, len(self._gobs)+1);
         pd.setWindowModality(Qt.WindowModal);
         sts = []

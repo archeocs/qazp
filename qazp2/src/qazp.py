@@ -32,7 +32,7 @@
 from PyQt4.QtGui import QAction, QApplication,QMainWindow,QStackedWidget, QMessageBox,\
                         QFileDialog
 from PyQt4.QtCore import QObject, SIGNAL
-from widok import trasy,miejsca,stanowiska, wykazy, admin
+from widok import trasy,miejsca,stanowiska, wykazy, admin, zestawienia
 from qgis.core import QgsMapLayerRegistry
 from os.path import abspath
 from dane.zrodla import get_warstwa, getPolaczenie2
@@ -135,6 +135,8 @@ class Okno(QMainWindow):
         admin_menu.addAction(admin.SchematAkcja(self._iface, self))
         admin_menu.addAction(admin.SkryptAkcja(self._iface, self))
         admin_menu.addAction(admin.LogowanieAkcja(self._iface, self))
+        zest_menu = self.menuBar().addMenu('Zestawienia')
+        zest_menu.addAction(zestawienia.NoweZestawienieAkcja(self._iface, self))
         
     
     zaznWgt = None
