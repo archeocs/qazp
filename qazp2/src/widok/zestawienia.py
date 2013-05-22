@@ -82,6 +82,7 @@ class WidokZestModel(QAbstractTableModel):
             return self._odtw.odtworz(c, self._dane[r][c])
         return QVariant()
     
+    
 ##### Edytor SQL - Tabela
 
 class TypTablica(object):
@@ -185,6 +186,19 @@ class TablicaModel(QAbstractTableModel):
             self.endResetModel()
         self._tab.setWartosc(wartosc, r, c)
         self.dataChanged.emit(indeks, indeks)
+        
+    def headerData(self, sekcja, orientacja, rola):
+        #print sekcja, orientacja
+        if orientacja == Qt.Horizontal and rola == Qt.DisplayRole:
+            if sekcja == 0:
+                return u'Funkcja'
+            elif sekcja == 1:
+                return u'Grupowanie'
+            elif sekcja == 2:
+                return u'Warunek ORAZ'
+            elif sekcja > 2:
+                return u'Warunek LUB'
+        return None
 
     def flags(self,indeks):
         return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
@@ -440,7 +454,7 @@ class NoweZestawienieAkcja(QAction):
     
     def __init__(self, iface, window):
         QAction.__init__(self,u'Nowe zestawienie',window)
-        self.triggered.connect(self.wykonaj())
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         
