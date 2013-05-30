@@ -31,7 +31,6 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import sys
-
 from dane.tabela import *
 
 
@@ -60,6 +59,32 @@ class Filtr(object):
     def wartosc(self):
         return self._wartosc
 
+class Filtr2(object):
+
+    def __init__(self, atr, wartosc, rep=None):
+        fmt = u'%s.%s = %s'
+        if rep is None:
+            self._widok = fmt % (atr.tabela.tetykieta, atr.aetykieta, wartosc)
+        else:
+            self._widok = fmt % (atr.tabela.tetykieta, atr.aetykieta, rep)
+        self._atr = atr
+        self._war = wartosc
+
+    def __unicode__(self):
+        return self._widok
+
+    @property
+    def tabela(self):
+        return self._atr.tabela
+
+    @property
+    def atrybut(self):
+        return self._atr
+
+    @property    
+    def wartosc(self):
+        return self._war
+        
 class ListaModel(QAbstractListModel):
 
     def __init__(self, filtry, parent=None):
@@ -193,7 +218,7 @@ class Edytor(QWidget):
 
 class FiltrWidget(QWidget):
     
-    def __init__(self, parent=None):
+    def __init__(self, con, parent=None):
         QWidget.__init__(self, parent)
         self._filtry = []
         self._tabele = []
@@ -214,6 +239,7 @@ class FiltrWidget(QWidget):
         self._tabele.append(gleba())
         self._tabele.append(wnioski())
         self._tabele.append(zagrozenia())
+        self._tabele.append(fakty(con))
         for t in self._tabele:
             ed.dodajTabele(t)
         hbox.addWidget(ed)
@@ -231,13 +257,13 @@ class FiltrWidget(QWidget):
         #fmt = u'%s.%s = %s'
         t = self._tabele[wyb[0]]#.tetykieta
         a = t.atrs[wyb[1]]
-        w = wyb[2]
-        we = None
-        if isinstance(w, int):
-            we = a.etwar(w)
-            w = a.kodwar(w)
+        war = wyb[2]
+        rep = None
+        if isinstance(war, int):
+            rep = a.etwar(war)
+            war = a.kodwar(war)
         self._wmodel.beginResetModel()
-        self._filtry.append(Filtr(t.tnazwa, t.tetykieta, a.anazwa, a.aetykieta, w, we))
+        self._filtry.append(Filtr2(a, war, rep))
         self._wmodel.endResetModel()
     
     filtruj = pyqtSignal(dict, name='filtruj')

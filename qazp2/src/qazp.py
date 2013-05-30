@@ -38,6 +38,7 @@ from os.path import abspath
 from dane.zrodla import get_warstwa, getPolaczenie2
 from lib.uzytki import dostosujSchemat, wykonajPolecenie
 
+
 class SchematAkcja(QAction):
     def __init__(self,iface,window):
         QAction.__init__(self,'Dostosuj schemat',window)
@@ -109,7 +110,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp 0.14.2')
+        self.setWindowTitle('qazp 0.14.3')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         
@@ -144,7 +145,6 @@ class Okno(QMainWindow):
         fakty_sub.addAction(zestawienia.jednostkiMiej(self._iface, self))
         fakty_sub.addAction(zestawienia.jedOkrMiej(self._iface, self))
         fakty_sub.addAction(zestawienia.jedOkrFunMiej(self._iface, self))
-        
     
     zaznWgt = None
     def pokazZaznaczone(self,wgt):

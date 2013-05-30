@@ -32,13 +32,12 @@ from PyQt4.QtCore import SIGNAL,QObject,Qt
 from PyQt4.QtGui import QAction,QMessageBox,QInputDialog, QProgressDialog, QFileDialog, QDialog
 from widok.lista import GTabModel2, GFrame
 from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie2,\
-    rejestr_map, stLista, filtrSql
+    rejestr_map, stLista, sqlListaId
 from widok.sted import Edytor
 from lib.keza import  KezaDruk
 from widok.dialog import NrAzpDialog
 from lib.qgsop import usun, tempWarstwa
 from widok.filtred import FiltrWidget
-import logging
 
 def tab_model(obiekty,parent=None):
     return GTabModel2([('Ident','id'),('Obszar','obszar'),('Nr na obszarze','nr_obszar'),('Rodzaj','rodzaj_badan')
@@ -56,6 +55,7 @@ class StanowiskaFrame(GFrame):
         self._win = win
         self._win.statusBar().showMessage("Wyszukano %s obiektow %s"%(str(self.warstwa.featureCount()),
                self.warstwa.dataProvider().dataSourceUri()))
+        self._con = getPolaczenie2(self.warstwa)
         
     def akcja_wyswietl(self):
         atrs = self.warstwa.dataProvider().fields()
@@ -69,12 +69,13 @@ class StanowiskaFrame(GFrame):
     
     def akcja_zmien(self):
         ww = self.wybrany_wiersz()[1]
-        ed = Edytor(self.warstwa,ww,self._win,funModel=self.zmienWiersz)
+        ed = Edytor(self.warstwa, ww, self._win, funModel=self.zmienWiersz)
         self._win.setWindowTitle('Stanowisko: '+str(ww['obszar'].toString())+'/'+str(ww['nr_obszar'].toString()))
         self._win.dodaj(ed)
         
     def _akcjaDrukuj(self):
-        kd = KezaDruk(getPolaczenie2(self.warstwa))
+        #kd = KezaDruk(getPolaczenie2(self.warstwa))
+        kd = KezaDruk(self._con)
         plik = QFileDialog.getSaveFileName(parent=self, filter='PDF (*.pdf)')
         pd = QProgressDialog("Przygotowuje wydruk", "Cancel", 0, len(self._gobs)+1);
         pd.setWindowModality(Qt.WindowModal);
@@ -91,13 +92,15 @@ class StanowiskaFrame(GFrame):
         QMessageBox.information(self,'Drukowanie','Karty wygenerowane')
     
     def _anulujFiltr(self):
+        #self._con.zakoncz()
         self._win.usun()
     
     def _zastosujFiltr(self, mapa):
         self._win.usun()
         fzbior = None
         for (k, m) in mapa.iteritems():
-            s = filtrSql(getPolaczenie2(self.warstwa), unicode(k), m)
+            rf = k.filtr(m)
+            s = sqlListaId(self._con, rf[0], rf[1])
             if fzbior is None:
                 fzbior = s
             else:
@@ -106,7 +109,7 @@ class StanowiskaFrame(GFrame):
         QMessageBox.information(self,'Filtrowanie','Filtr zastosowany. Wybrano '+str(f))
     
     def _akcjaFiltruj(self):
-        fw = FiltrWidget()
+        fw = FiltrWidget(self._con)
         fw.filtruj.connect(self._zastosujFiltr)
         fw.anuluj.connect(self._anulujFiltr)
         self._win.dodaj(fw)
@@ -120,6 +123,10 @@ class StanowiskaFrame(GFrame):
         if usun(self.warstwa, ww[1].feature()):
             self.getModel().removeRow(ww[0].row())
             self._win.statusBar().showMessage(u'Stanowisko usunięte')
+
+    def _akcjaOk(self):
+        self._con.zakoncz()
+        self._win.usun()
 
 class WyszukajAkcja(QAction):
     
@@ -202,7 +209,7 @@ class PolaczSql(QAction):
         self._iface = iface
         
     def wykonaj(self):
-        db = getPolaczenie2(get_warstwa('stanowiska'))
-        if db._con.isOpen():
+        #db = getPolaczenie2(get_warstwa('stanowiska'))
+        if self._con._con.isOpen():
             QMessageBox.information(self, u'Połączenie', 'Połączenie nawiązane')
         

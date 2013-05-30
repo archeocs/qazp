@@ -231,7 +231,8 @@ class DynAtrybut(Atrybut):
 class FaktyAtrybut(DynAtrybut):
 
     def __init__(self, con, nazwa, etykieta, tabela):
-        DynAtrybut.__init__(self, nazwa, 'select kod, skrot from '+tabela+' order by nazwa', etykieta, con)
+        DynAtrybut.__init__(self, nazwa, 'select kod, skrot from '+tabela+' order by skrot', 
+                                    etykieta, con)
         
     def odtworz(self, wartosc): 
         #return wartosc
@@ -297,6 +298,28 @@ class Tabela(object):
     def dodajAtrybut(self, atrybut):
         self._atrs.append(atrybut)
         atrybut.tabela = self
+
+    def _nowyFiltr(self, atrs):
+        sql = u'select distinct stanowisko from %s where '%self._nazwa
+        params = []
+        c = 0
+        for a, v in atrs.iteritems():
+            if len(v) > 1:
+                war = '%s in (%s) ' % (a.anazwa, ','.join(['?' for x in range(len(v))]))
+                for y in v:
+                    params.append(unicode(y))
+            else:
+                war = '%s = ? '% a.anazwa
+                params.append(unicode(v[0]))
+            if c > 0:
+                sql += ' and '
+            sql += war
+            c += 1
+        sql += 'order by stanowisko'
+        return (sql, params)
+
+    def filtr(self, atrs):
+        return self._nowyFiltr(atrs)
         
     def __unicode__(self):
         return self._etykieta
@@ -306,10 +329,11 @@ class Tabela(object):
 
 class SelectTabela(Tabela):
 
-    def __init__(self, nazwa, etykieta, alias, mapaAtr, notnull=True):
+    def __init__(self, nazwa, etykieta, alias, mapaAtr, notnull=True, genfiltr=None):
         Tabela.__init__(self, nazwa, [], etykieta, alias)
         self._matr = mapaAtr
         self._notnull = notnull
+        self._genfiltr = genfiltr
         
     def select(self, atrs):
         sql = '(select distinct stanowisko, %s from '+self.tnazwa+' %s )'
@@ -318,6 +342,11 @@ class SelectTabela(Tabela):
             warunek = ' OR '.join(['%s is not null' % a.anazwa for a in atrs])
             return sql % (kols, ' WHERE '+warunek) 
         return sql % kols 
+
+    def filtr(self, atrs):
+        if self._genfiltr is None:
+            return Tabela._nowyFiltr(self, atrs)
+        return self._genfiltr(atrs)
 
 def fizgeo():
     t = Tabela('fizgeo_dane', [], 'Jed. fiz.-geo.', 'A')
@@ -447,12 +476,49 @@ def stanowiska(con):
     return t
 
 
+def _faktyFiltr(atrs):
+    sql = u'select distinct stanowisko from fakty where '
+    params = {}
+    c, pc = 0, 0
+    for a, v in atrs.iteritems():
+        if a.anazwa == 'jednostka':
+            rpola = ['jeda', 'jedb']
+        elif a.anazwa == 'okres':
+            rpola = ['okresa', 'okresb']
+        else:
+            rpola = ['funkcja']
+        if len(v) > 1:
+            #parstr = ','.join([':p'+str(pc+x) for x in range(len(v))])
+            tpar = []
+            for (yi, y) in enumerate(v):
+                tpar.append(':p'+str(pc+yi))
+                params['p'+str(pc+yi)] = unicode(y)
+            pc += len(v)
+            parstr = ','.join(tpar)
+            if len(rpola) == 2:
+                war = '%s in (%s) OR %s in (%s) ' % (rpola[0], parstr, rpola[1], parstr)
+            else:
+                war = '%s in (%s) ' % (rpola[0], parstr)
+        else:
+            if len(rpola) == 2:
+                war = '%s = :p%d OR %s = :p%d ' % (rpola[0], pc, rpola[1], pc)
+            else:
+                war = '%s = :p%d ' % (rpola[0], pc)
+            params['p'+str(pc)] = unicode(v[0])
+            pc += 1
+        if c > 0:
+            sql += ' AND '
+        sql += war
+        c += 1
+    sql += 'order by stanowisko'
+    return (sql, params)
+    
 def fakty(con):
     mapa = {'jednostka' : "jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'')",
             'okres' : "okresa||'#'||coalesce(okresb,'')||'#'||coalesce(okr_relacja,'')||'#'||coalesce(okr_pewnosc,'')",
             'fun': "funkcja||'###'||coalesce(fun_pewnosc,'')"
     }
-    t = SelectTabela('fakty', u'Fakty', 'J', mapa)
+    t = SelectTabela('fakty', u'Fakty', 'J', mapa, genfiltr=_faktyFiltr)
     t.dodajAtrybut(FaktyAtrybut(con, 'jednostka', 'Jednostka', 'jednostki'))
     t.dodajAtrybut(FaktyAtrybut(con, 'okres', 'Okres', 'okresy_dziejow'))
     t.dodajAtrybut(FaktyAtrybut(con, 'fun', 'Funkcja', 'funkcje'))
