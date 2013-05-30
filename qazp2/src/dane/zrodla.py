@@ -254,7 +254,11 @@ def daneGleba(st,qgsWarstwa):
 
 def daneObszar(st,qgsWarstwa):
     wys = wyszukajSql(st,qgsWarstwa,OBSZAR_ATR,'OBSZAR_DANE')
-    wys['powierzchnia'] = float(str(wys.get('powierzchnia',0)).replace(',','.'))
+    ps = wys.get('powierzchnia', 0)
+    if ps is not None:
+        wys['powierzchnia'] = float(str(ps).replace(',','.'))
+    else:
+        wys['powierzchnia'] = 0.0
     return AModel(wys)
 
 def daneZagr(st,qgsWarstwa):

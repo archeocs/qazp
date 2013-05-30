@@ -51,7 +51,7 @@ class Warunek(object):
         
     @property
     def tabele(self):
-        return set([repr(a.tabela) for a in self._atrs.itervalues()])
+        return set([(a.tabela.tnazwa, a.tabela.alias) for a in self._atrs.itervalues()])
             
     def __repr__(self):
         if len(self._atrs) == 1:
@@ -104,10 +104,20 @@ class SqlGenerator(object):
         return pd
         
     def __unicode__(self):
-        tabs = set(['stanowiska'])
-        for g in self._iterValues(self._grupy):#self._grupy.itervalues():
-            tabs.add(repr(g.tabela))
-        for a in self._iterValues(self._warunki):#self._warunki.itervalues():
+        tabs = set([('stanowiska', 'H')])
+        seltab = set([])
+        selatr = []
+        for g in self._iterValues(self._grupy):
+            if not isinstance(g.tabela, SelectTabela):
+                tabs.add((g.tabela.tnazwa, g.tabela.alias))
+            else:
+                selatr.append(g)
+                seltab.add(g.tabela)
+            #tabs.add(repr(g.tabela))
+        for t in seltab:
+            tatr = [a for a in selatr if a.tabela == t]
+            tabs.add((t.select(tatr), t.alias))
+        for a in self._iterValues(self._warunki):
             tabs = tabs.union(a.tabele)
         if len(self._grupy) == 0 or len(self._funkcje) == 0:
             raise Exception('Nie zdefiniowano grupowania')
@@ -115,10 +125,10 @@ class SqlGenerator(object):
         wh = ' AND '.join([repr(w) for w in self._iterValues(self._warunki)])
         if wh.strip() != '':
             wh = 'WHERE ' + wh
-        jo = 'stanowiska '
+        jo = 'stanowiska H'
         for t in tabs:
-            if t != 'stanowiska':
-                jo += ' join %s on %s.stanowisko = stanowiska.id ' % (t, t)
+            if t[0] != 'stanowiska':
+                jo += ' join %s on %s.stanowisko = H.id ' % (t[0]+' '+t[1], t[1])
         #args = []
         #for a in self._warunki.itervalues():
         #    args.extend(a.wartosci())
@@ -188,7 +198,7 @@ class Atrybut(object):
     def __repr__(self):
         if self._tabela is None:
             return self._nazwa
-        return self._tabela.tnazwa+'.'+self._nazwa
+        return self._tabela.alias+'.'+self._nazwa
     
     def toStr(self):
         if self._tabela is None:
@@ -217,6 +227,30 @@ class DynAtrybut(Atrybut):
             for p in self._prepDoz.wszystkie():
                 self._dozwolone.append((p[0], p[1]))
         self._lock.release() 
+
+class FaktyAtrybut(DynAtrybut):
+
+    def __init__(self, con, nazwa, etykieta, tabela):
+        DynAtrybut.__init__(self, nazwa, 'select kod, skrot from '+tabela+' order by nazwa', etykieta, con)
+        
+    def odtworz(self, wartosc): 
+        #return wartosc
+        tw = wartosc.split('#') # jeda, jedb, rel, pewnosc
+        self._initDozwolone()
+        for d in self._dozwolone:
+            if d[0] == tw[0]:
+                r = d[1]
+                break
+        if tw[1] != '':
+            for d in self._dozwolone:
+                if d[0] == tw[1] and tw[2] == 'Z':
+                    r += '-'+d[1]
+                    break
+                elif d[0] == tw[1] and tw[2] == 'P':
+                    r += '/'+d[1]
+        if tw[3] != '' and float(tw[3]) < 1:
+            r = '?'+r
+        return r
     
 def atrsTab(tab):
     atrs = []
@@ -224,12 +258,14 @@ def atrsTab(tab):
         atrs.append(Atrybut(t[0], t[1], t[2]))
     return atrs
 
+
 class Tabela(object):
     
-    def __init__(self, nazwa, atrybuty, etykieta=None):
+    def __init__(self, nazwa, atrybuty, etykieta, alias):
         self._nazwa = nazwa
         self._atrs = atrybuty
         self._etykieta = etykieta
+        self._alias = alias
         for a in self._atrs:
             a.tabela = self
     
@@ -248,6 +284,10 @@ class Tabela(object):
     def tetykieta(self):
         return self._etykieta
     
+    @property
+    def alias(self):
+        return self._alias
+    
     def dodajAtr(self, nazwa, etykieta, dozwolone=None):
         a = Atrybut(nazwa, etykieta=etykieta, dozwolone=dozwolone)
         self._atrs.append(a)
@@ -264,8 +304,23 @@ class Tabela(object):
     def __repr__(self):
         return self._nazwa
 
+class SelectTabela(Tabela):
+
+    def __init__(self, nazwa, etykieta, alias, mapaAtr, notnull=True):
+        Tabela.__init__(self, nazwa, [], etykieta, alias)
+        self._matr = mapaAtr
+        self._notnull = notnull
+        
+    def select(self, atrs):
+        sql = '(select distinct stanowisko, %s from '+self.tnazwa+' %s )'
+        kols = ', '.join(['%s as %s' % (self._matr[a.anazwa], a.anazwa) for a in atrs])
+        if self._notnull:
+            warunek = ' OR '.join(['%s is not null' % a.anazwa for a in atrs])
+            return sql % (kols, ' WHERE '+warunek) 
+        return sql % kols 
+
 def fizgeo():
-    t = Tabela('fizgeo_dane', [], 'Jed. fiz.-geo.')
+    t = Tabela('fizgeo_dane', [], 'Jed. fiz.-geo.', 'A')
     t.dodajAtr('nadmorska', u'Nadmorska', TAKNIEATR)
     t.dodajAtr('w_morzu', u'W morzu', TAKNIEATR)
     t.dodajAtr('plaza', u'Plaża', TAKNIEATR)
@@ -290,7 +345,7 @@ def fizgeo():
     return t
 
 def obszar():
-    t = Tabela('obszar_dane', [], 'Obszar')
+    t = Tabela('obszar_dane', [], 'Obszar', 'B')
     t.dodajAtr('obserwacja', u'Obserwacja')\
         .dodajKod('U', u'Utrudniona')\
         .dodajKod('B', u'Bez przeszkód')
@@ -311,7 +366,7 @@ def obszar():
     return t
 
 def teren():
-    t = Tabela('teren_dane', [], 'Teren')
+    t = Tabela('teren_dane', [], 'Teren', 'C')
     t.dodajAtr('zabudowany', u'Zabudowany', TAKNIEATR)
     t.dodajAtr('sred_zabud', u'Śred. zabudowany', TAKNIEATR)
     t.dodajAtr('prywatny', u'Prywatny', TAKNIEATR)
@@ -329,7 +384,7 @@ def teren():
     return t
 
 def gleba():
-    t = Tabela('gleba_dane', [], 'Gleba')
+    t = Tabela('gleba_dane', [], 'Gleba', 'D')
     t.dodajAtr('luzna', u'Luźna', TAKNIEATR)
     t.dodajAtr('zwiezla', u'Zwięzła', TAKNIEATR)
     t.dodajAtr('torf_bag', u'Torf.-bag', TAKNIEATR)
@@ -340,7 +395,7 @@ def gleba():
     return t
     
 def wnioski():
-    t = Tabela('wnioski', [], 'Wnioski')
+    t = Tabela('wnioski', [], 'Wnioski', 'E')
     t.dodajAtr('wartosc', u'Wartość')\
         .dodajKod('M', u'Mała')\
         .dodajKod('S', u'Średnia')\
@@ -351,7 +406,7 @@ def wnioski():
     return t
         
 def ekspozycja():
-    t = Tabela('ekspozycja_dane', [], 'Ekspozycja')
+    t = Tabela('ekspozycja_dane', [], 'Ekspozycja', 'F')
     t.dodajAtr('eksponowany', u'Eksponowany', TAKNIEATR)
     t.dodajAtr('kraw_stoki', u'Krawędzie, stoki', TAKNIEATR)
     t.dodajAtr('sfaldowania_cyple', u'Sfałdowania, cyple', TAKNIEATR)
@@ -369,7 +424,7 @@ def ekspozycja():
     return t
 
 def zagrozenia():
-    t = Tabela('zagrozenia', [], u'Zagrożenia')
+    t = Tabela('zagrozenia', [], u'Zagrożenia', 'G')
     t.dodajAtr('wystepowanie', u'Występowanie')\
         .dodajKod('I', 'Istnieje')\
         .dodajKod('N', 'Nie istnieje')
@@ -383,12 +438,24 @@ def zagrozenia():
     return t
 
 def stanowiska(con):
-    t = Tabela('stanowiska', [], u'Stanowiska')
+    t = Tabela('stanowiska', [], u'Stanowiska', 'H')
     t.dodajAtr('obszar', u'Obszar AZP')
     t.dodajAtr('nr_obszar', u'Numer AZP')
     t.dodajAtrybut(DynAtrybut('miejscowosc', 'select id, nazwa from miejscowosci order by nazwa', u'Miejscowość', con))
     t.dodajAtr('nr_miejscowsc', u'Numer w miejscowości')
     t.dodajAtrybut(DynAtrybut('gmina', 'select id, nazwa from gminy order by nazwa', u'Gmina', con))
+    return t
+
+
+def fakty(con):
+    mapa = {'jednostka' : "jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'')",
+            'okres' : "okresa||'#'||coalesce(okresb,'')||'#'||coalesce(okr_relacja,'')||'#'||coalesce(okr_pewnosc,'')",
+            'fun': "funkcja||'###'||coalesce(fun_pewnosc,'')"
+    }
+    t = SelectTabela('fakty', u'Fakty', 'J', mapa)
+    t.dodajAtrybut(FaktyAtrybut(con, 'jednostka', 'Jednostka', 'jednostki'))
+    t.dodajAtrybut(FaktyAtrybut(con, 'okres', 'Okres', 'okresy_dziejow'))
+    t.dodajAtrybut(FaktyAtrybut(con, 'fun', 'Funkcja', 'funkcje'))
     return t
     
 WSZYSTKIE = [zagrozenia(), ekspozycja(), wnioski(), gleba(), teren(), obszar(), fizgeo()]

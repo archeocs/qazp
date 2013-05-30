@@ -35,7 +35,7 @@ from PyQt4.QtGui import QItemEditorFactory, QStyledItemDelegate, QDialog, QVBoxL
                         QPrinter, QTextTableFormat, QTextLength, QFont, QGridLayout,\
                         QFrame, QAction, QDialogButtonBox, QTextCursor, QTextDocument,\
                         QPlainTextEdit, QMessageBox, QFileDialog
-from dane.tabela import SqlGenerator, WSZYSTKIE, stanowiska, Atrybut, Warunek
+from dane.tabela import SqlGenerator, WSZYSTKIE, stanowiska, Atrybut, Warunek, fakty
 from dane.zrodla import get_warstwa, getPolaczenie2
 
 ############## Wyswietlanie wynikow zestawien ##################
@@ -249,16 +249,15 @@ class EWidget(QWidget):
         model = TablicaModel(self._typyTab)
         model.dataChanged.connect(self._zmianaWartosci)
         widok.setModel(model)
-        #funatr = [(None, Atrybut('licz', etykieta='LICZ()'))]
         widok.setItemDelegateForColumn(0, AtrybutyDelegate([Atrybut('count(*)', etykieta='LICZ()')], parent=widok))
         tabPola = []
         for tab in WSZYSTKIE:
             tabPola.extend(tab.atrs)
-            #for atr in tab.atrs:
-            #    tabPola.append((tab, atr))
         if con is not None:
             tabPola.extend(stanowiska(con))
         widok.setItemDelegate(AtrybutyDelegate(tabPola, parent=widok))
+        tabPola.extend(fakty(con))
+        widok.setItemDelegateForColumn(1, AtrybutyDelegate(tabPola, parent=widok))
         widok.horizontalHeader().setResizeMode(QHeaderView.Stretch)
         
         self._podglad = QPlainTextEdit()
@@ -298,8 +297,8 @@ class EWidget(QWidget):
     
 class WynikWidget(QTableView):
 
-    def __init__(self, odtwarzacz, dane):
-        QTableView.__init__(self)
+    def __init__(self, odtwarzacz, dane, parent=None):
+        QTableView.__init__(self, parent=parent)
         self.setModel(WidokZestModel(odtwarzacz, dane))
         
     def drukuj(self, drukarka):
@@ -331,6 +330,39 @@ class WynikWidget(QTableView):
                 kom.setFormat(kfmt)
                 kom.firstCursorPosition().insertText(model.data(model.index(r, c)))
         doc.print_(drukarka)
+
+class WynikZestFrame(QFrame):
+    
+    def __init__(self, win, dane, odtwarzacz, parent=None):
+        QFrame.__init__(self, parent=parent)
+        self._grid = QGridLayout(self)
+        self._wgt = WynikWidget(odtwarzacz, dane, parent=self)
+        self._grid.addWidget(self._wgt, 0, 0)
+        self._grid.setRowMinimumHeight(0,150)
+        self._grid.setColumnMinimumWidth(0,150)
+        bb = QDialogButtonBox()
+        self._grid.addWidget(bb, 1, 0)
+        self._btnDrukuj = bb.addButton('Drukuj', QDialogButtonBox.ApplyRole)
+        self._btnDrukuj.setObjectName('drukuj')
+        self._btnZamknij = bb.addButton('Zamknij', QDialogButtonBox.ApplyRole)
+        self._btnZamknij.setObjectName('zamknij')
+        self._win = win
+        bb.clicked.connect(self._btnKlik)
+   
+    def _btnKlik(self, btn):
+        on = str(btn.objectName())
+        if on == 'zamknij':
+            biez = self._grid.itemAtPosition(0, 0).widget()
+            biez.setParent(None)
+            del biez
+            self._win.usun(self)
+        elif on == 'drukuj':
+            plik = QFileDialog.getSaveFileName(parent=self, filter='PDF (*.pdf)')
+            dev = QPrinter()
+            dev.setOutputFormat(QPrinter.PdfFormat)
+            dev.setOrientation(QPrinter.Portrait)
+            dev.setOutputFileName(plik)
+            self._wgt.drukuj(dev)
             
 class ZestFrame(QFrame):
     
@@ -465,3 +497,102 @@ class NoweZestawienieAkcja(QAction):
             return 
         nf = ZestFrame(getPolaczenie2(st), self._win)
         self._win.dodaj(nf)
+        
+class DefZestawienieAkcja(QAction):
+    
+    def __init__(self, etykieta, iface, window, sql, fkols, fparams=None):
+        QAction.__init__(self, etykieta, window)
+        self.triggered.connect(self.wykonaj)
+        self._win = window
+        self._iface = iface
+        self._pa = fparams
+        self._sql = sql
+        self._kols = fkols
+        
+    def wykonaj(self):
+        st = get_warstwa('stanowiska')
+        if st is None:
+            QMessageBox.warning(self._win,u'Zestawienie',u'Przed wykonaniem zestawienia należy otworzyć warstwę "stanowiska"')
+            return 
+        con = getPolaczenie2(st)
+        if self._pa:
+            pd = ParamDialog(self._pa(con), self._win)
+            if pd.exec_() == QDialog.Accepted:
+                wynik = con.wszystkie(self._sql, pd.daneParam)
+            else:
+                return
+        else:
+            wynik = con.wszystkie(self._sql)
+        self._win.dodaj(WynikZestFrame(self._win, wynik, Odtwarzacz(self._kols(con))))
+        
+def jednostkiObszar(iface, window):
+    sql = """select count(*) as LICZ, s.obszar, j.jednostka from stanowiska s join 
+            (select distinct stanowisko, 
+                jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'') as jednostka 
+            from fakty where jednostka is not null) j on s.id = j.stanowisko 
+            group by s.obszar, j.jednostka"""
+    def kolumny(con):
+        return [Atrybut('count(*)', etykieta='LICZ()'), stanowiska(con).atrs[0], fakty(con).atrs[0]]
+    return DefZestawienieAkcja('Jednostka, obszar', iface, window, sql, kolumny)
+
+def jedOkrObszar(iface, window):
+    sql = """SELECT count(*), H.obszar, I.jednostka,I.okres FROM stanowiska H join  
+                (select distinct stanowisko, 
+                    jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'') as jednostka, 
+                    okresa||'#'||coalesce(okresb,'')||'#'||coalesce(okr_relacja,'')||'#'||coalesce(okr_pewnosc,'') as okres 
+                from fakty where jednostka is not null OR okres is not null) I on I.stanowisko = H.id 
+                GROUP BY H.obszar, I.jednostka, I.okres"""
+    def kolumny(con):
+        f = fakty(con)
+        return [Atrybut('count(*)', etykieta='LICZ()'), stanowiska(con).atrs[0], f.atrs[0], f.atrs[1]]
+    return DefZestawienieAkcja('Jednostka, okres, obszar', iface, window, sql, kolumny)
+
+def jedOkrFunObszar(iface, window):
+    sql = """SELECT count(*), H.obszar, I.jednostka,I.okres,I.fun FROM stanowiska H join  
+                (select distinct stanowisko, 
+                        jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'') as jednostka, 
+                        okresa||'#'||coalesce(okresb,'')||'#'||coalesce(okr_relacja,'')||'#'||coalesce(okr_pewnosc,'') as okres, 
+                        funkcja||'###'||coalesce(fun_pewnosc,'') as fun
+                        from 
+                    fakty where jednostka is not null OR okres is not null or fun is not null) I on I.stanowisko = H.id 
+                    GROUP BY H.obszar, I.jednostka,I.okres,I.fun"""
+    def kolumny(con):
+        f = fakty(con)
+        return [Atrybut('count(*)', etykieta='LICZ()'), stanowiska(con).atrs[0], f.atrs[0], f.atrs[1],f.atrs[2]]
+    return DefZestawienieAkcja('Jednostka, okres, funkcja, obszar', iface, window, sql, kolumny)
+
+def jednostkiMiej(iface, window):
+    sql = """select count(*) as LICZ, s.miejscowosc, j.jednostka from stanowiska s join 
+            (select distinct stanowisko, 
+                jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'') as jednostka 
+            from fakty where jednostka is not null) j on s.id = j.stanowisko 
+            group by s.miejscowosc, j.jednostka"""
+    def kolumny(con):
+        return [Atrybut('count(*)', etykieta='LICZ()'), stanowiska(con).atrs[2], fakty(con).atrs[0]]
+    return DefZestawienieAkcja('Jednostka, miejscowosc', iface, window, sql, kolumny)
+
+def jedOkrMiej(iface, window):
+    sql = """SELECT count(*), H.miejscowosc, I.jednostka,I.okres FROM stanowiska H join  
+                (select distinct stanowisko, 
+                    jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'') as jednostka, 
+                    okresa||'#'||coalesce(okresb,'')||'#'||coalesce(okr_relacja,'')||'#'||coalesce(okr_pewnosc,'') as okres
+                from fakty where jednostka is not null OR okres is not null) I on I.stanowisko = H.id 
+                GROUP BY H.miejscowosc, I.jednostka, I.okres"""
+    def kolumny(con):
+        f = fakty(con)
+        return [Atrybut('count(*)', etykieta='LICZ()'), stanowiska(con).atrs[2], f.atrs[0], f.atrs[1]]
+    return DefZestawienieAkcja('Jednostka, okres, miejscowosc', iface, window, sql, kolumny)
+
+def jedOkrFunMiej(iface, window):
+    sql = """SELECT count(*), H.miejscowosc, I.jednostka,I.okres,I.fun FROM stanowiska H join  
+                (select distinct stanowisko, 
+                        jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'') as jednostka, 
+                        okresa||'#'||coalesce(okresb,'')||'#'||coalesce(okr_relacja,'')||'#'||coalesce(okr_pewnosc,'') as okres, 
+                        funkcja||'###'||coalesce(fun_pewnosc,'') as fun
+                        from 
+                    fakty where jednostka is not null OR okres is not null or fun is not null) I on I.stanowisko = H.id 
+                    GROUP BY H.miejscowosc, I.jednostka,I.okres,I.fun"""
+    def kolumny(con):
+        f = fakty(con)
+        return [Atrybut('count(*)', etykieta='LICZ()'), stanowiska(con).atrs[2], f.atrs[0], f.atrs[1], f.atrs[2]]
+    return DefZestawienieAkcja('Jednostka, okres, funkcja, miejscowosc', iface, window, sql, kolumny)            
