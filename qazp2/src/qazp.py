@@ -197,10 +197,4 @@ def start(mw=None,iface=None,app=None):
     td = Okno(mw,iface)
     td.show()
     if app:
-        app.exec_() 
-    
-if __name__ == '__main__':
-    from sys import argv
-    app = QApplication(argv)
-    start(app=app)
-    
+        app.exec_()
