@@ -355,9 +355,14 @@ class ImportGpsAkcja(QAction):
             fn = '/home/milosz/archeocs/gpx/miejsca_test.gpx'
         trpts = TrackPoints()
         trpts.create(fn)
+        if trpts.count() == 0:
+            QMessageBox.warning(self._win,u'Import GPS',u'W pliku GPX nie ma zdefinowanych tras')
+            return
         add_dial = DialogDodajTraseGps(trpts,parent=self._win)
         add_dial.exec_()
         nt = add_dial.get_track()
+        if nt is None:
+            return
         nf, ni = nt[0], nt[1]
         trasy.startEditing()
         #TRASY_ATR = ['id','rozpoczecie','zakonczenie','czestotliwosc','rodzaj_badan','data','autor','uwagi']
