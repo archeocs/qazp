@@ -110,9 +110,10 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp 0.14.3')
+        self.setWindowTitle('qazp 0.14.5')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
+        self.setMinimumSize(500, 500)
         
     def menu(self):
         miej_menu = self.menuBar().addMenu('Miejsca')

@@ -102,14 +102,7 @@ class WykDialog(QFrame):
         hed = QHBoxLayout()
         edwgt.setLayout(hed)
         self._cbstart = QComboBox(edwgt)
-        try:
-            self._skroty = listaStart(self._con, self._nazWyk)
-        except:
-            stmt = self._con.prep('update miejscowosci set start=? where id = ?' )
-            stmt.wykonaj(['BE', 23])
-            stmt.wykonaj(['ZL', 7])
-            self._con.zatwierdz()
-            self._skroty = listaStart(self._con, self._nazWyk)
+        self._skroty = listaStart(self._con, self._nazWyk)
         self._cbstart.addItems(self._skroty)
         hed.addWidget(self._cbstart)
         self._cbstart.currentIndexChanged.connect(self._zmWyk)

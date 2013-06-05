@@ -97,9 +97,15 @@ class TrasyFrame(GFrame):
                 
     def akcja_usun(self):
         ww = self.wybrany_wiersz()[1]
+        odp = QMessageBox.question(self, u'Usuwanie trasy', 
+                u'Czy na pewno chcesz usunąć stanowisko wybraną trasę?',
+                            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if odp != QMessageBox.Yes:
+            return
         u = usun(self.warstwa,ww.feature())
         if u:
-            QMessageBox.information(self, 'info', u'Usunieta trasa %s'%unicode(ww['nazwa'].toString()))
+            QMessageBox.information(self, u'Usuwanie trasy', u'Trasa została usunięta')
+            self.odswiez(gtrasy(self.warstwa))
 
 def get_val_text(txt_fld):
     return unicode(txt_fld.text())
@@ -116,7 +122,7 @@ class TableGpsTracks(QTableWidget):
         QTableWidget.__init__(self,parent)
         self.tracks = []
         self.segments = segments
-        self.cov = 0.0
+        self.cov, self.mean = 0.0, 0.0
         self._handler_cov = None
         self.init_tab()
         
@@ -146,6 +152,7 @@ class TableGpsTracks(QTableWidget):
         self.setHorizontalHeaderLabels([u'Dodaj', u'Data rozpoczęcia', u'Data zakończenia',u'Pierwszy punkt',
                                         u'Ostatni punkt',u'Liczba punktów'])   
         self.con_list = GpxPunktyLista()
+       # if self.con_list.zlicz() > 0:
         for s in self.segments:
             self.add_row([True,s.min_czas(),s.max_czas(),s.pierw().wkt(),s.ost().wkt(),s.zlicz()]) 
             self.con_list += s
@@ -168,8 +175,6 @@ class TableGpsTracks(QTableWidget):
             self.mean = round(d[0],2)
             if self._handler_mean:
                 self._handler_mean(self.mean,self.cov)
-        else:
-            self._handler_mean(it.column())
             
 class FormInfo(QWidget):
     
@@ -260,7 +265,7 @@ class DialogDodajTraseGps(QDialog):
         QDialog.__init__(self,parent)
         self.setModal(False)
         self.tracks = track_list
-        if self.tracks.count() > 1:
+        if self.tracks.count() > 0:
             self._track_frags = True
         else:
             self._track_frags = False
@@ -278,7 +283,6 @@ class DialogDodajTraseGps(QDialog):
         self.track_info = self.info_form.get_input()
         if self._track_frags:
             self.rs = self.view.get_selected()
-            print self.rs
             if not self.rs:
                 QMessageBox.information(self, u'Błąd', u'Należy wybrać conajmniej jeden fragment trasy') 
         if self.track_info:
@@ -298,8 +302,8 @@ class DialogDodajTraseGps(QDialog):
     def init_dialog(self):
         self.setMinimumSize(QSize(800, 0))
         self.vbox = QVBoxLayout(self)
+        self.vbox.addWidget(QLabel(u'Wybierz fragmenty do scalenia w trasę'))
         if self._track_frags:
-            self.vbox.addWidget(QLabel(u'Wybierz fragmenty do scalenia w trasę'))
             self.view = TableGpsTracks(self.tracks.get_segments(),parent=self) #QListWidget(self)
             self.vbox.addWidget(self.view)
         info ={'czest':str(int(self.view.mean))}
@@ -366,8 +370,8 @@ class ImportGpsAkcja(QAction):
         nf, ni = nt[0], nt[1]
         trasy.startEditing()
         #TRASY_ATR = ['id','rozpoczecie','zakonczenie','czestotliwosc','rodzaj_badan','data','autor','uwagi']
-        atrs = {4:ni['rodzaj'],5:ni['data'],6:ni['autor'],1:nf.min_czas(),2:nf.max_czas(),
-                3:ni['czest'],7:ni['uwagi']}
+        atrs = {1:ni['rodzaj'],2:ni['data'],3:ni['autor'],4:nf.min_czas(),5:nf.max_czas(),
+               6:ni['czest'],7:ni['uwagi']}
         dodaj(trasy, atrs, nf.geom())
         if trasy.commitChanges():
             QMessageBox.information(self._win, "Import GPS", u'Nowa trasa została zapisana')

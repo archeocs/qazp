@@ -167,10 +167,11 @@ def zmien_srid(g, osr=4326, dsr=2180):
 
 MIEJSCA_ATR = ['id','nazwa','rodzaj_badan','data','autor','uwagi']
 
-TRASY_ATR = ['id','rozpoczecie','zakonczenie','czestotliwosc','rodzaj_badan','data','autor','uwagi']
+TRASY_ATR = ['id','rodzaj_badan','data','autor','rozpoczecie','zakonczenie',
+            'czestotliwosc','uwagi']
 
-STANOWISKA_ATR = ['id','obszar','nr_obszar','miejscowosc','nr_miejscowosc','gmina','powiat','wojewodztwo',
-                  'rodzaj_badan','data','autor','uwagi']
+STANOWISKA_ATR = ['id','obszar','nr_obszar','miejscowosc','nr_miejscowosc','gmina',
+                'powiat','wojewodztwo',  'rodzaj_badan','data','autor','uwagi']
 
 JEDFIZG_ATR = ['id','nadmorska','w_morzu','plaza','mierzeja','skarpa','wal_wydmowy','duze_doliny',
             'w_wodzie','ter_denna','ter_nadzalewowa','ter_wyzsze','brzeg_wysoczyzny','male_doliny',
