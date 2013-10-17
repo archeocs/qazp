@@ -28,7 +28,7 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from multiprocessing import Lock
+from threading import Lock
 
 TAKNIEATR = [('T', 'Tak'), ('N', 'Nie')]
 
@@ -129,13 +129,8 @@ class SqlGenerator(object):
         for t in tabs:
             if t[0] != 'stanowiska':
                 jo += ' join %s on %s.stanowisko = H.id ' % (t[0]+' '+t[1], t[1])
-        #args = []
-        #for a in self._warunki.itervalues():
-        #    args.extend(a.wartosci())
-        #se = 'count(*), '+gbp
         fun = ', '.join([repr(atr) for atr in self._iterValues(self._funkcje)])
         return 'SELECT %s, %s FROM %s %s GROUP BY %s' % (fun, gbp, jo, wh, gbp)
-        #return (True, 'SELECT %s FROM %s %s GROUP BY %s' % (se, jo, wh, gbp) , args)
 
 
 class Atrybut(object):

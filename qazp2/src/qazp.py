@@ -110,7 +110,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp 0.14.5')
+        self.setWindowTitle('qazp 0.14.6')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         self.setMinimumSize(500, 500)
@@ -195,6 +195,11 @@ class QazpPlugin(object):
         start(self.iface.mainWindow(),self.iface)
         
 def start(mw=None,iface=None,app=None):
+    import locale
+    try:
+        locale.setlocale(locale.LC_COLLATE, 'pl_PL.UTF-8')
+    except:
+        pass
     td = Okno(mw,iface)
     td.show()
     if app:

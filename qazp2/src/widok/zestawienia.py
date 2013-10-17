@@ -37,6 +37,8 @@ from PyQt4.QtGui import QItemEditorFactory, QStyledItemDelegate, QDialog, QVBoxL
                         QPlainTextEdit, QMessageBox, QFileDialog
 from dane.tabela import SqlGenerator, WSZYSTKIE, stanowiska, Atrybut, Warunek, fakty
 from dane.zrodla import get_warstwa, getPolaczenie2
+from functools import partial
+from locale import strcoll
 
 ############## Wyswietlanie wynikow zestawien ##################
 class Odtwarzacz(object):
@@ -75,7 +77,17 @@ class WidokZestModel(QAbstractTableModel):
             h = self._odtw.etykieta(sekcja)
             return h
         return None         
-        
+
+    def _sortujDane(self, arow=[], brow=[], sk=0):
+        war = self._odtw.odtworz(sk, arow[sk])
+        wbr = self._odtw.odtworz(sk, brow[sk])
+        return strcoll(war, wbr)
+
+    def sort(self, kolumna, porzadek=Qt.AscendingOrder):
+        self.beginResetModel()
+        self._dane.sort(partial(self._sortujDane, sk=kolumna))
+        self.endResetModel()
+
     def data(self, indeks, rola=Qt.DisplayRole):
         r, c = indeks.row(), indeks.column()
         if rola == Qt.DisplayRole:
@@ -297,10 +309,22 @@ class EWidget(QWidget):
     
 class WynikWidget(QTableView):
 
+
     def __init__(self, odtwarzacz, dane, parent=None):
         QTableView.__init__(self, parent=parent)
         self.setModel(WidokZestModel(odtwarzacz, dane))
-        
+        self.setSortingEnabled(True)
+        header = self.horizontalHeader()
+        header.sectionClicked.connect(self._sortuj)
+        self._sortOrder = Qt.AscendingOrder
+        self._altSortOrder = Qt.DescendingOrder
+
+    def _sortuj(self, kolumna):
+        self.sortByColumn(kolumna, self._sortOrder)
+        so = self._sortOrder
+        self._sortOrder = self._altSortOrder
+        self._altSortOrder = so
+
     def drukuj(self, drukarka):
         doc = QTextDocument()
         cur = QTextCursor(doc)
