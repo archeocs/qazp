@@ -109,7 +109,9 @@ class ComboTxt(QWidget):
         box = QHBoxLayout(self)
         self.setLayout(box)
         self._cb = QComboBox()
+        self._cb.setMinimumWidth(200)
         self._txt = QLineEdit()
+        self._txt.setMinimumWidth(200)
         self._txt.setVisible(False)
         box.addWidget(self._cb)
         box.addWidget(self._txt)
@@ -254,7 +256,6 @@ class FiltrWidget(QWidget):
         bb.rejected.connect(self._anuluj)
         
     def _nowyFiltr(self, wyb):
-        #fmt = u'%s.%s = %s'
         t = self._tabele[wyb[0]]#.tetykieta
         a = t.atrs[wyb[1]]
         war = wyb[2]

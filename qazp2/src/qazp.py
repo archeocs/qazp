@@ -146,6 +146,8 @@ class Okno(QMainWindow):
         fakty_sub.addAction(zestawienia.jednostkiMiej(self._iface, self))
         fakty_sub.addAction(zestawienia.jedOkrMiej(self._iface, self))
         fakty_sub.addAction(zestawienia.jedOkrFunMiej(self._iface, self))
+        fakty_sub.addAction(zestawienia.klasyfikacjaOkres(self._iface, self))
+        fakty_sub.addAction(zestawienia.klasyfikacjaJednostka(self._iface, self))
     
     zaznWgt = None
     def pokazZaznaczone(self,wgt):

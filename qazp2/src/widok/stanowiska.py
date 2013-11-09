@@ -104,7 +104,7 @@ class StanowiskaFrame(GFrame):
             if fzbior is None:
                 fzbior = s
             else:
-                fzbior &= s # roznica zbiorow - interesujace sa tylko powtarzajace sie identyfikatory
+                fzbior &= s # przekroj zbiorow - interesujace sa tylko powtarzajace sie identyfikatory
         f = self.setFiltr(fzbior)
         QMessageBox.information(self,'Filtrowanie','Filtr zastosowany. Wybrano '+str(f))
     

@@ -32,6 +32,8 @@ from threading import Lock
 
 TAKNIEATR = [('T', 'Tak'), ('N', 'Nie')]
 
+RODZAJ_BADAN = [('W', 'Wykopaliska'), ('P', 'Powierzchniowe'), ('L', u'Luźne')]
+
 class Warunek(object):
     
     def __init__(self, atrybut=None):
@@ -54,9 +56,13 @@ class Warunek(object):
         return set([(a.tabela.tnazwa, a.tabela.alias) for a in self._atrs.itervalues()])
             
     def __repr__(self):
+        #if len(self._atrs) == 1:
+        #    return '%s = ?' % repr(self.atrs[0])
+        #p = ' OR '.join(['%s = ?' % repr(a) for a in self.atrs])
+        #return '( '+p+' )'
         if len(self._atrs) == 1:
-            return '%s = ?' % repr(self.atrs[0])
-        p = ' OR '.join(['%s = ?' % repr(a) for a in self.atrs])
+            return self.atrs[0].warunek
+        p = ' OR '.join([a.warunek for a in self.atrs])
         return '( '+p+' )'
         
 class SqlGenerator(object):
@@ -135,7 +141,8 @@ class SqlGenerator(object):
 
 class Atrybut(object):
 
-    def __init__(self, nazwa, dozwolone=None, etykieta=None): # jezeli dowolone == None to znaczy ze kazda wartosc jest dozwolona
+    def __init__(self, nazwa, dozwolone=None, etykieta=None): 
+        # jezeli dowolone == None to znaczy ze kazda wartosc jest dozwolona
         self._nazwa = nazwa
         self._dozwolone = dozwolone
         self._etykieta = etykieta
@@ -207,9 +214,14 @@ class Atrybut(object):
                 return d[1]
         return ''
 
+    @property    
+    def warunek(self):
+        return repr(self)+' = ?'
+
 class DynAtrybut(Atrybut):
 
-    def __init__(self, nazwa, select, etykieta, con): # polecenie select w pierwszych dwoch kolumnach musi zwracac pare (kod, wartosc)
+    def __init__(self, nazwa, select, etykieta, con): 
+        # polecenie select w pierwszych dwoch kolumnach musi zwracac pare (kod, wartosc)
         Atrybut.__init__(self, nazwa, etykieta=etykieta)
         #self._con = con
         self._prepDoz = con.prep(select)
@@ -225,9 +237,10 @@ class DynAtrybut(Atrybut):
 
 class FaktyAtrybut(DynAtrybut):
 
-    def __init__(self, con, nazwa, etykieta, tabela):
+    def __init__(self, con, nazwa, etykieta, tabela, wherePola):
         DynAtrybut.__init__(self, nazwa, 'select kod, skrot from '+tabela+' order by skrot', 
                                     etykieta, con)
+        self._wherePola = wherePola
         
     def odtworz(self, wartosc): 
         #return wartosc
@@ -247,6 +260,11 @@ class FaktyAtrybut(DynAtrybut):
         if tw[3] != '' and float(tw[3]) < 1:
             r = '?'+r
         return r
+
+    @property
+    def warunek(self):
+        return '? in ( %s )' % (','.join([self.tabela.alias+'.'+wp 
+                                            for wp in self._wherePola]))
     
 def atrsTab(tab):
     atrs = []
@@ -295,6 +313,15 @@ class Tabela(object):
         atrybut.tabela = self
 
     def _nowyFiltr(self, atrs):
+        """
+        Tworzy polecenie sql do wyszukania stanowisk spelniajacyh okreslone 
+        kryteria oraz przygotowuje wartosci parametrow
+
+        atrs - atrybuty w wybranej tabeli na podstawie ktorych maja byc wyszukane 
+        stanowiska. 
+
+        return para (polecenie sql, lista wartosci parametrow)
+        """
         sql = u'select distinct stanowisko from %s where '%self._nazwa
         params = []
         c = 0
@@ -468,6 +495,7 @@ def stanowiska(con):
     t.dodajAtrybut(DynAtrybut('miejscowosc', 'select id, nazwa from miejscowosci order by nazwa', u'Miejscowość', con))
     t.dodajAtr('nr_miejscowsc', u'Numer w miejscowości')
     t.dodajAtrybut(DynAtrybut('gmina', 'select id, nazwa from gminy order by nazwa', u'Gmina', con))
+    t.dodajAtr('rodzaj_badan', u'Rodzaj badań', RODZAJ_BADAN)
     return t
 
 
@@ -514,9 +542,9 @@ def fakty(con):
             'fun': "funkcja||'###'||coalesce(fun_pewnosc,'')"
     }
     t = SelectTabela('fakty', u'Fakty', 'J', mapa, genfiltr=_faktyFiltr)
-    t.dodajAtrybut(FaktyAtrybut(con, 'jednostka', 'Jednostka', 'jednostki'))
-    t.dodajAtrybut(FaktyAtrybut(con, 'okres', 'Okres', 'okresy_dziejow'))
-    t.dodajAtrybut(FaktyAtrybut(con, 'fun', 'Funkcja', 'funkcje'))
+    t.dodajAtrybut(FaktyAtrybut(con, 'jednostka', 'Jednostka', 'jednostki', ['jeda', 'jedb']))
+    t.dodajAtrybut(FaktyAtrybut(con, 'okres', 'Okres', 'okresy_dziejow', ['okresa', 'okresb']))
+    t.dodajAtrybut(FaktyAtrybut(con, 'fun', 'Funkcja', 'funkcje', ['funkcja']))
     return t
     
 WSZYSTKIE = [zagrozenia(), ekspozycja(), wnioski(), gleba(), teren(), obszar(), fizgeo()]

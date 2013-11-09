@@ -228,7 +228,7 @@ class Schemat2(object):
     def __init__(self, plik):
         self._pola = []
         sp = open(plik, 'r')
-        for w in sp.readlines():
+        for (wi, w) in enumerate(sp.readlines()):
             if w.startswith('#'):
                 continue
             tw = w.split(';')
@@ -236,7 +236,7 @@ class Schemat2(object):
                 continue
             if 1 <  len(tw) < 6:
                 sp.close()
-                raise Exception('zly schemat') # nieprawidlowy schemat
+                raise Exception('zly schemat linia '+str(wi)) # nieprawidlowy schemat
             x,y,s,w = int(tw[0]), int(tw[1]), int(tw[2]), int(tw[3]) 
             v = tw[4].strip().decode('utf-8')
             self._pola.append((x, y, s, w, v))
