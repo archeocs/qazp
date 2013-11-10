@@ -325,6 +325,28 @@ class WynikWidget(QTableView):
         self._sortOrder = self._altSortOrder
         self._altSortOrder = so
 
+    def zapisz(self, plik):
+        f = open(plik, 'wb')
+        model = self.model()
+        cc = model.columnCount()
+        head = u';'.join(
+            [
+                unicode(model.headerData(c, Qt.Horizontal)) 
+                    for c in range(cc)
+            ]
+        )+u';\n'
+        f.write(head.encode('utf-8'))
+        rc = model.rowCount()
+        for r in range(rc):
+            row = u';'.join(
+                [
+                    unicode(model.data(model.index(r, c))) 
+                        for c in range(cc)
+                ]
+            )+u';\n'
+            f.write(row.encode('utf-8'))
+        f.close()
+        
     def drukuj(self, drukarka):
         doc = QTextDocument()
         cur = QTextCursor(doc)
@@ -368,6 +390,8 @@ class WynikZestFrame(QFrame):
         self._grid.addWidget(bb, 1, 0)
         self._btnDrukuj = bb.addButton('Drukuj', QDialogButtonBox.ApplyRole)
         self._btnDrukuj.setObjectName('drukuj')
+        self._btnCsv = bb.addButton('Zapisz', QDialogButtonBox.ApplyRole)
+        self._btnCsv.setObjectName('zapisz')
         self._btnZamknij = bb.addButton('Zamknij', QDialogButtonBox.ApplyRole)
         self._btnZamknij.setObjectName('zamknij')
         self._win = win
@@ -387,6 +411,11 @@ class WynikZestFrame(QFrame):
             dev.setOrientation(QPrinter.Portrait)
             dev.setOutputFileName(plik)
             self._wgt.drukuj(dev)
+        elif on == 'zapisz':
+            plik = QFileDialog.getSaveFileName(parent=self, filter='CSV (*.csv)')
+            self._wgt.zapisz(str(plik))
+        else:
+            print on
             
 class ZestFrame(QFrame):
     
@@ -405,10 +434,13 @@ class ZestFrame(QFrame):
         self._btnWstecz.setObjectName('wstecz')
         self._btnDrukuj = bb.addButton('Drukuj', QDialogButtonBox.ApplyRole)
         self._btnDrukuj.setObjectName('drukuj')
+        self._btnCsv = bb.addButton('Zapisz', QDialogButtonBox.ApplyRole)
+        self._btnCsv.setObjectName('zapisz')
         self._btnZamknij = bb.addButton('Zamknij', QDialogButtonBox.ApplyRole)
         self._btnZamknij.setObjectName('zamknij')
         self._btnWstecz.setVisible(False)
         self._btnDrukuj.setVisible(False)
+        self._btnCsv.setVisible(False)
         self._con = con
         self._win = win
         bb.clicked.connect(self._btnKlik)
@@ -436,6 +468,7 @@ class ZestFrame(QFrame):
                 self._btnDalej.setVisible(False)
                 self._btnWstecz.setVisible(True)
                 self._btnDrukuj.setVisible(True)
+                self._btnCsv.setVisible(True)
         elif on == 'wstecz':
             #biez = self._grid.itemAtPosition(0, 0).widget()
             self._grid.removeWidget(self._tv)
@@ -456,7 +489,10 @@ class ZestFrame(QFrame):
             dev.setOutputFormat(QPrinter.PdfFormat)
             dev.setOrientation(QPrinter.Portrait)
             dev.setOutputFileName(plik)
-            self._tv.drukuj(dev)    
+            self._tv.drukuj(dev)   
+        elif on == 'zapisz':
+            plik = QFileDialog.getSaveFileName(parent=self, filter='CSV (*.csv)')
+            self._tv.zapisz(str(plik))
 ########## parametry dialog
 
 class ParamFrame(QFrame):
