@@ -110,7 +110,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp 0.15')
+        self.setWindowTitle('qazp 0.15.1')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         self.setMinimumSize(500, 500)
@@ -146,6 +146,7 @@ class Okno(QMainWindow):
         fakty_sub.addAction(zestawienia.jednostkiMiej(self._iface, self))
         fakty_sub.addAction(zestawienia.jedOkrMiej(self._iface, self))
         fakty_sub.addAction(zestawienia.jedOkrFunMiej(self._iface, self))
+        fakty_sub.addAction(zestawienia.klasyfikacjaData(self._iface, self))
         fakty_sub.addAction(zestawienia.klasyfikacjaOkres(self._iface, self))
         fakty_sub.addAction(zestawienia.klasyfikacjaJednostka(self._iface, self))
     

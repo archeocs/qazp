@@ -585,18 +585,22 @@ class DefZestawienieAkcja(QAction):
             wynik = con.wszystkie(self._sql)
         self._win.dodaj(WynikZestFrame(self._win, wynik, Odtwarzacz(self._kols(con))))
 
-def _klasyfikacja(iface, window, warunek, atr_indeks, etykieta):
+def _klasyfikacja(iface, window, etykieta, warunek=None, atr_indeks=-1):
     sql = """ select S.obszar, S.nr_obszar, S.miejscowosc, S.nr_miejscowosc, S.data, S.rodzaj_badan, 
         jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'') as jednostka,
         okresa||'#'||coalesce(okresb,'')||'#'||coalesce(okr_relacja,'')||'#'||coalesce(okr_pewnosc,'') as okres,
         funkcja||'###'||coalesce(fun_pewnosc,'') as fun, 
         masowy,wydzielony
         from stanowiska S join fakty F on S.id = F.stanowisko 
-        where data  like ?||'%' AND """+warunek
+        where data  like ?||'%' """ #AND """+warunek
     def parametry(con):
-        fk = fakty(con)
-        st = stanowiska(con)
-        return [Atrybut('data', etykieta='Rok/data przeprowadzenia'), fk.atrs[atr_indeks]]   
+        if atr_indeks >= 0:
+            fk = fakty(con)
+            #st = stanowiska(con)
+            return [Atrybut('data', etykieta=u'Rok/data badań'), 
+                        fk.atrs[atr_indeks]]
+        else:
+            return [Atrybut('data', etykieta=u'Rok/data badań')]
         
     def kolumny(con):
         fk = fakty(con)
@@ -606,14 +610,22 @@ def _klasyfikacja(iface, window, warunek, atr_indeks, etykieta):
                 fk.atrs[0], fk.atrs[1], fk.atrs[2], 
                 Atrybut('masowy', etykieta=u'Materiał masowy'),
                 Atrybut('masowy', etykieta=u'Materiał wyodrębniony')]
-    return DefZestawienieAkcja(etykieta, iface, window, sql, kolumny, parametry)
+    if warunek is not None:
+        return DefZestawienieAkcja(etykieta, iface, window, sql+warunek, kolumny, parametry)
+    else:
+        return DefZestawienieAkcja(etykieta, iface, window, sql, kolumny, parametry)
 
 def klasyfikacjaJednostka(iface, window):
-    return _klasyfikacja(iface, window, '? in (jeda, jedb)', 0, 'Klasyfikacja kuluturowa wg jednostki')
+    return _klasyfikacja(iface, window, 'Klasyfikacja kuluturowa wg jednostki', 
+            ' AND ? in (jeda, jedb)', 0)
 
 def klasyfikacjaOkres(iface, window):
-    return _klasyfikacja(iface, window, '? in (okresa, okresb)', 1, 'Klasyfikacja kuluturowa wg okresu')
-    
+    return _klasyfikacja(iface, window, 'Klasyfikacja kuluturowa wg okresu',
+            ' AND ? in (okresa, okresb)', 1)
+
+def klasyfikacjaData(iface, window):
+    return _klasyfikacja(iface, window, u'Klasyfikacja kulturowa wg daty badań')
+            
 def jednostkiObszar(iface, window):
     sql = """select count(*) as LICZ, s.obszar, j.jednostka from stanowiska s join 
             (select distinct stanowisko, 
