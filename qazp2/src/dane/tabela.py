@@ -223,7 +223,6 @@ class DynAtrybut(Atrybut):
     def __init__(self, nazwa, select, etykieta, con): 
         # polecenie select w pierwszych dwoch kolumnach musi zwracac pare (kod, wartosc)
         Atrybut.__init__(self, nazwa, etykieta=etykieta)
-        #self._con = con
         self._prepDoz = con.prep(select)
         self._lock = Lock()
         
@@ -265,6 +264,7 @@ class FaktyAtrybut(DynAtrybut):
     def warunek(self):
         return '? in ( %s )' % (','.join([self.tabela.alias+'.'+wp 
                                             for wp in self._wherePola]))
+                                            
     
 def atrsTab(tab):
     atrs = []
@@ -496,6 +496,22 @@ def stanowiska(con):
     t.dodajAtr('nr_miejscowsc', u'Numer w miejscowości')
     t.dodajAtrybut(DynAtrybut('gmina', 'select id, nazwa from gminy order by nazwa', u'Gmina', con))
     t.dodajAtr('rodzaj_badan', u'Rodzaj badań', RODZAJ_BADAN)
+    return t
+    
+def klasyfikacja(con):
+    t = Tabela('fakty', [], 'Fakty', 'J')
+    t.dodajAtrybut(DynAtrybut('okresa', 'select kod, skrot from okresy_dziejow order by skrot', 'OkresA', con))
+    t.dodajAtrybut(DynAtrybut('okresb', 'select kod, skrot from okresy_dziejow order by skrot', 'OkresB', con))
+    t.dodajAtr('okr_relacja', 'OkresRelacja').dodajKod('Z', '-').dodajKod('P', '/')
+    t.dodajAtr('okr_pewnosc', u'OkresPewność')
+    t.dodajAtrybut(DynAtrybut('jeda', 'select kod, skrot from jednostki order by skrot', 'JednostkaA', con))
+    t.dodajAtrybut(DynAtrybut('jedb', 'select kod, skrot from jednostki order by skrot', 'JednostkaB', con))
+    t.dodajAtr('jed_relacja', 'JednostkaRelacja').dodajKod('Z', '-').dodajKod('P', '/')
+    t.dodajAtr('jed_pewnosc', u'JednostkaPewność')
+    t.dodajAtrybut(DynAtrybut('funkcja', 'select kod, skrot from funkcje order by skrot', 'Funkcja', con))
+    t.dodajAtr('fun_pewnosc', u'FunkcjaPewność')
+    t.dodajAtr('masowy', 'M. masowy')
+    t.dodajAtr('wydzielony', 'M. wydzielony')
     return t
 
 

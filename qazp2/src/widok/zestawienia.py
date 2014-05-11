@@ -35,8 +35,10 @@ from PyQt4.QtGui import QItemEditorFactory, QStyledItemDelegate, QDialog, QVBoxL
                         QPrinter, QTextTableFormat, QTextLength, QFont, QGridLayout,\
                         QFrame, QAction, QDialogButtonBox, QTextCursor, QTextDocument,\
                         QPlainTextEdit, QMessageBox, QFileDialog
-from dane.tabela import SqlGenerator, WSZYSTKIE, stanowiska, Atrybut, Warunek, fakty
+from dane.tabela import WSZYSTKIE, stanowiska, Atrybut, Warunek, fakty, klasyfikacja
 from dane.zrodla import get_warstwa, getPolaczenie2
+from qtqube.qtqube import QtQube
+from dbschemat import utworzSchemat
 from functools import partial
 from locale import strcoll
 
@@ -93,219 +95,7 @@ class WidokZestModel(QAbstractTableModel):
         if rola == Qt.DisplayRole:
             return self._odtw.odtworz(c, self._dane[r][c])
         return QVariant()
-    
-    
-##### Edytor SQL - Tabela
-
-class TypTablica(object):
-
-    def __init__(self):
-        self._tab = []
-        self._typyKol = []
-        self._wc = 0
-        self._kc = 0
-            
-    def liczbaKolumn(self):
-        return self._kc
         
-    def liczbaWierszy(self):
-        return self._wc
-    
-    def wiersze(self):
-        for wt in self._tab:
-            yield wt
-        
-    def dodajWiersze(self, ile=1):
-        if ile < 1:
-            raise Exception("liczba wierszy musi byc wieksza od 0")
-        for i in range(ile):
-            self._tab.append([None] * self._kc)
-        self._wc += ile
-        
-    def dodajKolumne(self, typ): # grupa, typ
-        pk = -1
-        znaleziony = False
-        for (ti, t) in enumerate(self._typyKol):
-            if t == typ:
-                znaleziony = True
-            elif znaleziony:
-                pk = ti
-                break
-        if pk >= 0:
-            for wt in self._tab:
-                wt.insert(pk, None)
-            self._typyKol.insert(pk, typ)
-        else:
-            for wt in self._tab:
-                wt.append(None)
-            self._typyKol.append(typ)
-        self._kc += 1
-    
-    def typ(self, k):
-        return self._typyKol[k]
-    
-    def typyWar(self):
-        for t in self._typyKol:
-            yield t
-        
-    def wartosc(self, w, k):
-        return self._tab[w][k]
-        
-    def setWartosc(self, wartosc, w, k):
-        self._tab[w][k] = wartosc
-        
-    def kolumnyTyp(self, typ):
-        return [x for x in range(len(self._typyKol)) if self._typyKol[x] == typ]
-        
-class TablicaModel(QAbstractTableModel):
-    
-    def __init__(self, tablica=TypTablica()):
-        QAbstractTableModel.__init__(self)
-        self._tab = tablica
-        self._naglowki = ['Funkcja', 'Grupuj', 'Warunek']
-        self._typy = ['funkcja', 'grupuj', 'warunek']
-        
-    def rowCount(self, model):
-        return self._tab.liczbaWierszy()
-        
-    def columnCount(self, model):
-        return self._tab.liczbaKolumn()
-        
-    def data(self, indeks, rola=Qt.DisplayRole): # wartosciami pol sa pary (tabela.Tabela, tabela.Atrybut)
-        r, c = indeks.row(), indeks.column()
-        if rola == Qt.DisplayRole:
-            p = self._tab.wartosc(r, c)
-            if p is not None:
-                return p.toStr()
-        elif rola == Qt.EditRole:
-            return self._tab.wartosc(r, c)
-        return QVariant()
-        
-    def setData(self, indeks, wartosc, rola=Qt.EditRole):
-        #print 'W', wartosc[1].aetykieta
-        r, c = indeks.row(), indeks.column()
-        ct = self._tab.typ(c)
-        kc = self._tab.liczbaKolumn()
-        if ct == self._typy[2] and c == kc-1:
-            self.beginResetModel()
-            self._tab.dodajKolumne(self._typy[2])
-            self.endResetModel()
-        wc = self._tab.liczbaWierszy()
-        if r == wc-1:
-            self.beginResetModel()
-            #print 'nowy wiersz'
-            self._tab.dodajWiersze()
-            self.endResetModel()
-        self._tab.setWartosc(wartosc, r, c)
-        self.dataChanged.emit(indeks, indeks)
-        
-    def headerData(self, sekcja, orientacja, rola):
-        #print sekcja, orientacja
-        if orientacja == Qt.Horizontal and rola == Qt.DisplayRole:
-            if sekcja == 0:
-                return u'Funkcja'
-            elif sekcja == 1:
-                return u'Grupowanie'
-            elif sekcja == 2:
-                return u'Warunek ORAZ'
-            elif sekcja > 2:
-                return u'Warunek LUB'
-        return None
-
-    def flags(self,indeks):
-        return Qt.ItemIsEnabled | Qt.ItemIsEditable | Qt.ItemIsSelectable
-        
-class AtrybutyDelegate(QStyledItemDelegate):
-
-    def __init__(self, atrybuty, parent=None):
-        QStyledItemDelegate.__init__(self, parent=parent)
-        self.setItemEditorFactory(QItemEditorFactory.defaultFactory())
-        self._atrs = atrybuty
-        
-    def createEditor(self, parent, styl, indeks):
-        self.initStyleOption(styl, indeks)
-        print 'ok'
-        cb = QComboBox(parent)
-        for a in self._atrs: # atrybuty 
-            cb.addItem(a.toStr())
-        return cb
-        
-    def setEditorData(self, edytor, indeks):
-        wartosc = indeks.data()
-        for (ai, a) in enumerate(self._atrs):
-            if a == wartosc:
-                edytor.setCurrentIndex(ai)
-                return
-        edytor.setCurrentIndex(0)
-    
-    def setModelData(self, edytor, model, indeks):
-        #print 'SET ', self._atrs[edytor.currentIndex()][1].aetykieta
-        model.setData(indeks, self._atrs[edytor.currentIndex()])
-
-################ Edytor SQL - ramka
-
-class EWidget(QWidget):
-    
-    def __init__(self, con=None, parent=None):
-        QWidget.__init__(self, parent=parent)
-        self.setLayout(QVBoxLayout(self))
-        widok = QTableView()
-        self.layout().addWidget(widok)
-        self._typyTab = TypTablica()
-        self._typyTab.dodajWiersze()
-        self._typyTab.dodajKolumne('funkcja')
-        self._typyTab.dodajKolumne('grupuj')
-        self._typyTab.dodajKolumne('warunek')
-        self._sqlGen = SqlGenerator()
-        widok.setEditTriggers(QAbstractItemView.DoubleClicked)
-        model = TablicaModel(self._typyTab)
-        model.dataChanged.connect(self._zmianaWartosci)
-        widok.setModel(model)
-        widok.setItemDelegateForColumn(0, AtrybutyDelegate([Atrybut('count(*)', etykieta='LICZ()')], parent=widok))
-        tabPola = []
-        for tab in WSZYSTKIE:
-            tabPola.extend(tab.atrs)
-        if con is not None:
-            tabPola.extend(stanowiska(con))
-        widok.setItemDelegate(AtrybutyDelegate(tabPola, parent=widok))
-        tabPola.extend(fakty(con))
-        widok.setItemDelegateForColumn(1, AtrybutyDelegate(tabPola, parent=widok))
-        widok.horizontalHeader().setResizeMode(QHeaderView.Stretch)
-        
-        self._podglad = QPlainTextEdit()
-        self._podglad.setFixedHeight(5 * QFontMetrics(self._podglad.font()).lineSpacing())
-        self.layout().addWidget(self._podglad)
-        
-    def _zmianaWartosci(self, start, koniec):
-        r, c = start.row(), start.column()
-        p = self._typyTab.wartosc(r, c)
-        if c == 0:
-            self._sqlGen.funkcje[r] = p
-        elif c == 1:
-            self._sqlGen.grupy[r] = p
-        elif c > 1:
-            self._sqlGen.warunki[r] = self._sqlGen.warunki.get(r, Warunek()).dodaj(p, c-2)
-        if self._sqlGen.poprawny:
-            self._podglad.setPlainText(unicode(self._sqlGen))
-            
-    @property
-    def polecenie(self):
-        if self._sqlGen.poprawny:
-            return unicode(self._sqlGen)
-        else:
-            raise Exception('Niepoprawne polecenie')
-            
-    @property
-    def poprawny(self):
-        return self._sqlGen.poprawny
-        
-    @property
-    def parametry(self):
-        return self._sqlGen.params
-        
-    @property
-    def pobierane(self):
-        return self._sqlGen.pobierane
     
 class WynikWidget(QTableView):
 
@@ -422,7 +212,8 @@ class ZestFrame(QFrame):
     def __init__(self, con, win, parent=None):
         QFrame.__init__(self, parent=parent)
         self._grid = QGridLayout(self)
-        self._ed = EWidget(con, parent=self)
+        schemat = utworzSchemat()
+        self._ed = QtQube(schemat, parent=self)
         self._grid.addWidget(self._ed, 0, 0)
         self._grid.setRowMinimumHeight(0,150)
         self._grid.setColumnMinimumWidth(0,150)
@@ -444,31 +235,53 @@ class ZestFrame(QFrame):
         self._con = con
         self._win = win
         bb.clicked.connect(self._btnKlik)
+        self._tabzest = []
+        self._tabzest.extend(WSZYSTKIE)
+        self._tabzest.append(stanowiska(con))
+        self._tabzest.append(klasyfikacja(con))
+    
+    def _konwertujAtrybut(self, qubeAtr):
+        print 'konwertuje ', qubeAtr.view.source, qubeAtr.name
+        widok = qubeAtr.view.source
+        atr = qubeAtr.name
+        for tabela in self._tabzest:
+            if tabela.tnazwa == widok:
+                for a in tabela.atrs:
+                    if a.anazwa == atr:
+                        return a
+                print tabela.tnazwa, atr
+                nowy = Atrybut(atr, etykieta=qubeAtr.realName())
+                nowy.tabela = tabela
+                return nowy
+        raise Exception('Brak atrybutu')
+            
         
     def _btnKlik(self, btn):
         on = str(btn.objectName())
         print on
         if on == 'dalej':
-            if self._ed.poprawny:
-                #print self._ed.pobierane
-                odtw = Odtwarzacz(self._ed.pobierane)
-                params = self._ed.parametry
-                if params:
-                    pd = ParamDialog(params, self)
-                    if pd.exec_() == QDialog.Accepted:
-                        wynik = self._con.wszystkie(self._ed.polecenie, pd.daneParam)
-                    else:
-                        return
+            qubeWynik = self._ed.getQuery()
+            pobierane = [self._konwertujAtrybut(a) for a in qubeWynik.attributes]
+            odtw = Odtwarzacz(pobierane)
+            params = {}
+            for (k, v) in qubeWynik.params.iteritems():
+                params[k] = self._konwertujAtrybut(v)
+            if params:
+                pd = ParamDialog(params, self)
+                if pd.exec_() == QDialog.Accepted:
+                    wynik = self._con.wszystkie(qubeWynik.statement, pd.daneParam)
                 else:
-                    wynik = self._con.wszystkie(self._ed.polecenie)
-                self._tv = WynikWidget(odtw, wynik)
-                self._grid.removeWidget(self._ed)
-                self._ed.setParent(None)
-                self._grid.addWidget(self._tv, 0, 0)
-                self._btnDalej.setVisible(False)
-                self._btnWstecz.setVisible(True)
-                self._btnDrukuj.setVisible(True)
-                self._btnCsv.setVisible(True)
+                    return
+            else:
+                wynik = self._con.wszystkie(qubeWynik.statement)
+            self._tv = WynikWidget(odtw, wynik)
+            self._grid.removeWidget(self._ed)
+            self._ed.setParent(None)
+            self._grid.addWidget(self._tv, 0, 0)
+            self._btnDalej.setVisible(False)
+            self._btnWstecz.setVisible(True)
+            self._btnDrukuj.setVisible(True)
+            self._btnCsv.setVisible(True)
         elif on == 'wstecz':
             #biez = self._grid.itemAtPosition(0, 0).widget()
             self._grid.removeWidget(self._tv)
@@ -500,9 +313,11 @@ class ParamFrame(QFrame):
     def __init__(self, atrybuty, parent=None):
         QFrame.__init__(self, parent=parent)
         self._atrs = atrybuty
+        self._kolejnosc = []
         self._form = QFormLayout(self)
         self.setLayout(self._form)
-        for a in atrybuty:
+        for (n, a) in atrybuty.iteritems():
+            self._kolejnosc.append(n)
             if a.dowolnaWartosc:
                 self._form.addRow(a.toStr(), QLineEdit())
             else:
@@ -516,11 +331,11 @@ class ParamFrame(QFrame):
     
     @property    
     def dane(self):
-        dt = []
-        for (ai, a) in enumerate(self._atrs):
+        dt = {}
+        for (ai, a) in enumerate(self._kolejnosc):
             wgt = self._form.itemAt(ai, QFormLayout.FieldRole).widget()
-            if a.dowolnaWartosc:
-                dt.append(str(wgt.text()))
+            if self._atrs[a].dowolnaWartosc:
+                dt[a] = (str(wgt.text()))
             else:
                 dt.append(a.kodwar(wgt.currentIndex()))
         return dt
