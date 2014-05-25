@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# (c) Milosz Piglas 2013 Wszystkie prawa zastrzezone
+# (c) Milosz Piglas 2013-2014 Wszystkie prawa zastrzezone
 
 #  Redistribution and use in source and binary forms, with or without
 #  modification, are permitted provided that the following conditions are
@@ -328,7 +328,7 @@ class ParamFrame(QFrame):
         for w in wartosci:
             c.addItem(w)
         return c
-    
+        
     @property    
     def dane(self):
         dt = {}
@@ -337,7 +337,7 @@ class ParamFrame(QFrame):
             if self._atrs[a].dowolnaWartosc:
                 dt[a] = (str(wgt.text()))
             else:
-                dt.append(a.kodwar(wgt.currentIndex()))
+                dt[a] = (self._atrs[a].kodwar(wgt.currentIndex()))
         return dt
         
 class ParamDialog(QDialog):
@@ -407,15 +407,15 @@ def _klasyfikacja(iface, window, etykieta, warunek=None, atr_indeks=-1):
         funkcja||'###'||coalesce(fun_pewnosc,'') as fun, 
         masowy,wydzielony
         from stanowiska S join fakty F on S.id = F.stanowisko 
-        where data  like ?||'%' """ #AND """+warunek
+        where data  like :param0||'%' """ #AND """+warunek
     def parametry(con):
         if atr_indeks >= 0:
             fk = fakty(con)
             #st = stanowiska(con)
-            return [Atrybut('data', etykieta=u'Rok/data badań'), 
-                        fk.atrs[atr_indeks]]
+            return {'param0':Atrybut('data', etykieta=u'Rok/data badań'), 
+                        'param1':fk.atrs[atr_indeks]}
         else:
-            return [Atrybut('data', etykieta=u'Rok/data badań')]
+            return {'param0':Atrybut('data', etykieta=u'Rok/data badań')}
         
     def kolumny(con):
         fk = fakty(con)
@@ -432,11 +432,11 @@ def _klasyfikacja(iface, window, etykieta, warunek=None, atr_indeks=-1):
 
 def klasyfikacjaJednostka(iface, window):
     return _klasyfikacja(iface, window, 'Klasyfikacja kuluturowa wg jednostki', 
-            ' AND ? in (jeda, jedb)', 0)
+            ' AND :param1 in (jeda, jedb)', 0)
 
 def klasyfikacjaOkres(iface, window):
     return _klasyfikacja(iface, window, 'Klasyfikacja kuluturowa wg okresu',
-            ' AND ? in (okresa, okresb)', 1)
+            ' AND :param1 in (okresa, okresb)', 1)
 
 def klasyfikacjaData(iface, window):
     return _klasyfikacja(iface, window, u'Klasyfikacja kulturowa wg daty badań')

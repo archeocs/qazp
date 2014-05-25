@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # QAZP2 
-# (c) Milosz Piglas 2012 Wszystkie prawa zastrzezone
+# (c) Milosz Piglas 2012-2014 Wszystkie prawa zastrzezone
 
 #  Redistribution and use in source and binary forms, with or without
 #  modification, are permitted provided that the following conditions are
@@ -110,7 +110,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp 0.15.1')
+        self.setWindowTitle('qazp 0.15.99')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         self.setMinimumSize(500, 500)
