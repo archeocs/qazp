@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# (c) Milosz Piglas 2014 Wszystkie prawa zastrzezone
+# (c) Milosz Piglas 2013-2014 Wszystkie prawa zastrzezone
 
 #  Redistribution and use in source and binary forms, with or without
 #  modification, are permitted provided that the following conditions are
@@ -171,6 +171,14 @@ class SelectAttr(ViewAttr):
         if self.altName:
             return self.altName
         return ViewAttr.realName(self)
+        
+    def queryName(self, alias):
+        if self.altName:
+            return self.altName
+        return self.toString(alias)
+        
+    def condName(self, alias):
+        return '%s.%s' % (alias, self.name)
         
 
 class IView(object):

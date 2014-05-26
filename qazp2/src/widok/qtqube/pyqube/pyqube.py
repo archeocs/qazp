@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# (c) Milosz Piglas 2014 Wszystkie prawa zastrzezone
+# (c) Milosz Piglas 2013-2014 Wszystkie prawa zastrzezone
 
 #  Redistribution and use in source and binary forms, with or without
 #  modification, are permitted provided that the following conditions are
@@ -157,15 +157,16 @@ class QueryView(IView):
         cc = 0
         for a in self.attrs:        
             alias = self.tree.getAlias(a.view)
+            qn = a.queryName(alias)
             an = a.toString(alias)
             if a.visible:
                 attrList.append(an)
             if a.orderBy:
-                orderList.append(an)
+                orderList.append(qn)
             if a.groupBy:
-                groupList.append(an)
+                groupList.append(qn)
             if a.condition and addWhere:
-                cstr = a.condition.toString(an, cc)
+                cstr = a.condition.toString(a.condName(alias), cc)
                 whereList.append(cstr[0])
                 cc = cstr[1]
         query += ', '.join(attrList)

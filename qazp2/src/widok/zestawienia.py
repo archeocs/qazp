@@ -269,6 +269,7 @@ class ZestFrame(QFrame):
             if params:
                 pd = ParamDialog(params, self)
                 if pd.exec_() == QDialog.Accepted:
+                    print qubeWynik.statement
                     wynik = self._con.wszystkie(qubeWynik.statement, pd.daneParam)
                 else:
                     return
