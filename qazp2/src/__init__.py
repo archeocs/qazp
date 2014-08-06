@@ -38,7 +38,7 @@ def description():
     return "qazp2"
 
 def version():
-    return "0.15.100"
+    return "0.16"
 
 def qgisMinimumVersion():
     return "1.7"

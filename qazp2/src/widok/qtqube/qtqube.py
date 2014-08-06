@@ -375,6 +375,7 @@ class QtQube(gui.QWidget):
         self.matrix = Matrix()
         model = EditorTableModel(schema, self.matrix)
         tableView.setModel(model)
+        tableView.setSortingEnabled(False)
         functionNames = ['avg', 'count', 'sum']
         operators = ['<', '<=', '=', '>=', '>', 'LIKE']
         tableView.setItemDelegate(ListDelegate({4: functionNames, 5: operators, 6: operators}, tableView))

@@ -103,7 +103,7 @@ class WynikWidget(QTableView):
     def __init__(self, odtwarzacz, dane, parent=None):
         QTableView.__init__(self, parent=parent)
         self.setModel(WidokZestModel(odtwarzacz, dane))
-        self.setSortingEnabled(True)
+        #self.setSortingEnabled(True)
         header = self.horizontalHeader()
         header.sectionClicked.connect(self._sortuj)
         self._sortOrder = Qt.AscendingOrder
