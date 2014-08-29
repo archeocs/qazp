@@ -31,7 +31,6 @@
 
 from PyQt4 import QtCore as core
 from PyQt4 import QtGui as gui
-from nevow.taglibrary.tabbedPane import tabbedPaneGlue
 from pyqube import pyqube as p
 from pyqube import views as v
 from functools import partial
