@@ -110,7 +110,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp 0.16')
+        self.setWindowTitle('qazp2 1.0-RC1')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         self.setMinimumSize(500, 500)
@@ -126,7 +126,6 @@ class Okno(QMainWindow):
         stan_menu = self.menuBar().addMenu('Stanowiska')
         stan_menu.addAction(stanowiska.WyszukajAkcja(self._iface, self))
         stan_menu.addAction(stanowiska.WyszukajNrAzpAkcja(self._iface, self))
-        #stan_menu.addAction(stanowiska.PolaczSql(self._iface,self))
         stan_menu.addAction(stanowiska.PokazujZaznAkcja(self._iface, self))
         wykaz_menu = self.menuBar().addMenu('Wykazy')
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Miejscowości','miejscowosci', self._iface, self))

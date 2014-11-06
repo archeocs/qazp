@@ -245,6 +245,7 @@ class FaktyAtrybut(DynAtrybut):
         #return wartosc
         tw = wartosc.split('#') # jeda, jedb, rel, pewnosc
         self._initDozwolone()
+        r = ""
         for d in self._dozwolone:
             if d[0] == tw[0]:
                 r = d[1]

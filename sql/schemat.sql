@@ -172,6 +172,7 @@ CREATE TABLE fakty
      constraint jedb_jednostki_fkey foreign key(jedb) references jednostki(kod),
      constraint funkcja_funkcje_fkey foreign key(funkcja) references funkcje(kod)
 );
+
 CREATE TABLE funkcje (
     kod varchar(8) primary key, 
     funkcja varchar(20), 
@@ -181,25 +182,31 @@ CREATE TABLE funkcje (
     nazwa varchar(90), 
     skrot varchar(20)
 );
+
 CREATE TABLE geometry_columns (
-f_table_name TEXT NOT NULL,
-f_geometry_column TEXT NOT NULL,
-type TEXT NOT NULL,
-coord_dimension TEXT NOT NULL,
-srid INTEGER NOT NULL,
-spatial_index_enabled INTEGER NOT NULL,
-CONSTRAINT pk_geom_cols PRIMARY KEY (f_table_name, f_geometry_column),
-CONSTRAINT fk_gc_srs FOREIGN KEY (srid) REFERENCES spatial_ref_sys (srid));
+    f_table_name TEXT NOT NULL,
+    f_geometry_column TEXT NOT NULL,
+    type TEXT NOT NULL,
+    coord_dimension TEXT NOT NULL,
+    srid INTEGER NOT NULL,
+    spatial_index_enabled INTEGER NOT NULL,
+    CONSTRAINT pk_geom_cols PRIMARY KEY (f_table_name, f_geometry_column),
+    CONSTRAINT fk_gc_srs FOREIGN KEY (srid) REFERENCES spatial_ref_sys (srid)
+);
+
 CREATE TABLE geometry_columns_auth (
-f_table_name VARCHAR(256) NOT NULL,
-f_geometry_column VARCHAR(256) NOT NULL,
-read_only INTEGER NOT NULL,
-hidden INTEGER NOT NULL,
-CONSTRAINT pk_gc_auth PRIMARY KEY (f_table_name, f_geometry_column),
-CONSTRAINT fk_gc_auth FOREIGN KEY (f_table_name, f_geometry_column) REFERENCES geometry_columns (f_table_name, f_geometry_column) ON DELETE CASCADE);
+    f_table_name VARCHAR(256) NOT NULL,
+    f_geometry_column VARCHAR(256) NOT NULL,
+    read_only INTEGER NOT NULL,
+    hidden INTEGER NOT NULL,
+    CONSTRAINT pk_gc_auth PRIMARY KEY (f_table_name, f_geometry_column),
+    CONSTRAINT fk_gc_auth FOREIGN KEY (f_table_name, f_geometry_column) 
+            REFERENCES geometry_columns (f_table_name, f_geometry_column) ON DELETE CASCADE
+);
+
 CREATE TABLE gleba_dane -- gleby 
 (
-    id integer NOT NULL,
+  id integer NOT NULL,
   stanowisko integer NOT NULL,
   luzna character varying(1) check (luzna in ('T','N')),
   zwiezla character varying(1) check (zwiezla in ('T','N')),
@@ -211,11 +218,13 @@ CREATE TABLE gleba_dane -- gleby
       ON UPDATE CASCADE ON DELETE cascade,
       constraint unique_gleba_dane_st unique(id, stanowisko)
 );
+
 CREATE TABLE gminy (
     id integer primary key, 
     start varchar(2) not null, 
     nazwa varchar(50)
 );
+
 CREATE TABLE jednostki (
     kod varchar(6) primary key, 
     okres varchar(1), 
@@ -225,6 +234,7 @@ CREATE TABLE jednostki (
     skrot varchar(15), 
     start varchar(2)
 );
+
 CREATE TABLE karty -- do kazdego stanowiska mozna dodac informacje o wypelnionej karcie azp
 (
   id integer not null,
@@ -243,6 +253,7 @@ CREATE TABLE karty -- do kazdego stanowiska mozna dodac informacje o wypelnionej
   uwagi varchar(255),
   CONSTRAINT pk_karty PRIMARY KEY (id)
 );
+
 CREATE TABLE miejsca(
   id integer NOT NULL,
   nazwa varchar(50), 
@@ -253,31 +264,48 @@ CREATE TABLE miejsca(
   wspolrzedne POINT,
   CONSTRAINT pk_miejsca PRIMARY KEY (id)
 );
+
 CREATE TABLE miejscowosci (
     id integer primary key, 
     start varchar(2) not null, 
-    nazwa varchar(50));
-CREATE TABLE okresy_dziejow ( kod varchar(2) not null, kod_epoka varchar(1) not null, epoka varchar(20) not null, okres varchar(30), nazwa varchar(30) not null, skrot varchar(20) not null, constraint okresy_dziejow_pkey primary key (kod));
+    nazwa varchar(50)
+);
+
+CREATE TABLE okresy_dziejow ( 
+    kod varchar(2) not null, 
+    kod_epoka varchar(1) not null, 
+    epoka varchar(20) not null, 
+    okres varchar(30), 
+    nazwa varchar(30) not null, 
+    skrot varchar(20) not null, 
+    CONSTRAINT okresy_dziejow_pkey primary key (kod)
+);
+
 CREATE TABLE powiaty(
     id integer primary key, 
     start varchar(2) not null, 
     nazwa varchar(50)
 );
+
 CREATE TABLE spatial_ref_sys (
-srid INTEGER NOT NULL PRIMARY KEY,
-auth_name TEXT NOT NULL,
-auth_srid INTEGER NOT NULL,
-ref_sys_name TEXT,
-proj4text TEXT NOT NULL,
-srs_wkt TEXT);
+    srid INTEGER NOT NULL PRIMARY KEY,
+    auth_name TEXT NOT NULL,
+    auth_srid INTEGER NOT NULL,
+    ref_sys_name TEXT,
+    proj4text TEXT NOT NULL,
+    srs_wkt TEXT
+);
+
 CREATE TABLE spatialite_history (
-event_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-table_name TEXT NOT NULL,
-geometry_column TEXT,
-event TEXT NOT NULL,
-timestamp TEXT NOT NULL,
-ver_sqlite TEXT NOT NULL,
-ver_splite TEXT NOT NULL);
+    event_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    table_name TEXT NOT NULL,
+    geometry_column TEXT,
+    event TEXT NOT NULL,
+    timestamp TEXT NOT NULL,
+    ver_sqlite TEXT NOT NULL,
+    ver_splite TEXT NOT NULL
+);
+
 CREATE TABLE trasy(
   id integer NOT NULL,
   rodzaj_badan varchar(2) not null default '?', -- L - lot, P - powierzchniowe, W - weryfikacje, ? - nieokreslone
@@ -290,39 +318,50 @@ CREATE TABLE trasy(
   wspolrzedne LINESTRING,
   CONSTRAINT pk_trasy PRIMARY KEY (id)
 );
+
 CREATE TABLE views_geometry_columns (
-view_name TEXT NOT NULL,
-view_geometry TEXT NOT NULL,
-view_rowid TEXT NOT NULL,
-f_table_name VARCHAR(256) NOT NULL,
-f_geometry_column VARCHAR(256) NOT NULL,
-CONSTRAINT pk_geom_cols_views PRIMARY KEY (view_name, view_geometry),
-CONSTRAINT fk_views_geom_cols FOREIGN KEY (f_table_name, f_geometry_column) REFERENCES geometry_columns (f_table_name, f_geometry_column) ON DELETE CASCADE);
+    view_name TEXT NOT NULL,
+    view_geometry TEXT NOT NULL,
+    view_rowid TEXT NOT NULL,
+    f_table_name VARCHAR(256) NOT NULL,
+    f_geometry_column VARCHAR(256) NOT NULL,
+    CONSTRAINT pk_geom_cols_views PRIMARY KEY (view_name, view_geometry),
+    CONSTRAINT fk_views_geom_cols FOREIGN KEY (f_table_name, f_geometry_column) 
+        REFERENCES geometry_columns (f_table_name, f_geometry_column) ON DELETE CASCADE
+);
+
 CREATE TABLE virts_geometry_columns (
-virt_name TEXT NOT NULL,
-virt_geometry TEXT NOT NULL,
-type VARCHAR(30) NOT NULL,
-srid INTEGER NOT NULL,
-CONSTRAINT pk_geom_cols_virts PRIMARY KEY (virt_name, virt_geometry),
-CONSTRAINT fk_vgc_srid FOREIGN KEY (srid) REFERENCES spatial_ref_sys (srid));
+    virt_name TEXT NOT NULL,
+    virt_geometry TEXT NOT NULL,
+    type VARCHAR(30) NOT NULL,
+    srid INTEGER NOT NULL,
+    CONSTRAINT pk_geom_cols_virts PRIMARY KEY (virt_name, virt_geometry),
+    CONSTRAINT fk_vgc_srid FOREIGN KEY (srid) REFERENCES spatial_ref_sys (srid)
+);
+
 CREATE TABLE wojewodztwa (
     id integer primary key, 
     start varchar(2) not null, 
-    nazwa varchar(50));
+    nazwa varchar(50)
+);
+
 CREATE VIEW geom_cols_ref_sys AS
-SELECT f_table_name, f_geometry_column, type,
-coord_dimension, spatial_ref_sys.srid AS srid,
-auth_name, auth_srid, ref_sys_name, proj4text
-FROM geometry_columns, spatial_ref_sys
-WHERE geometry_columns.srid = spatial_ref_sys.srid;
+    SELECT f_table_name, f_geometry_column, type, coord_dimension, spatial_ref_sys.srid AS srid,
+        auth_name, auth_srid, ref_sys_name, proj4text
+    FROM geometry_columns, spatial_ref_sys
+    WHERE geometry_columns.srid = spatial_ref_sys.srid
+;
+
 CREATE UNIQUE INDEX idx_spatial_ref_sys 
-ON spatial_ref_sys (auth_srid, auth_name);
-CREATE INDEX idx_srid_geocols ON geometry_columns
-(srid);
-CREATE INDEX idx_viewsjoin ON views_geometry_columns
-(f_table_name, f_geometry_column);
-CREATE INDEX idx_virtssrid ON virts_geometry_columns
-(srid);
+    ON spatial_ref_sys (auth_srid, auth_name)
+;
+
+CREATE INDEX idx_srid_geocols ON geometry_columns (srid);
+
+CREATE INDEX idx_viewsjoin ON views_geometry_columns (f_table_name, f_geometry_column);
+
+CREATE INDEX idx_virtssrid ON virts_geometry_columns (srid);
+
 CREATE TRIGGER del_stanowisko before delete on stanowiska 
 begin
     delete from ekspozycja_dane where stanowisko = OLD.id;
@@ -337,51 +376,87 @@ begin
     delete from media where id = (select medium from st_media where stanowisko = OLD.id);
     delete from st_media where stanowisko = OLD.id;
 end;
+
 CREATE TRIGGER "ggi_miejsca_wspolrzedne" BEFORE INSERT ON miejsca
-FOR EACH ROW BEGIN
-SELECT RAISE(ROLLBACK, 'miejsca.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-WHERE (SELECT type FROM geometry_columns
-WHERE f_table_name = 'miejsca' AND f_geometry_column = 'wspolrzedne'
-AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1) IS NULL;
+    FOR EACH ROW BEGIN
+        SELECT RAISE(ROLLBACK, 'miejsca.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
+        WHERE (
+            SELECT type FROM geometry_columns
+            WHERE f_table_name = 'miejsca' AND f_geometry_column = 'wspolrzedne'
+            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY'
+        ) = 1) IS NULL;
 END;
+
 CREATE TRIGGER "ggi_stanowiska_wspolrzedne" BEFORE INSERT ON stanowiska
-FOR EACH ROW BEGIN
-SELECT RAISE(ROLLBACK, 'stanowiska.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-WHERE (SELECT type FROM geometry_columns
-WHERE f_table_name = 'stanowiska' AND f_geometry_column = 'wspolrzedne'
-AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1) IS NULL;
+    FOR EACH ROW BEGIN
+        SELECT RAISE(ROLLBACK, 'stanowiska.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
+        WHERE (
+            SELECT type FROM geometry_columns
+            WHERE f_table_name = 'stanowiska' AND f_geometry_column = 'wspolrzedne'
+            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
+        ) IS NULL;
 END;
+
 CREATE TRIGGER "ggi_trasy_wspolrzedne" BEFORE INSERT ON trasy
-FOR EACH ROW BEGIN
-SELECT RAISE(ROLLBACK, 'trasy.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-WHERE (SELECT type FROM geometry_columns
-WHERE f_table_name = 'trasy' AND f_geometry_column = 'wspolrzedne'
-AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1) IS NULL;
+    FOR EACH ROW BEGIN
+        SELECT RAISE(ROLLBACK, 'trasy.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
+        WHERE (
+            SELECT type FROM geometry_columns
+            WHERE f_table_name = 'trasy' AND f_geometry_column = 'wspolrzedne'
+            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
+        ) IS NULL;
 END;
+
 CREATE TRIGGER "ggu_miejsca_wspolrzedne" BEFORE UPDATE ON miejsca
-FOR EACH ROW BEGIN
-SELECT RAISE(ROLLBACK, 'miejsca.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-WHERE (SELECT type FROM geometry_columns
-WHERE f_table_name = 'miejsca' AND f_geometry_column = 'wspolrzedne'
-AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1) IS NULL;
+    FOR EACH ROW BEGIN
+        SELECT RAISE(ROLLBACK, 'miejsca.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
+        WHERE (
+            SELECT type FROM geometry_columns
+            WHERE f_table_name = 'miejsca' AND f_geometry_column = 'wspolrzedne'
+            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
+        ) IS NULL;
 END;
+
 CREATE TRIGGER "ggu_stanowiska_wspolrzedne" BEFORE UPDATE ON stanowiska
-FOR EACH ROW BEGIN
-SELECT RAISE(ROLLBACK, 'stanowiska.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-WHERE (SELECT type FROM geometry_columns
-WHERE f_table_name = 'stanowiska' AND f_geometry_column = 'wspolrzedne'
-AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1) IS NULL;
+    FOR EACH ROW BEGIN
+        SELECT RAISE(ROLLBACK, 'stanowiska.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
+        WHERE (
+            SELECT type FROM geometry_columns
+            WHERE f_table_name = 'stanowiska' AND f_geometry_column = 'wspolrzedne'
+            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
+        ) IS NULL;
 END;
+
 CREATE TRIGGER "ggu_trasy_wspolrzedne" BEFORE UPDATE ON trasy
-FOR EACH ROW BEGIN
-SELECT RAISE(ROLLBACK, 'trasy.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-WHERE (SELECT type FROM geometry_columns
-WHERE f_table_name = 'trasy' AND f_geometry_column = 'wspolrzedne'
-AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1) IS NULL;
+    FOR EACH ROW BEGIN
+        SELECT RAISE(ROLLBACK, 'trasy.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
+        WHERE (
+            SELECT type FROM geometry_columns
+            WHERE f_table_name = 'trasy' AND f_geometry_column = 'wspolrzedne'
+            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
+         ) IS NULL;
 END;
-CREATE TABLE st_media(medium integer, stanowisko integer, typ varchar(1));
-CREATE TABLE media(id integer not null primary key, sygnatura varchar(50), plik varchar(20), format varchar(4), tabela varchar(1), dane blob);
-CREATE TABLE ustawienia(klucz varchar(10) primary key, wartosc varchar(20));
+
+CREATE TABLE st_media(
+    medium integer, 
+    stanowisko integer, 
+    typ varchar(1)
+);
+
+CREATE TABLE media(
+    id integer not null primary key, 
+    sygnatura varchar(50), 
+    plik varchar(20), 
+    format varchar(4), 
+    tabela varchar(1), 
+    dane blob
+);
+
+CREATE TABLE ustawienia(
+    klucz varchar(10) primary key, 
+    wartosc varchar(20)
+);
+
 INSERT INTO "geometry_columns" VALUES('trasy','wspolrzedne','LINESTRING','XY',2180,0);
 INSERT INTO "geometry_columns" VALUES('miejsca','wspolrzedne','POINT','XY',2180,0);
 INSERT INTO "geometry_columns" VALUES('stanowiska','wspolrzedne','POLYGON','XY',2180,0);
