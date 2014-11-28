@@ -341,7 +341,7 @@ class KartaWidok(PropWidok):
         opt=[(u'Nazwa lokalna','nazwa_lok',self.nic),(u'Arkusz mapy','arkusz_mapy',self.nic),(u'Dalsze losy','dalsze_losy',self.nic),
             (u'Dzieje badań','dzieje_badan',self.nic), (u'Metryka historyczna','metryka_hist',self.nic), (u'Literatura','literatura',self.nic),
              (u'Nr działki geod.','dzialka_geodezyjna',self.nic), (u'Identyfikator EGB','egb',self.nic), (u'Autorzy','autorzy',self.nic),  
-             (u'Określił chronologię','chronologia',self.nic),(u'Sprawdził','konsultant',self.nic),  (u'Uwagi','uwagi',self.nic)]
+             (u'Określił chronologię','chronologia',self.nic),(u'Sprawdził','konsultant',self.nic),  (u'Pochodzenie danych', 'pochodzenie_danych', self.nic), (u'Uwagi','uwagi',self.nic)]
         self.ustawModel(dane,opt)
 
 class MapaWidok(QWidget):

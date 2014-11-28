@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Stanowisko</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -64,12 +64,18 @@
       <property name="text">
        <string>Rodzaj</string>
       </property>
+            <property name="visible">
+       <bool>false</bool>
+      </property>
      </widget>
     </item>
     <item row="2" column="1">
      <widget class="QComboBox" name="rodzaj_badan">
       <property name="editable">
        <bool>true</bool>
+      </property>
+      <property name="visible">
+       <bool>false</bool>
       </property>
       <item>
        <property name="text">
@@ -131,7 +137,7 @@
   </widget>
  </widget>
  <tabstops>
-  <tabstop>rodzaj_badan</tabstop>
+  <!-- <tabstop>rodzaj_badan</tabstop> -->
   <tabstop>data</tabstop>
   <tabstop>autor</tabstop>
   <tabstop>uwagi</tabstop>

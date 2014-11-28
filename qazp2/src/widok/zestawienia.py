@@ -274,6 +274,7 @@ class ZestFrame(QFrame):
                 else:
                     return
             else:
+                print qubeWynik.statement
                 wynik = self._con.wszystkie(qubeWynik.statement)
             self._tv = WynikWidget(odtw, wynik)
             self._grid.removeWidget(self._ed)

@@ -76,11 +76,15 @@ def dodajMedia(con):
                 end;
             """
     con.prep(crTrig).wykonaj(zatwierdz=False)
+    
+def dodajKolumnePochodzenie0002(con):
+    altKarty = "alter table karty add column pochodzenie_danych integer"
+    con.prep(altKarty).wykonaj(zatwierdz=False)
 
 def wykonajPolecenie(con, stmt, zatwierdz=False):
     return con.prep(stmt).wykonaj(zatwierdz=zatwierdz)
 
-_BIEZ_SCHEMAT = '0001' # ostatnia wersja schematu bazy
+_BIEZ_SCHEMAT = '0002' # ostatnia wersja schematu bazy
 
 def dostosujSchemat(con):
     ss = sprSchemat(con, _BIEZ_SCHEMAT)
@@ -91,8 +95,10 @@ def dostosujSchemat(con):
         dodajMedia(con)
     if setUstawienia(con, 'wersja', '0001'):
         schBaza = '0001'
-    # if schBaza == '0001'
-    # ...
+    if schBaza == '0001':
+        dodajKolumnePochodzenie0002(con)
+    if setUstawienia(con, 'wersja', '0002'):
+        schBaza = '0002'
     # if schBaza == '0002'
     # ...
     return schBaza == _BIEZ_SCHEMAT

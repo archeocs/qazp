@@ -169,6 +169,8 @@ class UniPole(QWidget):
                     ci = ki
             menu.setCurrentIndex(ci)
             menu.activated.connect(partial(self._cbwyb,menu=menu,klucz=km))
+            menu.view().setTextElideMode(Qt.ElideNone)
+            menu.setSizeAdjustPolicy(QComboBox.AdjustToContents)
             menu.showPopup()
         elif i == 0:
             self._mapa[km] = None

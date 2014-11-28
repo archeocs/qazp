@@ -192,27 +192,28 @@ def daneFizg(st,qgsWarstwa):
     return AModel(wyszukajSql(st,qgsWarstwa,JEDFIZG_ATR,'FIZGEO_DANE'))
 
 tabkier = ['N','NE','E','SE','S','SW','W','NW']
+tabpochodzenie = ['A','T','X','N','W','P','L']
 
-def decbin(kier):
+def decbin(kier, wartosci=tabkier):
     if kier == 0 or kier > 255:
         return ''
     i, n = 0, kier
     bkier = ''
     while n > 1:
         if n % 2 == 1:
-            bkier += tabkier[i]+','
+            bkier += wartosci[i]+','
         n /= 2
         i+= 1
-    return bkier+tabkier[i]
+    return bkier+wartosci[i]
 
-def bindec(kier):
+def bindec(kier, wartosci=tabkier):
     if len(kier) == 0:
         return (True,0)
     tb = kier.upper().replace(';',',').replace(' ',',').replace(':',',').split(',')
     dkier = 0
     for t in tb:
-        if t in tabkier:
-            dkier += 2**tabkier.index(t)
+        if t in wartosci:
+            dkier += 2**wartosci.index(t)
         elif t != '':
             return (False,-1)
     return (True,dkier)
@@ -252,7 +253,12 @@ def daneAkt(st,qgsWarstwa):
     return AModel(wyszukajSql(st,qgsWarstwa,AKTUALNOSCI_ATR,'AKTUALNOSCI'))
 
 def daneKarta(st,qgsWarstwa):
-    return AModel(wyszukajSql(st,qgsWarstwa,KARTA_ATR,'KARTY'))
+    wys = wyszukajSql(st,qgsWarstwa,KARTA_ATR,'KARTY')
+    pochodzenie = wys.get('pochodzenie_danych', 0)
+    if pochodzenie is None:
+        pochodzenie = 0
+    wys['pochodzenie_danych'] = decbin(int(pochodzenie), tabpochodzenie)
+    return AModel(wys)
 
 def _updtstmt2(atr, tab, stid):
     a = ','.join(['%s=:%s'%(a,a) for a in atr])
@@ -325,5 +331,13 @@ def updtAkt(st,qgsWarstwa,tdane=[]):
     return updtSql(st,qgsWarstwa,AKTUALNOSCI_ATR,'AKTUALNOSCI',tdane)
 
 def updtKarta(st,qgsWarstwa,tdane=[]):
-    return updtSql(st,qgsWarstwa,KARTA_ATR,'KARTY',tdane)
+    td = []
+    td.extend(tdane)
+    for d in td:
+        dp = bindec(d.get('pochodzenie_danych', ''), tabpochodzenie)
+        if dp[0]:
+            d['pochodzenie_danych'] = dp[1]
+        else:
+            raise Exception(u'Nieprawidlowe okreslenie pochodzenia danych '+d.get('pochodzenie_danych',''))
+    return updtSql(st,qgsWarstwa,KARTA_ATR,'KARTY',td)
 

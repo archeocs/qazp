@@ -198,4 +198,4 @@ AKTUALNOSCI_ATR=['id','magazyn','nr_inwentarza','nr_krz','data_krz',
 
 KARTA_ATR = ['id','nazwa_lok','arkusz_mapy','dalsze_losy','dzieje_badan',
              'metryka_hist','literatura','dzialka_geodezyjna','egb','autorzy',
-             'chronologia','konsultant','uwagi']
+             'chronologia','konsultant','uwagi', 'pochodzenie_danych']

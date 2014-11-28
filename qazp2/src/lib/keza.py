@@ -58,7 +58,7 @@ KOLEJNOSC = ['obszar', 'nr_obszar', 'miej', 'nr_miejscowosc', 'gm',
                 'park_kult', 'plan_zp', 'magazyn', 'nr_inwentarza', 'wlasciciel', 
                 'nazwa_lok', 'dalsze_losy', 'historia','metryka_hist', 
                 'literatura', 'dzialka_geodezyjna', 'egb', 'chronologia', 
-                'konsultant', 'kuwagi','stanowisko']
+                'konsultant', 'kuwagi','stanowisko', 'pochodzenie']
 
 def mkmapa(t):
     return dict(zip(KOLEJNOSC,t))
@@ -85,7 +85,7 @@ def prepSt(con):
     a.nr_krz, a.data_krz, a.park as park_kult, a.plan as plan_zp, a.magazyn, a.nr_inwentarza, a.wlasciciel,
     k.nazwa_lok, k.dalsze_losy, k.dzieje_badan as historia, k.metryka_hist, k.literatura,
     k.dzialka_geodezyjna, k.egb, k.chronologia, k.konsultant, k.uwagi as kuwagi,
-    s.id as stanowisko
+    s.id as stanowisko, k.pochodzenie_danych as pochodzenie
 from stanowiska s 
     left outer join fizgeo_dane f on s.id = f.stanowisko
     left outer join obszar_dane o on s.id = o.stanowisko
@@ -186,11 +186,32 @@ def _prepZagr(m):
     if uw is not None:
         zag += uw
     m['opis_zagrozenia'] = zag
+
+
+tabpochodzenie = ['A','T','X','N','W','P','L']
+
+def decbin(kier, wartosci):
+    if kier == 0 or kier > 255:
+        return ''
+    i, n = 0, kier
+    tkier = []
+    while n > 1:
+        if n % 2 == 1:
+            tkier.append(wartosci[i])
+        n /= 2
+        i+= 1
+    tkier.append(wartosci[i])
+    return tkier
     
 def _prepRodz(m):
-    ro = m.pop('rodzaj_badan',None)
-    if ro is not None:
-        m['rodz_'+ro.lower()] = 'x' 
+    ro = m.pop('pochodzenie',None)
+    if ro is None:
+        ro = 0
+    print 'rodzaj '
+    ptab = decbin(int(ro), tabpochodzenie)
+    print ptab
+    for p in ptab:
+        m['rodz_'+p.lower()] = 'x' 
 
 def _prepTer(m):
     if m['zabudowany'] != 'x' and m['sred_zabud'] != 'x':
