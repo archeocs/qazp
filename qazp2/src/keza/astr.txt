@@ -127,7 +127,7 @@
 36;9;11;1;wały i garby;
 47;9;1;1;k:waly_garby;
 36;10;11;1;wyniesienie o eksp. okrężnej;
-47;10;1;1;k:okrezna;
+47;10;1;1;k:wyniesienia_okrezne;
 36;11;11;1;TEREN OSŁONIĘTY;
 47;11;1;1;k:osloniety;
 36;12;11;1;podstawa stoku;

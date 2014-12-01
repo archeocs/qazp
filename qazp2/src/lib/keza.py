@@ -145,8 +145,8 @@ def _prepObser(m):
         m['obs_gest_sre'] = 'x'
     elif gz == 'D':
         m['obs_gest_duza'] = 'x'
-    pw = m.pop('powierzchnia')
-    if pw <= 0.01:
+    pw = m.pop('powierzchnia', None)
+    if pw == '' or pw <= 0.01:
         m['obs_pow_ar1'] = 'x'
     elif pw <= 0.5:
         m['obs_pow_ha05'] = 'x'
@@ -156,7 +156,7 @@ def _prepObser(m):
         m['obs_pow_ha5'] = 'x'
     elif pw <= 15:
         m['obs_pow_ha15'] = 'x'
-    else:
+    elif pw > 15:
         m['obs_pow_ha15+'] = 'x'
     #print ob,p,nr,nt,gz,pw
     
@@ -205,7 +205,7 @@ def decbin(kier, wartosci):
     
 def _prepRodz(m):
     ro = m.pop('pochodzenie',None)
-    if ro is None:
+    if ro is None or str(ro).strip() == '':
         ro = 0
     print 'rodzaj '
     ptab = decbin(int(ro), tabpochodzenie)
@@ -213,9 +213,22 @@ def _prepRodz(m):
     for p in ptab:
         m['rodz_'+p.lower()] = 'x' 
 
+def _prepKarta(m):
+    literatura = ''
+    if m['metryka_hist'] is not None:
+        literatura += m['metryka_hist']
+    if m['literatura'] is not None:
+        literatura += '\n'+m['literatura']
+    m['literatura'] = literatura
+
+def _prepEkspozycja(m):
+    if m['eksponowany'] == '':
+        m['nieeksponowany'] = 'x'
+
 def _prepTer(m):
-    if m['zabudowany'] != 'x' and m['sred_zabud'] != 'x':
-        m['niezabudowany'] = 'x'
+    pass
+#    if m['zabudowany'] != 'x' and m['sred_zabud'] != 'x':
+#        m['niezabudowany'] = 'x'
         
 def _prepFk(nr,m):
     opis = u''
@@ -313,6 +326,8 @@ class KezaDruk(object):
         _prepRodz(md)
         _prepTer(md)
         _prepAkt(md)
+        _prepKarta(md)
+        _prepEkspozycja(md)
         md['mapa_img'] = _prepImg(self._con, md)
         wf = WykazFaktow(str(md['stanowisko']), self._con, self._owyk, self._jwyk, self._fwyk)
         for i in range(len(wf)):
