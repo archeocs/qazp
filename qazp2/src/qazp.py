@@ -110,7 +110,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp2 1.0-RC1')
+        self.setWindowTitle('qazp2 1.0-RC2')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         self.setMinimumSize(500, 500)
