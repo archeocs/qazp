@@ -221,6 +221,8 @@ def _prepKarta(m):
         literatura += m['metryka_hist']
     if m['literatura'] is not None:
         literatura += '\n'+m['literatura']
+    if m['kuwagi'] is not None:
+        literatura += '\n'+m['kuwagi']
     m['literatura'] = literatura
 
 def _prepEkspozycja(m):
