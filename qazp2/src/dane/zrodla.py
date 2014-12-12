@@ -175,11 +175,17 @@ def getPolaczenie2(qgsWarstwa):
 
 def _selstmt(atr,tab):
     a = ','.join(atr)
-    return 'select '+a+' from '+tab+' where stanowisko=?'
+    return 'select '+a+' from '+tab+' where stanowisko=? order by id asc'
+
+def _filtruj(wiersze):
+    if wiersze is None or len(wiersze) == 0:
+        return None
+    else:
+        return wiersze[0]
     
 def wyszukajSql(ident, qgsWarstwa, atr, tab):
     p = getPolaczenie2(qgsWarstwa)
-    ret = p.jeden(_selstmt(atr,tab),[ident])
+    ret = _filtruj(p.wszystkie(_selstmt(atr,tab),[ident]))
     if ret is None:
         return {'id':-1}
     p.zakoncz()
@@ -277,6 +283,7 @@ def updtSql(stid, qgsWarstwa, atr, tab,tdane=[]):
     us = p.prep(_updtstmt2(atr[1:],tab,stid)) # a[1:] aby pominac parametr 'id'
     ins = p.prep(_insstmt2(atr,tab,stid))
     uzyty = -1
+    nowyId = None
     for d in tdane:
         pr = _genParam(atr,d)
         pr['id'] = int(pr['id'])
@@ -289,9 +296,10 @@ def updtSql(stid, qgsWarstwa, atr, tab,tdane=[]):
             logging.info("DODAJE %s wartosci: %s"%(tab,str(pr)))
             ins.wykonaj(pr, False)
             uzyty = 3000+len(tdane)
+            nowyId = pr['id']
     p.zatwierdz()
     p.zakoncz()
-    return uzyty
+    return nowyId
     
 def updtFizg(st,qgsWarstwa,tdane=[]):
     return updtSql(st,qgsWarstwa,JEDFIZG_ATR,'FIZGEO_DANE',tdane)

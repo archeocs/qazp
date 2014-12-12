@@ -100,7 +100,7 @@ from stanowiska s
     left outer join powiaty p on s.powiat = p.id
     left outer join gminy g on s.gmina = g.id
     left outer join wojewodztwa ww on s.wojewodztwo = ww.id
-    where s.id=?''' # wspolrzedne bedzie trzeba okreslac osobno za pomoca funkcji qgis
+    where s.id=? order by f.id, o.id, t.id, w.id, z.id, e.id, gd.id, a.id, k.id''' # wspolrzedne bedzie trzeba okreslac osobno za pomoca funkcji qgis
     return con.prep(sql)
 
 def getDane(stmt, ident):
@@ -148,18 +148,19 @@ def _prepObser(m):
     elif gz == 'D':
         m['obs_gest_duza'] = 'x'
     pw = m.pop('powierzchnia', None)
-    if pw == '' or pw <= 0.01:
-        m['obs_pow_ar1'] = 'x'
-    elif pw <= 0.5:
-        m['obs_pow_ha05'] = 'x'
-    elif pw <= 1:
-        m['obs_pow_ha1'] = 'x'
-    elif pw <= 5:
-        m['obs_pow_ha5'] = 'x'
-    elif pw <= 15:
-        m['obs_pow_ha15'] = 'x'
-    elif pw > 15:
-        m['obs_pow_ha15+'] = 'x'
+    if isinstance(pw, (int, float)):
+        if pw > 0 and pw <= 0.01:
+            m['obs_pow_ar1'] = 'x'
+        elif 0.01 < pw <= 0.5:
+            m['obs_pow_ha05'] = 'x'
+        elif 0.5 < pw <= 1:
+            m['obs_pow_ha1'] = 'x'
+        elif 1 < pw <= 5:
+            m['obs_pow_ha5'] = 'x'
+        elif 5 < pw <= 15:
+            m['obs_pow_ha15'] = 'x'
+        elif pw > 15:
+            m['obs_pow_ha15+'] = 'x'
     #print ob,p,nr,nt,gz,pw
     
 def _prepZagr(m):
@@ -209,9 +210,7 @@ def _prepRodz(m):
     ro = m.pop('pochodzenie',None)
     if ro is None or str(ro).strip() == '':
         ro = 0
-    print 'rodzaj '
     ptab = decbin(int(ro), tabpochodzenie)
-    print ptab
     for p in ptab:
         m['rodz_'+p.lower()] = 'x' 
 
@@ -339,7 +338,7 @@ class KezaDruk(object):
             if i < 7:
                 for (k, v) in _prepFk(i+1,wf.mapa(i)).iteritems():
                     md[k] = v
-        md['historia'] = md['historia']+' '+md['uwagi']
+        md['historia'] = md['historia']+'\n'+md['uwagi']
         return md
     
     def drukuj(self, plik, sts, postep):

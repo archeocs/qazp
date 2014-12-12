@@ -218,6 +218,10 @@ class PropWidok(QTableView):
         
     def wartosci(self):
         return self.konwert(self._dane)
+    
+    def aktualizujId(self, nowyId=None):
+        if nowyId is not None:
+            self._dane['id'] = nowyId
         
     def nic(self,w):
         return w

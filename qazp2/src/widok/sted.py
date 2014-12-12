@@ -151,39 +151,48 @@ class Edytor(QFrame):
         elif self.on == 'fizgeo':
             dane = panel.wartosci()
             u = updtFizg(str(self._model['id'].toString()),self._war,[dane])
-            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+            panel.aktualizujId(u)
+            self._win.statusBar().showMessage('Zapisany '+self.on)
         elif self.on == 'ekspozycja':
             dane = panel.wartosci()
             u = updtEkspo(str(self._model['id'].toString()),self._war,[dane])
-            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+            panel.aktualizujId(u)
+            self._win.statusBar().showMessage('Zapisany '+self.on)
         elif self.on == 'teren':
             dane = panel.wartosci()
             u = updtTeren(str(self._model['id'].toString()),self._war,[dane])
-            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+            panel.aktualizujId(u)
+            self._win.statusBar().showMessage('Zapisany '+self.on)
         elif self.on == 'gleba':
             dane = panel.wartosci()
             u = updtGleba(str(self._model['id'].toString()),self._war,[dane])
-            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+            panel.aktualizujId(u)
+            self._win.statusBar().showMessage('Zapisany '+self.on)
         elif self.on == 'obszar':
             dane = panel.wartosci()
             u = updtObszar(str(self._model['id'].toString()),self._war,[dane])
-            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+            panel.aktualizujId(u)
+            self._win.statusBar().showMessage('Zapisany '+self.on)
         elif self.on == 'zagrozenia':
             dane = panel.wartosci()
             u = updtZagr(str(self._model['id'].toString()),self._war,[dane])
-            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+            panel.aktualizujId(u)
+            self._win.statusBar().showMessage('Zapisany '+self.on)
         elif self.on == 'wnioski':
             dane = panel.wartosci()
             u = updtWnio(str(self._model['id'].toString()),self._war,[dane])
-            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+            panel.aktualizujId(u)
+            self._win.statusBar().showMessage('Zapisany '+self.on)
         elif self.on == 'aktualnosci':
             dane = panel.wartosci()
             u = updtAkt(str(self._model['id'].toString()),self._war,[dane])
-            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+            panel.aktualizujId(u)
+            self._win.statusBar().showMessage('Zapisany '+self.on)
         elif self.on == 'karta':
             dane = panel.wartosci()
             u = updtKarta(str(self._model['id'].toString()),self._war,[dane])
-            self._win.statusBar().showMessage('Zapisany '+self.on+" "+str(u))
+            panel.aktualizujId(u)
+            self._win.statusBar().showMessage('Zapisany '+self.on)
         elif self.on == 'fakty':
             panel.zatwierdz()
         elif self.on == 'mapa':
