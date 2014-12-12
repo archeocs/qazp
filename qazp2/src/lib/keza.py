@@ -113,7 +113,9 @@ def _prepLog(m):
     for (k,v) in m.iteritems():
         if v == 'T':
             m[k] = 'x'
-        elif v is None or v == 'N':
+        elif v is None:
+            m[k] = ''
+        elif v == 'N' and k != 'zabudowany':
             m[k] = ''        
 
 def _prepObser(m):
@@ -226,7 +228,9 @@ def _prepEkspozycja(m):
         m['nieeksponowany'] = 'x'
 
 def _prepTer(m):
-    pass
+    if m['zabudowany'] == 'N':
+        m['zabudowany'] = ''
+        m['niezabudowany'] = 'x'
 #    if m['zabudowany'] != 'x' and m['sred_zabud'] != 'x':
 #        m['niezabudowany'] = 'x'
         
