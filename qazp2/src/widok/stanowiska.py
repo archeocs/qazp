@@ -141,7 +141,7 @@ class WyszukajAkcja(QAction):
         if trasy is None:
             QMessageBox.warning(self._win,u'Wyszukaj',u'Przed wyszukiwaniem należy otworzyć warstwę "stanowiska"')
             return 
-        warunek = QInputDialog.getText(self._win, 'Stanowiska', 'Wprowadz warunek', text="obszar='56-27' and nr_obszar='1'")
+        warunek = QInputDialog.getText(self._win, 'Stanowiska', 'Wprowadz warunek', text="obszar='18-25' and nr_obszar='3'")
         if warunek[1]:
             warstwa = szukaj_stanowiska(unicode(warunek[0]))
             mf = StanowiskaFrame(warstwa,gstanowiska(warstwa),self._iface,self._win)

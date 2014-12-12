@@ -115,7 +115,7 @@ def _prepLog(m):
             m[k] = 'x'
         elif v is None:
             m[k] = ''
-        elif v == 'N' and k != 'zabudowany':
+        elif v == 'N' and k not in ['zabudowany', 'eksponowany']:
             m[k] = ''        
 
 def _prepObser(m):
@@ -224,15 +224,14 @@ def _prepKarta(m):
     m['literatura'] = literatura
 
 def _prepEkspozycja(m):
-    if m['eksponowany'] == '':
+    if m['eksponowany'] == 'N':
+        m['eksponowany'] = ''
         m['nieeksponowany'] = 'x'
 
 def _prepTer(m):
     if m['zabudowany'] == 'N':
         m['zabudowany'] = ''
         m['niezabudowany'] = 'x'
-#    if m['zabudowany'] != 'x' and m['sred_zabud'] != 'x':
-#        m['niezabudowany'] = 'x'
         
 def _prepFk(nr,m):
     opis = u''
