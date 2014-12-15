@@ -110,7 +110,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp2 1.0-RC3')
+        self.setWindowTitle('qazp2 1.0-RC4')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         self.setMinimumSize(500, 500)
@@ -136,6 +136,7 @@ class Okno(QMainWindow):
         admin_menu.addAction(admin.SchematAkcja(self._iface, self))
         admin_menu.addAction(admin.SkryptAkcja(self._iface, self))
         admin_menu.addAction(admin.LogowanieAkcja(self._iface, self))
+        admin_menu.addAction(admin.NaprawaAkcja(self._iface, self))
         zest_menu = self.menuBar().addMenu('Zestawienia')
         zest_menu.addAction(zestawienia.NoweZestawienieAkcja(self._iface, self))
         fakty_sub = zest_menu.addMenu('Fakty osadnicze')

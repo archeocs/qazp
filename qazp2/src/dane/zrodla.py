@@ -157,19 +157,26 @@ class Wykaz(object):
             return self._wykaz[ind]
         raise Exception('indeks %d poza zakresem %d'%(ind,len(self._wykaz)))
 
-def getPolaczenie2(qgsWarstwa):
+def getPolaczenie2(qgsWarstwa, wierszMapa = False):
     ndp = str(qgsWarstwa.dataProvider().name())
     uri = QgsDataSourceURI(qgsWarstwa.dataProvider().dataSourceUri())
     if ndp.upper() == 'SPATIALITE':
         import sqlite3
-        return Polaczenie(sqlite3.connect(str(uri.database())),Polaczenie.LITE)
+        con = sqlite3.connect(str(uri.database()))
+        if wierszMapa:
+            con.row_factory = sqlite3.Row
+        return Polaczenie(con, Polaczenie.LITE)
     elif ndp.upper() == 'POSTGRES':
         import psycopg2
         import psycopg2.extensions
+        import psycopg2.extras
         psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
         psycopg2.extensions.register_type(psycopg2.extensions.UNICODEARRAY)
+        rowFactory = None
+        if wierszMapa:
+            rowFactory = psycopg2.extras.DictCursor
         return Polaczenie(psycopg2.connect(database=str(uri.database()),host=str(uri.host()),port=str(uri.port()),
-                                user=str(uri.username()), password=str(uri.password())),Polaczenie.PG)
+                                user=str(uri.username()), password=str(uri.password()), cursor_factory = rowFactory),Polaczenie.PG)
     else:
         raise Exception('Nieobslugiwany typ bazy danych '+ndp)
 

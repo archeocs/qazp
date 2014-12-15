@@ -163,7 +163,8 @@ class UniPole(QWidget):
         if 0 < i < len(self._tsym):
             menu = QComboBox(self._ka)
             ci = 0
-            for (ki,k) in enumerate(self._wyk.listaKat(self._tsym[i])):
+            listaKat = self._wyk.listaKat(self._tsym[i])
+            for (ki,k) in enumerate(listaKat):
                 menu.addItem(k[1],k[0])
                 if km is not None and k[0] == self._mapa.get(km):
                     ci = ki
@@ -210,7 +211,7 @@ def funPole(wyk,f,parent):
     b = UniPole.Builder()
     b.parent = parent
     b.wka = QComboBox()
-    b.tokr = ['',u'OBRONNA',u'OBRZĘD.',u'OSAD.',u'SEPULKR.',u'GOSP.',u'KOMP. OS.',u'KOPIEC',u'POLE BITWY',u'STAN.',u'REDEP.',u'WAŁY',u'LUŹNE'  ]
+    b.tokr = ['',u'OBRONNA',u'OBRZĘD.',u'OSAD.',u'SEPULKR.',u'GOSP.',u'KOMP. OS.',u'KOPIEC',u'POLE BITWY',u'SKARB', u'STAN.',u'REDEP.',u'WAŁY',u'LUŹNE'  ]
     b.tsym = ['','O','B','M','S','G','K','P','T','R','A','D','W','L']
     b.wyk = wyk
     b.funZm = f

@@ -56,7 +56,7 @@ class Polaczenie(object):
         self._con = None
     
     def wykonaj(self, sql, vp=[], zatw=True):
-        self.prep(sql).wykonaj(vp,zatw)
+        return self.prep(sql).wykonaj(vp,zatw)
         
     def wszystkie(self, sql, vp=[], f=None):
         return self.prep(sql).wszystkie(vp,f)
