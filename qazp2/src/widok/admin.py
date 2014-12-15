@@ -192,7 +192,7 @@ class NaprawaAkcja(QAction):
             zatwierdz = self._usunDuplikaty(listaDup, polaczenie)
             if zatwierdz:
                 polaczenie.zatwierdz()
-                print 'OK'
+                QMessageBox.information(self._win, u'Napraw dane', u'SUKCES', QMessageBox.Ok)
             else:
                 polaczenie.wycofaj()
                 print 'FAIL'
