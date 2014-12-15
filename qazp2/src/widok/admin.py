@@ -173,10 +173,10 @@ class NaprawaAkcja(QAction):
         tabele = ['fizgeo_dane', 'ekspozycja_dane', 'obszar_dane', 'teren_dane', 'karty', 'aktualnosci', 'zagrozenia',
                     'wnioski', 'gleba_dane']
         warstwa = get_warstwa('stanowiska')
-        polaczenie = getPolaczenie2(warstwa, True)
         if warstwa is None:
             QMessageBox.warning(self._win,u'Napraw dane',u'Przed wyszukiwaniem należy otworzyć warstwę "stanowiska"')
             return 
+        polaczenie = getPolaczenie2(warstwa, True)
         for t in tabele:
             dt = self._wyszukajDuplikaty(t, polaczenie)
             if dt:
