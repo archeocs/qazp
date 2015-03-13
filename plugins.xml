@@ -1,7 +1,7 @@
 <?xml version = '1.0' encoding = 'ISO-8859-1'?>
 <?xml-stylesheet type='text/xsl' href='plugins.xsl' ?>
 <plugins>
-<pyqgis_plugin name='QAZP2' version='1.0-RC4'>
+<pyqgis_plugin name='QAZP2' version='1.0'>
     <description>Przestrzenne dane archeologiczne</description>
     <version>1.0</version>
     <qgis_minimum_version>1.7</qgis_minimum_version>
