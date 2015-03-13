@@ -402,6 +402,24 @@ class DefZestawienieAkcja(QAction):
             wynik = con.wszystkie(self._sql)
         self._win.dodaj(WynikZestFrame(self._win, wynik, Odtwarzacz(self._kols(con))))
 
+def listaKlasyfikacja(iface, window):
+    sql = """ select S.obszar, S.nr_obszar, S.miejscowosc, S.nr_miejscowosc, 
+        jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'') as jednostka,
+        okresa||'#'||coalesce(okresb,'')||'#'||coalesce(okr_relacja,'')||'#'||coalesce(okr_pewnosc,'') as okres,
+        funkcja||'###'||coalesce(fun_pewnosc,'') as fun, 
+        masowy,wydzielony
+        from stanowiska S left outer join fakty F on S.id = F.stanowisko"""
+        
+    def kolumny(con):
+        fk = fakty(con)
+        st = stanowiska(con)
+        return [st.atrs[0], st.atrs[1],  st.atrs[2], st.atrs[3],
+                fk.atrs[0], fk.atrs[1], fk.atrs[2], 
+                Atrybut('masowy', etykieta=u'Materiał masowy'),
+                Atrybut('masowy', etykieta=u'Materiał wyodrębniony')]
+    
+    return DefZestawienieAkcja(u'Lista stanowisk z klasyfikacją', iface, window, sql, kolumny)
+
 def _klasyfikacja(iface, window, etykieta, warunek=None, atr_indeks=-1):
     sql = """ select S.obszar, S.nr_obszar, S.miejscowosc, S.nr_miejscowosc, S.data, S.rodzaj_badan, 
         jeda||'#'||coalesce(jedb,'')||'#'||coalesce(jed_relacja,'')||'#'||coalesce(jed_pewnosc,'') as jednostka,

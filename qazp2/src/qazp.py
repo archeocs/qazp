@@ -140,6 +140,7 @@ class Okno(QMainWindow):
         zest_menu = self.menuBar().addMenu('Zestawienia')
         zest_menu.addAction(zestawienia.NoweZestawienieAkcja(self._iface, self))
         fakty_sub = zest_menu.addMenu('Fakty osadnicze')
+        fakty_sub.addAction(zestawienia.listaKlasyfikacja(self._iface, self))
         fakty_sub.addAction(zestawienia.jednostkiObszar(self._iface, self))
         fakty_sub.addAction(zestawienia.jedOkrObszar(self._iface, self))
         fakty_sub.addAction(zestawienia.jedOkrFunObszar(self._iface, self))
