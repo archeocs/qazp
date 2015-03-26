@@ -1,0 +1,23 @@
+; the next section is mandatory
+
+[general]
+name=QAZP2
+email=milosz@archeocs.com
+author=Milosz Piglas
+qgisMinimumVersion=2.0
+description=Archeologiczne Zdjecie Polski
+about=Archeologiczne Zdjecie Polski
+version=20150326
+; end of mandatory metadata
+
+; these metadata can be empty, they will eventually become mandatory.
+homepage=http://qazp.archeocs.com
+tracker=
+repository=
+icon=
+
+; experimental flag (applies to the single version)
+experimental=False
+
+; deprecated flag (applies to the whole plugin and not only to the uploaded version)
+deprecated=False

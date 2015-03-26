@@ -30,46 +30,61 @@
 
 from PyQt4.QtCore import QVariant
 from qgis.core import QgsFeature, QgsVectorLayer, QgsField
-from dane.model import MIEJSCA_ATR
 from qgis.core import QgsCoordinateTransform, QgsCoordinateReferenceSystem
-import logging
-
-def set_atr(qgs_obiekt,atr,v):
-    if atr not in MIEJSCA_ATR:
-        return False
-    ai = MIEJSCA_ATR.index(atr)
-    qgs_obiekt.changeAttribute(ai,QVariant(v))
-    return True
 
 def setAtr(qgsObiekt, atr, v, lista):
-    if atr not in lista:
-        return False
-    ai = lista.index(atr)
-    qgsObiekt.changeAttribute(ai,QVariant(v))
+    qgsObiekt[atr] = v
     return True
 
 def setMapa(qgsObiekt,mapa,lista):
     for (k,v) in mapa.iteritems():
         setAtr(qgsObiekt,k,v,lista)
 
-def set_mapa(qgs_obiekt,mapa):
-    for (k,v) in mapa.iteritems():
-        set_atr(qgs_obiekt,k,v)
-    
-def zmien(qgs_warstwa,qgs_obiekt):
-    am = qgs_obiekt.attributeMap()
-    fid = qgs_obiekt.id()
-    qgs_warstwa.startEditing()
-    for (k,v) in am.iteritems():
-        qgs_warstwa.changeAttributeValue(fid, k,v)
-    return qgs_warstwa.commitChanges()
+def zmien(qgsWarstwa, qgsObiekt):
+    pola = qgsWarstwa.dataProvider().fields()
+    fid = qgsObiekt.id()
+    qgsWarstwa.startEditing()
+    for (pi, p) in enumerate(pola):
+        qgsWarstwa.changeAttributeValue(fid, pi, qgsObiekt[p.name()])
+    return qgsWarstwa.commitChanges()
+
+#def zmien2(qgs_warstwa,qgs_obiekt):
+#    am = qgs_obiekt.attributeMap()
+#    fid = qgs_obiekt.id()
+#    qgs_warstwa.startEditing()
+#    for (k,v) in am.iteritems():
+#        qgs_warstwa.changeAttributeValue(fid, k,v)
+#    return qgs_warstwa.commitChanges()
 
 def usun(qgs_warstwa,qgs_obiekt):
     qgs_warstwa.startEditing()
     qgs_warstwa.deleteFeature(qgs_obiekt.id())
     return qgs_warstwa.commitChanges()
 
-def dodaj(qgs_warstwa,atr,qgs_geom,orig_srid=4326,commit=False):
+def dodaj(qgsWarstwa, atr, qgsGeom, origSrid=4326, commit=False):
+    provider = qgsWarstwa.dataProvider()
+    f = QgsFeature(provider.fields())
+    nowyIndeks = qgsWarstwa.maximumValue(0)
+    if not nowyIndeks:
+        nowyIndeks = 1
+    else:
+        nowyIndeks += 1
+    f[0] = nowyIndeks
+    for (k, v) in atr.iteritems():
+        if k > 0:
+            f[k] = v
+    wcrs = qgsWarstwa.crs()
+    ocrs = QgsCoordinateReferenceSystem(origSrid)
+    if ocrs != wcrs:
+        if qgsGeom.transform(QgsCoordinateTransform(ocrs,wcrs)) != 0:
+                raise Exception('Nieudana transformacja')
+    f.setGeometry(qgsGeom)
+    if commit:
+        qgsWarstwa.startEditing()
+    return qgsWarstwa.addFeatures([f]) and (not commit or qgsWarstwa.commitChanges())
+
+
+def dodaj2(qgs_warstwa,atr,qgs_geom,orig_srid=4326,commit=False):
     f = QgsFeature()
     ni = qgs_warstwa.maximumValue(0).toInt()[0]+1 # nowy id
     atr[0] = ni

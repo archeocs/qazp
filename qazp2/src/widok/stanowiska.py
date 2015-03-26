@@ -70,7 +70,7 @@ class StanowiskaFrame(GFrame):
     def akcja_zmien(self):
         ww = self.wybrany_wiersz()[1]
         ed = Edytor(self.warstwa, ww, self._win, funModel=self.zmienWiersz)
-        self._win.setWindowTitle('Stanowisko: '+str(ww['obszar'].toString())+'/'+str(ww['nr_obszar'].toString()))
+        self._win.setWindowTitle('Stanowisko: '+str(ww['obszar'])+'/'+str(ww['nr_obszar']))
         self._win.dodaj(ed)
         
     def _akcjaDrukuj(self):
@@ -86,7 +86,7 @@ class StanowiskaFrame(GFrame):
                 raise Exception("Centroid jest NONE "+str(st['id'].toInt()[0]))
             else:
                 ptc = cent.asPoint()
-                sts.append((st['id'].toInt()[0], unicode(st['obszar'].toString()), unicode(st['nr_obszar'].toString()),
+                sts.append((st['id'], unicode(st['obszar']), unicode(st['nr_obszar']),
                             round(ptc.x(),2), round(ptc.y(),2)))
         kd.drukuj(plik, sts, pd)
         QMessageBox.information(self,'Drukowanie','Karty wygenerowane')

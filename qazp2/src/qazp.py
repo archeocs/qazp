@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # QAZP2 
-# (c) Milosz Piglas 2012-2014 Wszystkie prawa zastrzezone
+# (c) Milosz Piglas 2012-2015 Wszystkie prawa zastrzezone
 
 #  Redistribution and use in source and binary forms, with or without
 #  modification, are permitted provided that the following conditions are
@@ -30,7 +30,7 @@
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from PyQt4.QtGui import QAction, QApplication,QMainWindow,QStackedWidget, QMessageBox,\
-                        QFileDialog
+                        QFileDialog, QLineEdit
 from PyQt4.QtCore import QObject, SIGNAL
 from widok import trasy,miejsca,stanowiska, wykazy, admin, zestawienia
 from qgis.core import QgsMapLayerRegistry
@@ -110,7 +110,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp2 1.0-RC4')
+        self.setWindowTitle('qazp2 20150326')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         self.setMinimumSize(500, 500)
@@ -187,6 +187,7 @@ class QazpPlugin(object):
             mapa.setEditForm(abspath(__file__+'/../forms/miejsca.ui'))
         elif str(mapa.name()).startswith('stanowiska'):
             mapa.setEditForm(abspath(__file__+'/../forms/stanowiska.ui'))
+            mapa.setEditFormInit('qazp.initStanowiska')
         elif str(mapa.name()).startswith('trasy'):
             mapa.setEditForm(abspath(__file__+'/../forms/trasy.ui'))
     
@@ -196,6 +197,11 @@ class QazpPlugin(object):
         
     def run(self):
         start(self.iface.mainWindow(),self.iface)
+
+def initStanowiska(dialog, warstwa, obiekt):
+    if not obiekt['rodzaj_badan']:
+        rodzajEdit = dialog.findChild(QLineEdit, 'rodzaj_badan')
+        rodzajEdit.setText('?')
         
 def start(mw=None,iface=None,app=None):
     import locale

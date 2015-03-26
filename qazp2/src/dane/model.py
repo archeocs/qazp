@@ -43,11 +43,11 @@ class AModel(dict):
         self._dom = domyslne
         for (k,v) in dane.iteritems():
             if v is None:
-                self[k] = QVariant(domyslne.get(k))
+                self[k] = domyslne.get(k)
             else:
                 if isinstance(v, Decimal):
                     v = float(v)
-                self[k] = QVariant(v)
+                self[k] = v
             
     def __setitem__(self, k,v):
         """ Wstawia wartosc do slownika i zapamietuje klucz, jezeli jego wartosc
@@ -111,8 +111,36 @@ class AModel(dict):
             if not self.has_key(a):
                 raise Exception("sublista: nie ma atrybut "+a)
             nt.append(self[a])
-        
-    
+
+class NowyModel(AModel):
+
+    def __init__(self, kolejnosc, feature):
+        AModel.__init__(self, {})
+        for k in kolejnosc:
+            self[k] = feature[k]
+        self._kolejnosc = kolejnosc
+        self._feature = feature
+
+    def kolejnosc(self):
+        return self._kolejnosc
+
+    def zatwierdz(self):
+        for k in self.kolejnosc():
+            self._feature.setAttribute(k, self[k])
+
+    def aktualizuj(self):
+        for k in self._kolejnosc:
+            self[k] = self._feature[k]
+
+    def feature(self):
+        return self._feature
+
+    def wspolrzedne(self):
+        return self._feature.geometry()
+
+    def __unicode__(self):
+        return unicode(self)
+
 class GModel(AModel):
     """ Model danych do obslugi informacji pochodzacych z QGIS"""
     def __init__(self,kolejnosc,feature):

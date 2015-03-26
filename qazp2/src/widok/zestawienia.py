@@ -94,7 +94,7 @@ class WidokZestModel(QAbstractTableModel):
         r, c = indeks.row(), indeks.column()
         if rola == Qt.DisplayRole:
             return self._odtw.odtworz(c, self._dane[r][c])
-        return QVariant()
+        return None
         
     
 class WynikWidget(QTableView):

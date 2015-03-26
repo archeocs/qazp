@@ -96,7 +96,7 @@ class ListaModel(QAbstractListModel):
         
     def data(self, indeks, rola=Qt.DisplayRole):
         if rola == Qt.DisplayRole:
-            return QVariant(unicode(self._filtry[indeks.row()]))
+            return unicode(self._filtry[indeks.row()])
     
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role==Qt.DisplayRole and section==0 and orientation==Qt.Vertical:

@@ -64,7 +64,7 @@ class WykModel(QAbstractTableModel):
         if rola == Qt.DisplayRole and indeks.column() == 0 and indeks.row() < len(self._wyk):
             self._wybrany = self._wyk[indeks.row()]
             return self._wybrany[1]
-        return QVariant()
+        return None
         
     def headerData(self, sekcja, orientacja, rola = Qt.DisplayRole):
         if orientacja == Qt.Vertical:
@@ -81,7 +81,7 @@ def listaStart(con,nazwa):
     sql = 'select distinct start from '+nazwa+' order by start'
     rt = []
     for w in con.wszystkie(sql):
-        rt.append(QVariant(w[0]).toString())
+        rt.append(w[0])
     return rt
                 
 class WykDialog(QFrame):

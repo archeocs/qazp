@@ -51,11 +51,11 @@ class GTabModel(QAbstractTableModel):
             r,c = indeks.row(), indeks.column()
             v = self._dane[r].wartosc(c)
             if not isinstance(v, QVariant):
-                return QVariant(self._dane[r].wartosc(c)).toString()
+                return self._dane[r].wartosc(c)
             else:
                 return v.toString()
         else:
-            return QVariant()
+            return None
     
     def headerData(self, sekcja, orientacja, rola = Qt.DisplayRole):
         if orientacja == Qt.Vertical:
@@ -63,7 +63,7 @@ class GTabModel(QAbstractTableModel):
         if sekcja < 0 or sekcja >= len(self._nag):
             raise Exception("headerData: indeks %d poza zakresem [0,%d]"%(sekcja,len(self._nag)-1))
         if rola == Qt.DisplayRole:
-            return QVariant(self._nag[sekcja])
+            return self._nag[sekcja]
                 
 class GTabModel2(QAbstractTableModel):
     
@@ -85,11 +85,11 @@ class GTabModel2(QAbstractTableModel):
             r,c = indeks.row(), indeks.column()
             v = self._dane[r][self._nag[c][1]]
             if not isinstance(v, QVariant):
-                return QVariant(v).toString()
+                return v
             else:
                 return v.toString()
         else:
-            return QVariant()
+            return None
     
     def headerData(self, sekcja, orientacja, rola = Qt.DisplayRole):
         if orientacja == Qt.Vertical:
@@ -97,7 +97,7 @@ class GTabModel2(QAbstractTableModel):
         if sekcja < 0 or sekcja >= len(self._nag):
             raise Exception("headerData: indeks %d poza zakresem [0,%d]"%(sekcja,len(self._nag)-1))
         if rola == Qt.DisplayRole:
-            return QVariant(self._nag[sekcja][0])
+            return self._nag[sekcja][0]
         
     def removeRows(self, row, count, parent=QModelIndex):
         ost = row+count-1

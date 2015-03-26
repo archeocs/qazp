@@ -28,7 +28,6 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 from PyQt4 import QtCore as core
 from PyQt4 import QtGui as gui
 from pyqube import pyqube as p
@@ -122,17 +121,17 @@ class AttrValidator(gui.QValidator):
             if not self.viewAttrs:
                 v =  self.schema.viewByName(text[:text.index('.')])
                 if not v:
-                    return (gui.QValidator.Invalid, pos)
+                    return (gui.QValidator.Invalid, text, pos)
                 else:
                     self.viewAttrs = [a.realName() for a in v.viewAttrs()]
             elif len(text) > text.index('.')+1:
                 attr = text[text.index('.')+1:]
                 for a in self.viewAttrs:
                     if a == attr:
-                        return (gui.QValidator.Acceptable, pos)
+                        return (gui.QValidator.Acceptable, text, pos)
                     elif a.startswith(attr):
-                        return (gui.QValidator.Intermediate, pos)
-        return (gui.QValidator.Intermediate, pos)
+                        return (gui.QValidator.Intermediate, text, pos)
+        return (gui.QValidator.Intermediate, text, pos)
         
         
         
@@ -142,7 +141,7 @@ class BoolConverter(ValueConverter):
         ValueConverter.__init__(self)
         
     def fromInput(self, variant):
-        return variant.toBool()
+        return variant
         
     def toOutput(self, value, role=core.Qt.DisplayRole):
         return value
@@ -154,8 +153,6 @@ class StrConverter(ValueConverter):
         
     def fromInput(self, variant):
         if isinstance(variant, core.QVariant):
-            return unicode(variant.toString())
-        elif isinstance(variant, core.QString):
             return unicode(variant)
         elif isinstance(variant, str) or isinstance(variant, unicode):
             return variant
@@ -204,7 +201,7 @@ class EditorTableModel(core.QAbstractTableModel):
         elif orientation == core.Qt.Horizontal and role==core.Qt.DisplayRole:
             return unicode(section+1)
         else:
-            return core.QVariant()
+            return None
         
     def rowCount(self, model):
         return self.matrix.rowCount
@@ -218,7 +215,7 @@ class EditorTableModel(core.QAbstractTableModel):
             return self._converter(index.row()).toOutput(v)
         elif role == core.Qt.EditRole:
             return self._converter(index.row()).toOutput(v, role)
-        return core.QVariant()
+        return None
 
     def setData(self, index, value, role=core.Qt.EditRole):
         self.beginResetModel()
@@ -263,7 +260,7 @@ class AttributesDelegate(gui.QStyledItemDelegate):
         return textField
         
     def setEditorData(self, editor, index):
-        value = index.data().toString()
+        value = index.data()
         editor.setText(value)
     
     def setModelData(self, editor, model, index):
@@ -302,7 +299,7 @@ class FunctionsDelegate(gui.QStyledItemDelegate):
         r = index.row()
         if r == 4:
             if value:
-                editor.setText(value.toString())
+                editor.setText(value)
                 return
             else:
                 editor.setText('')
@@ -357,7 +354,7 @@ class ListDelegate(gui.QStyledItemDelegate):
         return textField
         
     def _setEditorTextData(self, editor, index):
-        value = index.data().toString()
+        value = index.data()
         editor.setText(value)
     
     def _setModelTextData(self, editor, model, index):

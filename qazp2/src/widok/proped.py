@@ -78,7 +78,7 @@ class WyborDelegate(QStyledItemDelegate):
             cb = QComboBox(parent)
             for o in tw:
                 cb.addItem(o[1],o[0])
-            cb.addItem(u'Nieokreślone',QVariant())
+            cb.addItem(u'Nieokreślone',None)
             return cb
         return None
  
@@ -98,7 +98,7 @@ class WyborDelegate(QStyledItemDelegate):
             d = edytor.itemData(edytor.currentIndex())
             model.setData(indeks,d)
         else:
-            model.setData(indeks,QVariant(edytor.text()))
+            model.setData(indeks,edytor.text())
 
 class PropLista(QAbstractTableModel):
     
@@ -127,7 +127,7 @@ class PropLista(QAbstractTableModel):
             if not self._wid.has_key(self._opt[r][1]):
                 self._wid[self._opt[r][1]] = self._opt[r][2](self._dane[self._opt[r][1]]) 
             return self._wid[self._opt[r][1]]
-        return QVariant()
+        return None
     
     def setData(self,indeks, wartosc, rola=Qt.EditRole):
         r,c = indeks.row(), indeks.column()

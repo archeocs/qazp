@@ -33,7 +33,7 @@ from qgis.core import QgsMapLayerRegistry, QgsMapLayer,QgsFeature
 from qgis.core import QgsVectorLayer, QgsDataSourceURI
 from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR,STANOWISKA_ATR, AModel,\
     JEDFIZG_ATR,  EKSPOZYCJA_ATR, TEREN_ATR, OBSZAR_ATR, ZAGROZENIA_ATR,\
-    WNIOSKI_ATR, GLEBA_ATR, AKTUALNOSCI_ATR, KARTA_ATR
+    WNIOSKI_ATR, GLEBA_ATR, AKTUALNOSCI_ATR, KARTA_ATR, NowyModel
 from micon import Polaczenie  
 import logging
 def rejestr_map():
@@ -60,6 +60,13 @@ def _gwarstwa(qgs_warstwa,atrybuty):
         else:
             return mt
 
+def _obiekty(qgsWarstwa, atrybuty):
+    qgsWarstwa.selectAll()
+    mt = []
+    for f in qgsWarstwa.selectedFeatures():
+        mt.append(NowyModel(atrybuty, f))
+    return mt
+
 def sqlListaId(con, sql, params=[]):
     stmt = con.prep(sql)
     return set(stmt.wszystkie(params, f=lambda r : r[0]))    
@@ -67,17 +74,20 @@ def sqlListaId(con, sql, params=[]):
 def _listaMap(listaObi, atrybuty):
     return [GModel(atrybuty,f) for f in listaObi]
 
+def _konwertuj(listaObi, atrybuty):
+    return [NowyModel(atrybuty, f) for f in listaObi]
+
 def stLista(listaObi):
-    return _listaMap(listaObi, STANOWISKA_ATR)        
+    return _konwertuj(listaObi, STANOWISKA_ATR)
         
 def gstanowiska(qgs_warstwa):
-    return _gwarstwa(qgs_warstwa,STANOWISKA_ATR)
+    return _obiekty(qgs_warstwa,STANOWISKA_ATR)
 
 def gmiejsca(qgs_warstwa):
-    return _gwarstwa(qgs_warstwa, MIEJSCA_ATR)
+    return _obiekty(qgs_warstwa, MIEJSCA_ATR)
 
 def gtrasy(qgs_warstwa):
-    return _gwarstwa(qgs_warstwa, TRASY_ATR)
+    return _obiekty(qgs_warstwa, TRASY_ATR)
 
 _SZUKAJ_IDS = {}
 
@@ -121,7 +131,7 @@ class Wykaz(object):
             return
         self._wykaz = []
         for r in self._stLista.wszystkie([self._start]):
-            self._wykaz.append((QVariant(r[0]), QVariant(r[1])))
+            self._wykaz.append((r[0],r[1]))
         return len(self._wykaz)
     
     def dodaj(self,nazwa):

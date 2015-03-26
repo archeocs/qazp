@@ -50,8 +50,8 @@ class ListaFaktow(QAbstractTableModel):
        
     def data(self, indeks, rola = Qt.DisplayRole):
         if rola == Qt.DisplayRole and indeks.row() < len(self._fk):
-            return QVariant(self._fk.widok(indeks.row(), indeks.column()))
-        return QVariant()
+            return self._fk.widok(indeks.row(), indeks.column())
+        return None
     
     NAGLOWKI = [u'Chronologia',u'Kultura',u'Funkcja',u'Masowy',u'Wydzielone']
     def headerData(self, sekcja, orientacja, rola = Qt.DisplayRole):
@@ -60,7 +60,7 @@ class ListaFaktow(QAbstractTableModel):
         if rola == Qt.DisplayRole:
             if sekcja < 7:
                 return self.NAGLOWKI[sekcja]
-        return QVariant()
+        return None
     
 def funWykaz(con):
     return KodyWykaz(con,'funkcje')
