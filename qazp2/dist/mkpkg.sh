@@ -16,6 +16,7 @@ cp ../src/widok/qtqube/*.py qazp2/widok/qtqube
 cp ../src/widok/qtqube/pyqube/*.py qazp2/widok/qtqube/pyqube
 cp ../src/__init__.py qazp2/
 cp ../src/qazp.py qazp2/
+cp ../src/metadata.txt qazp2/
 #cp -r ../src qazp2
 #rm qazp2/uruchom.py
 zip -r $WERSJA qazp2

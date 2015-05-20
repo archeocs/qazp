@@ -201,6 +201,10 @@ TRASY_ATR = ['id','rodzaj_badan','data','autor','rozpoczecie','zakonczenie',
 STANOWISKA_ATR = ['id','obszar','nr_obszar','miejscowosc','nr_miejscowosc','gmina',
                 'powiat','wojewodztwo',  'rodzaj_badan','data','autor','uwagi']
 
+ZDJECIA_LOTNICZE_ATR = ['id', 'folder', 'klatka', 'miejscowosc', 'gmina', 'powiat', 'wojewodztwo',
+                        'autor', 'pilot', 'data_wykonania', 'czas_wykonania', 'rodzaj_zdjecia',
+                        'prawa_autorskie', 'projekt', 'numer', 'platnik']
+
 JEDFIZG_ATR = ['id','nadmorska','w_morzu','plaza','mierzeja','skarpa','wal_wydmowy','duze_doliny',
             'w_wodzie','ter_denna','ter_nadzalewowa','ter_wyzsze','brzeg_wysoczyzny','male_doliny',
             'dno_doliny','stok_doliny','krawedz_doliny','poza_dolinami','rownina',

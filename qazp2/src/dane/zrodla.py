@@ -33,7 +33,7 @@ from qgis.core import QgsMapLayerRegistry, QgsMapLayer,QgsFeature
 from qgis.core import QgsVectorLayer, QgsDataSourceURI
 from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR,STANOWISKA_ATR, AModel,\
     JEDFIZG_ATR,  EKSPOZYCJA_ATR, TEREN_ATR, OBSZAR_ATR, ZAGROZENIA_ATR,\
-    WNIOSKI_ATR, GLEBA_ATR, AKTUALNOSCI_ATR, KARTA_ATR, NowyModel
+    WNIOSKI_ATR, GLEBA_ATR, AKTUALNOSCI_ATR, KARTA_ATR, ZDJECIA_LOTNICZE_ATR, NowyModel
 from micon import Polaczenie  
 import logging
 def rejestr_map():
@@ -77,11 +77,17 @@ def _listaMap(listaObi, atrybuty):
 def _konwertuj(listaObi, atrybuty):
     return [NowyModel(atrybuty, f) for f in listaObi]
 
+def zdjeciaLista(listaObi):
+    return _konwertuj(listaObi, ZDJECIA_LOTNICZE_ATR)
+
 def stLista(listaObi):
     return _konwertuj(listaObi, STANOWISKA_ATR)
         
 def gstanowiska(qgs_warstwa):
     return _obiekty(qgs_warstwa,STANOWISKA_ATR)
+
+def gzdjecia(qgsWarstwa):
+    return _obiekty(qgsWarstwa, ZDJECIA_LOTNICZE_ATR)
 
 def gmiejsca(qgs_warstwa):
     return _obiekty(qgs_warstwa, MIEJSCA_ATR)
@@ -101,6 +107,9 @@ def _szukaj_warstwa(sql,nazwa_warstwy):
     nwar = QgsVectorLayer(nuri.uri(),nazwa_warstwy+'_szukaj_'+str(mid),qv.dataProvider().name())
     _SZUKAJ_IDS[nazwa_warstwy] = mid
     return nwar
+
+def szukaj_zdjecia(sql):
+    return _szukaj_warstwa(sql, 'zdjecia_lotnicze')
 
 def szukaj_stanowiska(sql):
     return _szukaj_warstwa(sql,'stanowiska')

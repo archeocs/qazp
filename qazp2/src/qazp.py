@@ -32,7 +32,7 @@
 from PyQt4.QtGui import QAction, QApplication,QMainWindow,QStackedWidget, QMessageBox,\
                         QFileDialog, QLineEdit
 from PyQt4.QtCore import QObject, SIGNAL
-from widok import trasy,miejsca,stanowiska, wykazy, admin, zestawienia
+from widok import trasy,miejsca,stanowiska, wykazy, admin, zestawienia, zdjecia_lotnicze
 from qgis.core import QgsMapLayerRegistry
 from os.path import abspath
 from dane.zrodla import get_warstwa, getPolaczenie2
@@ -110,7 +110,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp2 20150326')
+        self.setWindowTitle('qazp2 20150505')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         self.setMinimumSize(500, 500)
@@ -127,6 +127,8 @@ class Okno(QMainWindow):
         stan_menu.addAction(stanowiska.WyszukajAkcja(self._iface, self))
         stan_menu.addAction(stanowiska.WyszukajNrAzpAkcja(self._iface, self))
         stan_menu.addAction(stanowiska.PokazujZaznAkcja(self._iface, self))
+        zdjeciaMenu = self.menuBar().addMenu(u'Zdjęcia lotnicze')
+        zdjeciaMenu.addAction(zdjecia_lotnicze.WyszukajAkcja(self._iface, self))
         wykaz_menu = self.menuBar().addMenu('Wykazy')
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Miejscowości','miejscowosci', self._iface, self))
         wykaz_menu.addAction(wykazy.WykazAkcja(u'Gminy','gminy', self._iface, self))
