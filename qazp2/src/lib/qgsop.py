@@ -68,7 +68,7 @@ def dodaj(qgsWarstwa, atr, qgsGeom, origSrid=4326, commit=False):
     if not nowyIndeks:
         nowyIndeks = 1
     else:
-        nowyIndeks += 1
+        nowyIndeks = nowyIndeks.toInt()[0] + 1
     f[0] = nowyIndeks
     for (k, v) in atr.iteritems():
         if k > 0:

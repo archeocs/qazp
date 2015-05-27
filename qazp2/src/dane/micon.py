@@ -105,7 +105,8 @@ class Polecenie(object):
             if zatwierdz:
                 self._con.commit()
             return cur.rowcount
-        except:
+        except Exception as e:
+            print e
             return -1
     
     def wszystkie(self, params=[], f=None):

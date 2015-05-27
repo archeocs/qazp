@@ -220,7 +220,7 @@ class Edytor(QWidget):
 
 class FiltrWidget(QWidget):
     
-    def __init__(self, con, parent=None):
+    def __init__(self, con, tabele, parent=None):
         QWidget.__init__(self, parent)
         self._filtry = []
         self._tabele = []
@@ -234,14 +234,15 @@ class FiltrWidget(QWidget):
         self._widok.setModel(self._wmodel)
         hbox.addWidget(self._widok)
         ed = Edytor()
-        self._tabele.append(fizgeo())
-        self._tabele.append(ekspozycja())
-        self._tabele.append(obszar())
-        self._tabele.append(teren())
-        self._tabele.append(gleba())
-        self._tabele.append(wnioski())
-        self._tabele.append(zagrozenia())
-        self._tabele.append(fakty(con))
+        #self._tabele.append(fizgeo())
+        #self._tabele.append(ekspozycja())
+        #self._tabele.append(obszar())
+        #self._tabele.append(teren())
+        #self._tabele.append(gleba())
+        #self._tabele.append(wnioski())
+        #self._tabele.append(zagrozenia())
+        #self._tabele.append(fakty(con))
+        self._tabele.extend(tabele)
         for t in self._tabele:
             ed.dodajTabele(t)
         hbox.addWidget(ed)
@@ -254,6 +255,8 @@ class FiltrWidget(QWidget):
         vbox.addWidget(bb)
         bb.accepted.connect(self._zatwierdz)
         bb.rejected.connect(self._anuluj)
+
+
         
     def _nowyFiltr(self, wyb):
         t = self._tabele[wyb[0]]#.tetykieta

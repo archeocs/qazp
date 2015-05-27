@@ -273,7 +273,6 @@ def atrsTab(tab):
         atrs.append(Atrybut(t[0], t[1], t[2]))
     return atrs
 
-
 class Tabela(object):
     
     def __init__(self, nazwa, atrybuty, etykieta, alias):
@@ -349,6 +348,30 @@ class Tabela(object):
         
     def __repr__(self):
         return self._nazwa
+
+class ZdjeciaTabela(Tabela):
+
+    def __init__(self, nazwa, atrybuty, etykieta, alias):
+        Tabela.__init__(self, nazwa, atrybuty, etykieta, alias)
+
+    def filtr(self, atrs):
+        sql = u'select id from %s where '%self._nazwa
+        params = []
+        c = 0
+        for a, v in atrs.iteritems():
+            if len(v) > 1:
+                war = '%s in (%s) ' % (a.anazwa, ','.join(['?' for x in range(len(v))]))
+                for y in v:
+                    params.append(unicode(y))
+            else:
+                war = '%s = ? '% a.anazwa
+                params.append(unicode(v[0]))
+            if c > 0:
+                sql += ' and '
+            sql += war
+            c += 1
+        sql += 'order by id'
+        return (sql, params)
 
 class SelectTabela(Tabela):
 
@@ -514,6 +537,17 @@ def klasyfikacja(con):
     t.dodajAtr('masowy', 'M. masowy')
     t.dodajAtr('wydzielony', 'M. wydzielony')
     return t
+
+
+def zdjeciaLotnicze(con):
+    t = ZdjeciaTabela('zdjecia_lotnicze', [], u'Zdjęcia Lotnicze', 'K')
+    t.dodajAtr('folder', u'Folder')
+    t.dodajAtr('klatka', u'Klatka')
+    t.dodajAtrybut(DynAtrybut('miejscowosc', 'select id, nazwa from miejscowosci order by nazwa', u'Miejscowość', con))
+    t.dodajAtrybut(DynAtrybut('gmina', 'select id, nazwa from gminy order by nazwa', u'Gmina', con))
+    t.dodajAtrybut(DynAtrybut('projekt', 'select id, nazwa from projekty order by nazwa', u'Projekt', con))
+    return t
+
 
 
 def _faktyFiltr(atrs):

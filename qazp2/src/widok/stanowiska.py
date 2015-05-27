@@ -33,6 +33,7 @@ from PyQt4.QtGui import QAction,QMessageBox,QInputDialog, QProgressDialog, QFile
 from widok.lista import GTabModel2, GFrame
 from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie2,\
     rejestr_map, stLista, sqlListaId
+from dane.tabela import *
 from widok.sted import Edytor
 from lib.keza import  KezaDruk
 from widok.dialog import NrAzpDialog
@@ -109,7 +110,8 @@ class StanowiskaFrame(GFrame):
         QMessageBox.information(self,'Filtrowanie','Filtr zastosowany. Wybrano '+str(f))
     
     def _akcjaFiltruj(self):
-        fw = FiltrWidget(self._con)
+        fw = FiltrWidget(self._con, tabele=[fizgeo(), ekspozycja(), obszar(), teren(),
+               gleba(), wnioski(), zagrozenia(), fakty(self._con)])
         fw.filtruj.connect(self._zastosujFiltr)
         fw.anuluj.connect(self._anulujFiltr)
         self._win.dodaj(fw)

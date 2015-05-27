@@ -7,7 +7,7 @@ author=Milosz Piglas
 qgisMinimumVersion=2.0
 description=Archeologiczne Zdjecie Polski w QGIS
 about=Archeologiczne Zdjecie Polski w QGIS
-version=20150505
+version=20150527
 ; end of mandatory metadata
 
 ; these metadata can be empty, they will eventually become mandatory.

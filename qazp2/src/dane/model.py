@@ -202,8 +202,8 @@ STANOWISKA_ATR = ['id','obszar','nr_obszar','miejscowosc','nr_miejscowosc','gmin
                 'powiat','wojewodztwo',  'rodzaj_badan','data','autor','uwagi']
 
 ZDJECIA_LOTNICZE_ATR = ['id', 'folder', 'klatka', 'miejscowosc', 'gmina', 'powiat', 'wojewodztwo',
-                        'autor', 'pilot', 'data_wykonania', 'czas_wykonania', 'rodzaj_zdjecia',
-                        'prawa_autorskie', 'projekt', 'numer', 'platnik']
+                        'autor', 'pilot', 'data_wykonania', 'czas_wykonania',
+                        'prawa_autorskie', 'projekt', 'numer', 'zleceniodawca', 'platnik', 'nosnik']
 
 JEDFIZG_ATR = ['id','nadmorska','w_morzu','plaza','mierzeja','skarpa','wal_wydmowy','duze_doliny',
             'w_wodzie','ter_denna','ter_nadzalewowa','ter_wyzsze','brzeg_wysoczyzny','male_doliny',

@@ -83,10 +83,12 @@ CREATE TABLE STANOWISKA(
     etykieta_x varchar(20),
     etykieta_y varchar(20),
     etykieta_kolor varchar(7),
-    wspolrzedne POLYGON,
+--    wspolrzedne POLYGON,
     constraint stanowiska_pkey primary key(id)
 );
-CREATE VIRTUAL TABLE SpatialIndex USING VirtualSpatialIndex();
+SELECT AddGeometryColumn('stanowiska', 'wspolrzedne',
+  2180, 'POLYGON', 'XY');
+-- CREATE VIRTUAL TABLE SpatialIndex USING VirtualSpatialIndex();
 CREATE TABLE TEREN_DANE(
     id integer not null,
     stanowisko integer not null,
@@ -108,6 +110,7 @@ CREATE TABLE TEREN_DANE(
     CONSTRAINT teren_dane_pkey PRIMARY KEY (id),
       constraint unique_teren_dane_st unique(id, stanowisko)
 );
+
 CREATE TABLE WNIOSKI(
     id integer not null,
     stanowisko integer not null,
@@ -121,6 +124,7 @@ CREATE TABLE WNIOSKI(
     constraint unique_wnioski_st unique(id, stanowisko)
     
 );
+
 CREATE TABLE ZAGROZENIA(
     id integer not null,
     stanowisko integer not null,
@@ -129,7 +133,7 @@ CREATE TABLE ZAGROZENIA(
     przyczyna_ludzie varchar(1) check (przyczyna_ludzie in ('T','N')),
     przyczyna_natura varchar(1) check (przyczyna_natura in ('T','N')),
     uzytkownik_spoleczny varchar(1) check (uzytkownik_spoleczny in ('T','N')),
-    uzytkownik_prywatny varchar(1) check (uzytkownik_prywatny in ('T','N'))
+    uzytkownik_prywatny varchar(1) check (uzytkownik_prywatny in ('T','N')),
     uwagi varchar(255),
     CONSTRAINT zagrozenia_pkey PRIMARY KEY (id),
     CONSTRAINT check_wystepowanie CHECK (wystepowanie in ('I','N')),
@@ -181,27 +185,6 @@ CREATE TABLE funkcje (
     czlon3 varchar(30), 
     nazwa varchar(90), 
     skrot varchar(20)
-);
-
-CREATE TABLE geometry_columns (
-    f_table_name TEXT NOT NULL,
-    f_geometry_column TEXT NOT NULL,
-    type TEXT NOT NULL,
-    coord_dimension TEXT NOT NULL,
-    srid INTEGER NOT NULL,
-    spatial_index_enabled INTEGER NOT NULL,
-    CONSTRAINT pk_geom_cols PRIMARY KEY (f_table_name, f_geometry_column),
-    CONSTRAINT fk_gc_srs FOREIGN KEY (srid) REFERENCES spatial_ref_sys (srid)
-);
-
-CREATE TABLE geometry_columns_auth (
-    f_table_name VARCHAR(256) NOT NULL,
-    f_geometry_column VARCHAR(256) NOT NULL,
-    read_only INTEGER NOT NULL,
-    hidden INTEGER NOT NULL,
-    CONSTRAINT pk_gc_auth PRIMARY KEY (f_table_name, f_geometry_column),
-    CONSTRAINT fk_gc_auth FOREIGN KEY (f_table_name, f_geometry_column) 
-            REFERENCES geometry_columns (f_table_name, f_geometry_column) ON DELETE CASCADE
 );
 
 CREATE TABLE gleba_dane -- gleby 
@@ -261,9 +244,12 @@ CREATE TABLE miejsca(
   data varchar(10) not null,
   autor varchar(100) not null,
   uwagi varchar(255),
-  wspolrzedne POINT,
+  --wspolrzedne POINT,
   CONSTRAINT pk_miejsca PRIMARY KEY (id)
 );
+
+SELECT AddGeometryColumn('miejsca', 'wspolrzedne',
+  2180, 'POLYGON', 'XY');
 
 CREATE TABLE miejscowosci (
     id integer primary key, 
@@ -287,25 +273,6 @@ CREATE TABLE powiaty(
     nazwa varchar(50)
 );
 
-CREATE TABLE spatial_ref_sys (
-    srid INTEGER NOT NULL PRIMARY KEY,
-    auth_name TEXT NOT NULL,
-    auth_srid INTEGER NOT NULL,
-    ref_sys_name TEXT,
-    proj4text TEXT NOT NULL,
-    srs_wkt TEXT
-);
-
-CREATE TABLE spatialite_history (
-    event_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    table_name TEXT NOT NULL,
-    geometry_column TEXT,
-    event TEXT NOT NULL,
-    timestamp TEXT NOT NULL,
-    ver_sqlite TEXT NOT NULL,
-    ver_splite TEXT NOT NULL
-);
-
 CREATE TABLE trasy(
   id integer NOT NULL,
   rodzaj_badan varchar(2) not null default '?', -- L - lot, P - powierzchniowe, W - weryfikacje, ? - nieokreslone
@@ -315,29 +282,11 @@ CREATE TABLE trasy(
   zakonczenie varchar(25),
   czestotliwosc integer default 0, -- czestotliwosc odczytow w sekundach
   uwagi varchar(255),
-  wspolrzedne LINESTRING,
+  --wspolrzedne LINESTRING,
   CONSTRAINT pk_trasy PRIMARY KEY (id)
 );
-
-CREATE TABLE views_geometry_columns (
-    view_name TEXT NOT NULL,
-    view_geometry TEXT NOT NULL,
-    view_rowid TEXT NOT NULL,
-    f_table_name VARCHAR(256) NOT NULL,
-    f_geometry_column VARCHAR(256) NOT NULL,
-    CONSTRAINT pk_geom_cols_views PRIMARY KEY (view_name, view_geometry),
-    CONSTRAINT fk_views_geom_cols FOREIGN KEY (f_table_name, f_geometry_column) 
-        REFERENCES geometry_columns (f_table_name, f_geometry_column) ON DELETE CASCADE
-);
-
-CREATE TABLE virts_geometry_columns (
-    virt_name TEXT NOT NULL,
-    virt_geometry TEXT NOT NULL,
-    type VARCHAR(30) NOT NULL,
-    srid INTEGER NOT NULL,
-    CONSTRAINT pk_geom_cols_virts PRIMARY KEY (virt_name, virt_geometry),
-    CONSTRAINT fk_vgc_srid FOREIGN KEY (srid) REFERENCES spatial_ref_sys (srid)
-);
+SELECT AddGeometryColumn('trasy', 'wspolrzedne',
+  2180, 'LINESTRING', 'XY');
 
 CREATE TABLE wojewodztwa (
     id integer primary key, 
@@ -345,7 +294,7 @@ CREATE TABLE wojewodztwa (
     nazwa varchar(50)
 );
 
-CREATE VIEW geom_cols_ref_sys AS
+/* CREATE VIEW geom_cols_ref_sys AS
     SELECT f_table_name, f_geometry_column, type, coord_dimension, spatial_ref_sys.srid AS srid,
         auth_name, auth_srid, ref_sys_name, proj4text
     FROM geometry_columns, spatial_ref_sys
@@ -360,7 +309,7 @@ CREATE INDEX idx_srid_geocols ON geometry_columns (srid);
 
 CREATE INDEX idx_viewsjoin ON views_geometry_columns (f_table_name, f_geometry_column);
 
-CREATE INDEX idx_virtssrid ON virts_geometry_columns (srid);
+CREATE INDEX idx_virtssrid ON virts_geometry_columns (srid); */
 
 CREATE TRIGGER del_stanowisko before delete on stanowiska 
 begin
@@ -377,6 +326,7 @@ begin
     delete from st_media where stanowisko = OLD.id;
 end;
 
+/*
 CREATE TRIGGER "ggi_miejsca_wspolrzedne" BEFORE INSERT ON miejsca
     FOR EACH ROW BEGIN
         SELECT RAISE(ROLLBACK, 'miejsca.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
@@ -435,7 +385,8 @@ CREATE TRIGGER "ggu_trasy_wspolrzedne" BEFORE UPDATE ON trasy
             WHERE f_table_name = 'trasy' AND f_geometry_column = 'wspolrzedne'
             AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
          ) IS NULL;
-END;
+END; 
+*/
 
 CREATE TABLE st_media(
     medium integer, 
@@ -457,7 +408,48 @@ CREATE TABLE ustawienia(
     wartosc varchar(20)
 );
 
-INSERT INTO "geometry_columns" VALUES('trasy','wspolrzedne','LINESTRING','XY',2180,0);
+--drop table projekty;
+create table projekty(
+    id integer primary key,
+    start varchar(2), 
+    nazwa varchar(255)
+);
+
+--drop table podmioty;
+create table podmioty(
+    id integer primary key,
+    start varchar(2),
+    nazwa varchar(255)
+);
+
+--SELECT DiscardGeometryColumn('zdjecia_lotnicze', 'wspolrzedne');
+--drop table zdjecia_lotnicze;
+CREATE TABLE ZDJECIA_LOTNICZE(
+  id integer NOT NULL,
+  folder varchar(20),
+  klatka varchar(20),
+  miejscowosc integer,
+  gmina integer,
+  powiat integer,
+  wojewodztwo integer,
+  autor integer,
+  pilot integer,
+  data_wykonania varchar(10),
+  czas_wykonania varchar(20),
+  prawa_autorskie varchar(255),
+  projekt integer,
+  numer varchar(100),
+  zleceniodawca integer,
+  platnik integer,
+  nosnik varchar(1),
+  CONSTRAINT pk_zdjecia_lotnicze PRIMARY KEY (id),
+  CONSTRAINT unique_zdjecia_lotnicze UNIQUE (folder, klatka)
+);
+
+SELECT AddGeometryColumn('zdjecia_lotnicze', 'wspolrzedne',
+  2180, 'POINT', 'XY');
+
+/*INSERT INTO "geometry_columns" VALUES('trasy','wspolrzedne','LINESTRING','XY',2180,0);
 INSERT INTO "geometry_columns" VALUES('miejsca','wspolrzedne','POINT','XY',2180,0);
-INSERT INTO "geometry_columns" VALUES('stanowiska','wspolrzedne','POLYGON','XY',2180,0);
-insert into ustawienia values('wersja','0001');
+INSERT INTO "geometry_columns" VALUES('stanowiska','wspolrzedne','POLYGON','XY',2180,0); */
+insert into ustawienia values('wersja','0002');
