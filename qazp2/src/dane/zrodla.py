@@ -34,7 +34,7 @@ from qgis.core import QgsVectorLayer, QgsDataSourceURI
 from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR,STANOWISKA_ATR, AModel,\
     JEDFIZG_ATR,  EKSPOZYCJA_ATR, TEREN_ATR, OBSZAR_ATR, ZAGROZENIA_ATR,\
     WNIOSKI_ATR, GLEBA_ATR, AKTUALNOSCI_ATR, KARTA_ATR, ZDJECIA_LOTNICZE_ATR, NowyModel
-from micon import Polaczenie  
+from micon import Polaczenie, getLite
 import logging
 def rejestr_map():
     """ Zwraca rejestr map z QGIS """
@@ -42,9 +42,10 @@ def rejestr_map():
 
 def get_warstwa(nazwa):
     """ Wyszukuje warstwe wedlug nazwy i zwraca pierwsza znaleziona """
+    nup = nazwa.upper()
     reg = QgsMapLayerRegistry.instance()
     for v in reg.mapLayers().itervalues():
-        if v.isValid() and v.type() == QgsMapLayer.VectorLayer and v.name() == nazwa:
+        if v.isValid() and v.type() == QgsMapLayer.VectorLayer and unicode(v.name()).upper() == nup:
             return v
 
 def _gwarstwa(qgs_warstwa,atrybuty):
@@ -180,11 +181,13 @@ def getPolaczenie2(qgsWarstwa, wierszMapa = False):
     ndp = str(qgsWarstwa.dataProvider().name())
     uri = QgsDataSourceURI(qgsWarstwa.dataProvider().dataSourceUri())
     if ndp.upper() == 'SPATIALITE':
-        import sqlite3
-        con = sqlite3.connect(str(uri.database()))
-        if wierszMapa:
-            con.row_factory = sqlite3.Row
-        return Polaczenie(con, Polaczenie.LITE)
+        #import sqlite3
+        #con = sqlite3.connect(str(uri.database()))
+        con = getLite(str(uri.database()), wierszMapa)
+        return con
+        #if wierszMapa:
+        #    con.row_factory = sqlite3.Row
+        #return Polaczenie(con, Polaczenie.LITE)
     elif ndp.upper() == 'POSTGRES':
         import psycopg2
         import psycopg2.extensions

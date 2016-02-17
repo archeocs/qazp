@@ -40,7 +40,7 @@ def setUstawienia(con, klucz, wartosc):
     sw = getUstawienia(con, klucz)
     if sw is None:
         stmt = con.prep('insert into ustawienia values(:klucz,:wartosc)')
-    else:
+    elif sw < wartosc:
         stmt = con.prep('update ustawienia set wartosc=:wartosc where klucz=:klucz')
     if stmt.wykonaj({'klucz':klucz, 'wartosc':wartosc},False) != 1:
         con.wycofaj()
@@ -81,10 +81,45 @@ def dodajKolumnePochodzenie0002(con):
     altKarty = "alter table karty add column pochodzenie_danych integer"
     con.prep(altKarty).wykonaj(zatwierdz=False)
 
+def utworzWykaz(con, nazwa):
+    createSql = "CREATE TABLE %s " \
+                "(" \
+                "ID INTEGER PRIMARY KEY," \
+                "START VARCHAR(2)," \
+                "NAZWA VARCHAR(255)" \
+                ")"
+    con.prep(createSql % nazwa).wykonaj(zatwierdz=False)
+
+def utworzZdjeciaLotnicze(con):
+    createZdjecia = "CREATE TABLE ZDJECIA_LOTNICZE(" \
+                    "ID INTEGER NOT NULL," \
+                    "FOLDER VARCHAR(20)," \
+                    "KLATKA VARCHAR(20)," \
+                    "MIEJSCOWOSC INTEGER," \
+                    "GMINA INTEGER," \
+                    "POWIAT INTEGER," \
+                    "WOJEWODZTWO INTEGER," \
+                    "AUTOR INTEGER," \
+                    "PILOT INTEGER," \
+                    "DATA_WYKONANIA VARCHAR(10)," \
+                    "CZAS_WYKONANIA VARCHAR(20)," \
+                    "PRAWA_AUTORSKIE VARCHAR(255)," \
+                    "PROJEKT INTEGER," \
+                    "NUMER VARCHAR(100)," \
+                    "ZLECENIODAWCA INTEGER," \
+                    "PLATNIK INTEGER," \
+                    "NOSNIK VARCHAR(1)," \
+                    "CONSTRAINT PK_ZDJECIA_LOTNICZE PRIMARY KEY (ID)," \
+                    "CONSTRAINT UNIQUE_ZDJECIA_LOTNICZE UNIQUE (FOLDER, KLATKA)" \
+                    ")"
+    con.prep(createZdjecia).wykonaj(zatwierdz=False)
+    con.prep("SELECT ADDGEOMETRYCOLUMN('ZDJECIA_LOTNICZE', 'WSPOLRZEDNE',2180, 'POINT', 'XY')").wykonaj(zatwierdz=False)
+
+
 def wykonajPolecenie(con, stmt, zatwierdz=False):
     return con.prep(stmt).wykonaj(zatwierdz=zatwierdz)
 
-_BIEZ_SCHEMAT = '0002' # ostatnia wersja schematu bazy
+_BIEZ_SCHEMAT = '0003' # ostatnia wersja schematu bazy
 
 def dostosujSchemat(con):
     ss = sprSchemat(con, _BIEZ_SCHEMAT)
@@ -93,12 +128,21 @@ def dostosujSchemat(con):
     schBaza = ss[1]
     if schBaza == '0000':
         dodajMedia(con)
-    if setUstawienia(con, 'wersja', '0001'):
-        schBaza = '0001'
+        if setUstawienia(con, 'wersja', '0001'):
+            schBaza = '0001'
     if schBaza == '0001':
         dodajKolumnePochodzenie0002(con)
-    if setUstawienia(con, 'wersja', '0002'):
-        schBaza = '0002'
+        if setUstawienia(con, 'wersja', '0002'):
+            schBaza = '0002'
+    if schBaza == '0002':
+        if con._tc == 3:
+            utworzWykaz(con, 'PODMIOTY')
+            utworzWykaz(con, 'PROJEKTY')
+            utworzZdjeciaLotnicze(con)
+        else:
+            return False
+        if setUstawienia(con, 'wersja', '0003'):
+            schBaza = '0003'
     # if schBaza == '0002'
     # ...
     return schBaza == _BIEZ_SCHEMAT

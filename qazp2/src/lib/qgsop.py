@@ -68,7 +68,9 @@ def dodaj(qgsWarstwa, atr, qgsGeom, origSrid=4326, commit=False):
     if not nowyIndeks:
         nowyIndeks = 1
     else:
-        nowyIndeks = nowyIndeks.toInt()[0] + 1
+        if isinstance(nowyIndeks, QVariant):
+            nowyIndeks = nowyIndeks.toInt()[0]
+        nowyIndeks += 1
     f[0] = nowyIndeks
     for (k, v) in atr.iteritems():
         if k > 0:
@@ -80,9 +82,25 @@ def dodaj(qgsWarstwa, atr, qgsGeom, origSrid=4326, commit=False):
                 raise Exception('Nieudana transformacja')
     f.setGeometry(qgsGeom)
     if commit:
+        print nowyIndeks
         qgsWarstwa.startEditing()
     return qgsWarstwa.addFeatures([f]) and (not commit or qgsWarstwa.commitChanges())
 
+
+def dodajObj(qgsWarstwa, indeks, atr, qgsGeom, origSrid=4326):
+    provider = qgsWarstwa.dataProvider()
+    f = QgsFeature(provider.fields())
+    f[0] = indeks
+    for (k, v) in atr.iteritems():
+        if k > 0:
+            f[k] = v
+    wcrs = qgsWarstwa.crs()
+    ocrs = QgsCoordinateReferenceSystem(origSrid)
+    if ocrs != wcrs:
+        if qgsGeom.transform(QgsCoordinateTransform(ocrs,wcrs)) != 0:
+                raise Exception('Nieudana transformacja')
+    f.setGeometry(qgsGeom)
+    return qgsWarstwa.addFeatures([f])
 
 def dodaj2(qgs_warstwa,atr,qgs_geom,orig_srid=4326,commit=False):
     f = QgsFeature()

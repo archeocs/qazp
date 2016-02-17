@@ -29,15 +29,18 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtCore import SIGNAL,QObject,QVariant, Qt
+from PyQt4.QtCore import SIGNAL,QObject,QVariant, Qt, QFile, QTextStream, QIODevice
 from PyQt4.QtGui import QAction,QMessageBox,QInputDialog, QProgressDialog, QFileDialog, QDialog
+
 from functools import partial
+from locale import getpreferredencoding
+
 from filtred import FiltrWidget
 from widok.lista import GTabModel2, GFrame
 from dane.zrodla import gzdjecia, get_warstwa, szukaj_zdjecia,getPolaczenie2,\
     rejestr_map, stLista, sqlListaId
 from widok.proped import conw, PropWidok, PropFrame
-from lib.qgsop import usun, tempWarstwa, dodaj
+from lib.qgsop import usun, tempWarstwa, dodaj, dodajObj
 from dane.model import ZDJECIA_LOTNICZE_ATR
 from dane.gtypy import Punkt
 from dane.tabela import *
@@ -71,15 +74,11 @@ class ListaZdjec(GFrame):
         ww = self.wybrany_wiersz()[1]
         ed = edytor(self.warstwa, ww, self._win)
         self._win.dodaj(ed)
-        #ed = Edytor(self.warstwa, ww, self._win, funModel=self.zmienWiersz)
-        #self._win.setWindowTitle('Stanowisko: '+str(ww['obszar'])+'/'+str(ww['nr_obszar']))
-        #self._win.dodaj(ed)
 
     def _akcjaDrukuj(self):
         pass
 
     def _anulujFiltr(self):
-        #self._con.zakoncz()
         self._win.usun()
 
     def _zastosujFiltr(self, mapa):
@@ -109,7 +108,7 @@ class ListaZdjec(GFrame):
             return
         if usun(self.warstwa, ww[1].feature()):
             self.getModel().removeRow(ww[0].row())
-            self._win.statusBar().showMessage(u'Stanowisko usunięte')
+            self._win.statusBar().showMessage(u'Zdjęcie usunięte')
 
     def _akcjaOk(self):
         self._con.zakoncz()
@@ -142,39 +141,43 @@ class ImportujAkcja(QAction):
         self._win = window
         self._iface = iface
         self.wykazy = {}
+        self.prefEncoding = getpreferredencoding()
 
     def getWykaz(self, warstwa, wykNazwa, wartosc):
         if not wartosc:
             return None
-        wuni = wartosc.decode('utf-8')
         if not self.wykazy.has_key(wykNazwa):
             self.wykazy[wykNazwa] = {}
-        if self.wykazy[wykNazwa].has_key(wuni):
-            return self.wykazy[wykNazwa][wuni]
+        if self.wykazy[wykNazwa].has_key(wartosc):
+            return self.wykazy[wykNazwa][wartosc]
         con = getPolaczenie2(warstwa)
         sql = 'select id from '+wykNazwa+' where nazwa = ?'
-        ident = con.jeden(sql, [wuni])
+        ident = con.jeden(sql, [wartosc])
         if ident:
             con.zakoncz()
-            self.wykazy[wykNazwa][wuni] = ident[0]
+            self.wykazy[wykNazwa][wartosc] = ident[0]
             return ident[0]
         ident = con.getMax(wykNazwa) + 1
-        con.wykonaj('insert into '+wykNazwa+' values (?, ?, ?)', [ident, wuni[:2], wuni], True)
+        con.wykonaj('insert into '+wykNazwa+' values (?, ?, ?)', [ident, wartosc[:2], wartosc], True)
         con.zakoncz()
-        self.wykazy[wykNazwa][wuni] = ident
+        self.wykazy[wykNazwa][wartosc] = ident
         return ident
 
-
-    def czytaj(self,plik):
+    def czytajQt(self, plik):
         wiersze = []
         kolumny = ['folder', 'klatka', 'gDlugosc', 'gSzerokosc', 'miejscowosc', 'gmina',
                    'powiat', 'wojewodztwo', 'autor', 'pilot',
         'dataWykonania', 'czasWykonania','nosnik','prawaAutorskie', 'projekt', 'numer', 'zleceniodawca', 'platnik']
-        with open(plik, 'r') as csv:
-            for w in csv.readlines()[1:]:
-                wiersze.append(dict(zip(kolumny, w.rstrip('\n').split(';'))))
+        ff = QFile(plik)
+        ff.open(QIODevice.ReadOnly)
+        stream = QTextStream(ff)
+        line = stream.readLine()
+        while not stream.atEnd():
+            line = stream.readLine()
+            wmapa = dict(zip(kolumny, unicode(line).split(";")))
+            wiersze.append(wmapa)
+        ff.close()
         return wiersze
-
 
 
     def wierszeNaZdjecia(self, wiersze):
@@ -203,21 +206,36 @@ class ImportujAkcja(QAction):
     def wykonaj(self):
         warstwa = get_warstwa('zdjecia_lotnicze')
         if warstwa is None:
-            QMessageBox.warning(self._win,u'Import z GPS',u'Przed importem należy otworzyć warstwę "zdjecia_lotnicze"')
+            QMessageBox.warning(self._win,u'Import Zdjęć',u'Przed importem należy otworzyć warstwę "zdjecia_lotnicze"')
             return
         fn = QFileDialog.getOpenFileName(self._win, filter='Dane CSV (*.csv)')
         if not fn:
             return
-        wiersze = self.czytaj(str(fn))
-        #warstwa.startEditing()
+        wiersze = self.czytajQt(str(fn))
+        indeks = warstwa.maximumValue(0)
+        if isinstance(indeks, QVariant):
+            indeks = indeks.toInt()[0]
+        warstwa.startEditing()
         postep = QProgressDialog(u'Dodaję zdjęcia', "Cancel", 0, len(wiersze)+1)
         postep.setWindowModality(Qt.WindowModal)
+        sukces = False
         for (zi, z) in enumerate(self.wierszeNaZdjecia(wiersze)):
             postep.setValue(zi)
             postep.setLabelText(u'Zdjęcie %s/%s'%(z.folder, z.klatka))
-            dodaj(warstwa, z.mapa(), z.geom(), 2180, True)
+            indeks += 1
+            if not dodajObj(warstwa, indeks, z.mapa(), z.geom()):
+                warstwa.rollBack()
+                break
+        else:
+            sukces = warstwa.commitChanges()
         postep.setValue(len(wiersze)+1)
-        QMessageBox.information(self._win,u'Dodawanie zdjęć',u'Dodano %s zdjęć' % len(wiersze))
+        if sukces:
+            QMessageBox.information(self._win,u'Dodawanie zdjęć',u'Dodano %s zdjęć' % len(wiersze))
+        else:
+            msg = u'Zdjęcia nie zostały dodane\nBłędy:\n'
+            msg += '\n'.join([unicode(s) for s in warstwa.commitErrors()])
+            QMessageBox.information(self._win, u'Dodawanie zdjęć', msg)
+            warstwa.rollBack()
 
 def fdb(ident,war,tab):
     if ident is None:

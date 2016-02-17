@@ -32,6 +32,7 @@ class Polaczenie(object):
     """ Adapter polaczenia z baza danych PostgreSQL/Postgis albo Sqlite3/Spatialite"""
     PG = 1
     LITE = 2
+    SPATIALITE = 3
 
     def __init__(self, con, typ):
         """ Konstruktor obiektu klasy
@@ -75,7 +76,7 @@ class Polaczenie(object):
         Parametry powinny byc podawane w konwencji uzywanej w module sqlite3. Jezeli
         polaczenie dotyczy bazy Postgresql, to polecenie zostanie przeksztalcone do postaci
         wymaganej przez sterownik psycopg """
-        if self._tc == self.LITE:
+        if self._tc in (self.LITE, self.SPATIALITE):
             return Polecenie(self._con,sql)
         ns = self._rn.subn(self._rep,sql.replace('?','%s'))
         return Polecenie(self._con,ns[0])
@@ -137,6 +138,14 @@ class Polecenie(object):
             return f(r)
         return r
         
-def getLite(db):
-    import sqlite3
-    return Polaczenie(sqlite3.connect(db),Polaczenie.LITE)
+def getLite(db, rowFactory=False):
+    try:
+        import pyspatialite.dbapi2 as lite
+        typ = Polaczenie.SPATIALITE
+    except ImportError as ie:
+        import sqlite3 as lite
+        typ = Polaczenie.LITE
+    pycon = lite.connect(db)
+    if rowFactory:
+        pycon.row_factory = lite.Row
+    return Polaczenie(pycon, typ)

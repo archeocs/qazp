@@ -1,455 +1,365 @@
 CREATE TABLE EKSPOZYCJA_DANE(
-    id integer not null,
-    stanowisko integer not null,
-    eksponowany varchar(1) check (eksponowany in ('T','N')),
-    kraw_stoki varchar(1) check (kraw_stoki in ('T','N')),
-    sfaldowania_cyple varchar(1) check (sfaldowania_cyple in ('T','N')),
-    cyple_wybitne varchar(1) check (cyple_wybitne in ('T','N')),
-    waly_garby varchar(1) check (waly_garby in ('T','N')),
-    wyniesienia_okrezne varchar(1) check (wyniesienia_okrezne in ('T','N')),
-    osloniety varchar(1) check (osloniety in ('T','N')),
-    podst_stoku varchar(1) check (podst_stoku in ('T','N')),
-    doliny_niecki varchar(1) check (doliny_niecki in ('T','N')),
-    kotlinki_zagleb varchar(1) check (kotlinki_zagleb in ('T','N')),
-    jaskinie varchar(1) check (jaskinie in ('T','N')),
-    rozmiar decimal(4,1),
-    stopien decimal(3,1),
-    kierunek integer check (kierunek between 0 and 256),
-    uwagi varchar(255),
-    CONSTRAINT kspozycja_dane_pkey PRIMARY KEY (id),
-    constraint unique_ekspozycja_dane_st unique(id, stanowisko)
+    ID INTEGER NOT NULL,
+    STANOWISKO INTEGER NOT NULL,
+    EKSPONOWANY VARCHAR(1) CHECK (EKSPONOWANY IN ('T','N')),
+    KRAW_STOKI VARCHAR(1) CHECK (KRAW_STOKI IN ('T','N')),
+    SFALDOWANIA_CYPLE VARCHAR(1) CHECK (SFALDOWANIA_CYPLE IN ('T','N')),
+    CYPLE_WYBITNE VARCHAR(1) CHECK (CYPLE_WYBITNE IN ('T','N')),
+    WALY_GARBY VARCHAR(1) CHECK (WALY_GARBY IN ('T','N')),
+    WYNIESIENIA_OKREZNE VARCHAR(1) CHECK (WYNIESIENIA_OKREZNE IN ('T','N')),
+    OSLONIETY VARCHAR(1) CHECK (OSLONIETY IN ('T','N')),
+    PODST_STOKU VARCHAR(1) CHECK (PODST_STOKU IN ('T','N')),
+    DOLINY_NIECKI VARCHAR(1) CHECK (DOLINY_NIECKI IN ('T','N')),
+    KOTLINKI_ZAGLEB VARCHAR(1) CHECK (KOTLINKI_ZAGLEB IN ('T','N')),
+    JASKINIE VARCHAR(1) CHECK (JASKINIE IN ('T','N')),
+    ROZMIAR DECIMAL(4,1),
+    STOPIEN DECIMAL(3,1),
+    KIERUNEK INTEGER CHECK (KIERUNEK BETWEEN 0 AND 256),
+    UWAGI VARCHAR(255),
+    CONSTRAINT EKSPOZYCJA_DANE_PKEY PRIMARY KEY (ID),
+    CONSTRAINT UNIQUE_EKSPOZYCJA_DANE_ST UNIQUE(ID, STANOWISKO)
     
 );
 CREATE TABLE FIZGEO_DANE(
-    id integer not null,
-    stanowisko integer not null,
-    nadmorska varchar(1) check (nadmorska in ('T','N')),
-    w_morzu varchar(1) check (w_morzu in ('T','N')),
-    plaza varchar(1) check (plaza in ('T','N')),
-    mierzeja varchar(1) check (mierzeja in ('T','N')),
-    skarpa varchar(1) check (skarpa in ('T','N')),
-    wal_wydmowy varchar(1) check (wal_wydmowy in ('T','N')),
-    duze_doliny varchar(1) check (duze_doliny in ('T','N')),
-    w_wodzie varchar(1) check (w_wodzie in ('T','N')),
-    ter_denna varchar(1) check (ter_denna in ('T','N')),
-    ter_nadzalewowa varchar(1) check (ter_nadzalewowa in ('T','N')),
-    ter_wyzsze varchar(1) check (ter_wyzsze in ('T','N')),
-    brzeg_wysoczyzny varchar(1) check (brzeg_wysoczyzny in ('T','N')),
-    male_doliny varchar(1) check (male_doliny in ('T','N')),
-    dno_doliny varchar(1) check (dno_doliny in ('T','N')),
-    stok_doliny varchar(1) check (stok_doliny in ('T','N')),
-    krawedz_doliny varchar(1) check (krawedz_doliny in ('T','N')),
-    poza_dolinami varchar(1) check (poza_dolinami in ('T','N')),
-    rownina varchar(1) check (rownina in ('T','N')),
-    obsz_falisty varchar(1) check (obsz_falisty in ('T','N')),
-    obsz_pagorkowaty varchar(1) check (obsz_pagorkowaty in ('T','N')),
-    obsz_gorzysty varchar(1) check (obsz_gorzysty in ('T','N')),
-    uwagi varchar(255),
-    CONSTRAINT fizgeo_dane_pkey PRIMARY KEY (id),
-    constraint unique_fizgeo_dane_st unique(id, stanowisko)
+    ID INTEGER NOT NULL,
+    STANOWISKO INTEGER NOT NULL,
+    NADMORSKA VARCHAR(1) CHECK (NADMORSKA IN ('T','N')),
+    W_MORZU VARCHAR(1) CHECK (W_MORZU IN ('T','N')),
+    PLAZA VARCHAR(1) CHECK (PLAZA IN ('T','N')),
+    MIERZEJA VARCHAR(1) CHECK (MIERZEJA IN ('T','N')),
+    SKARPA VARCHAR(1) CHECK (SKARPA IN ('T','N')),
+    WAL_WYDMOWY VARCHAR(1) CHECK (WAL_WYDMOWY IN ('T','N')),
+    DUZE_DOLINY VARCHAR(1) CHECK (DUZE_DOLINY IN ('T','N')),
+    W_WODZIE VARCHAR(1) CHECK (W_WODZIE IN ('T','N')),
+    TER_DENNA VARCHAR(1) CHECK (TER_DENNA IN ('T','N')),
+    TER_NADZALEWOWA VARCHAR(1) CHECK (TER_NADZALEWOWA IN ('T','N')),
+    TER_WYZSZE VARCHAR(1) CHECK (TER_WYZSZE IN ('T','N')),
+    BRZEG_WYSOCZYZNY VARCHAR(1) CHECK (BRZEG_WYSOCZYZNY IN ('T','N')),
+    MALE_DOLINY VARCHAR(1) CHECK (MALE_DOLINY IN ('T','N')),
+    DNO_DOLINY VARCHAR(1) CHECK (DNO_DOLINY IN ('T','N')),
+    STOK_DOLINY VARCHAR(1) CHECK (STOK_DOLINY IN ('T','N')),
+    KRAWEDZ_DOLINY VARCHAR(1) CHECK (KRAWEDZ_DOLINY IN ('T','N')),
+    POZA_DOLINAMI VARCHAR(1) CHECK (POZA_DOLINAMI IN ('T','N')),
+    ROWNINA VARCHAR(1) CHECK (ROWNINA IN ('T','N')),
+    OBSZ_FALISTY VARCHAR(1) CHECK (OBSZ_FALISTY IN ('T','N')),
+    OBSZ_PAGORKOWATY VARCHAR(1) CHECK (OBSZ_PAGORKOWATY IN ('T','N')),
+    OBSZ_GORZYSTY VARCHAR(1) CHECK (OBSZ_GORZYSTY IN ('T','N')),
+    UWAGI VARCHAR(255),
+    CONSTRAINT FIZGEO_DANE_PKEY PRIMARY KEY (ID),
+    CONSTRAINT UNIQUE_FIZGEO_DANE_ST UNIQUE(ID, STANOWISKO)
 );
 CREATE TABLE OBSZAR_DANE(
-    id integer not null,
-    stanowisko integer not null,
-    obserwacja varchar(1), -- utrudniona / bez przeszkod
-    pole varchar(1), -- otwarte / zamkniete
-    nasyc_rozklad varchar(1), -- rownomierny / nierownomierny
-    nasyc_typ varchar(1), -- jednocentryczne / wielocentryczne / dekocentryczne
-    powierzchnia decimal(9,2),
-    gestosc_znal varchar(1), -- mala / srednia /duza
-    uwagi varchar(255),
-    CONSTRAINT obszar_dane_pkey PRIMARY KEY (id),
-    CONSTRAINT check_obserwacja CHECK (obserwacja in ('U','B')),
-    CONSTRAINT check_pole CHECK (pole in ('O','Z')),
-    CONSTRAINT check_nasyc_rozklad CHECK (nasyc_rozklad in ('R','N')),
-    CONSTRAINT check_nasyc_typ CHECK (nasyc_typ in ('J','W','D')),
-    CONSTRAINT check_gestosc_znal CHECK (gestosc_znal in ('M','S','D')),
-    constraint unique_obszar_dane_st unique(id, stanowisko)
+    ID INTEGER NOT NULL,
+    STANOWISKO INTEGER NOT NULL,
+    OBSERWACJA VARCHAR(1), -- UTRUDNIONA / BEZ PRZESZKOD
+    POLE VARCHAR(1), -- OTWARTE / ZAMKNIETE
+    NASYC_ROZKLAD VARCHAR(1), -- ROWNOMIERNY / NIEROWNOMIERNY
+    NASYC_TYP VARCHAR(1), -- JEDNOCENTRYCZNE / WIELOCENTRYCZNE / DEKOCENTRYCZNE
+    POWIERZCHNIA DECIMAL(9,2),
+    GESTOSC_ZNAL VARCHAR(1), -- MALA / SREDNIA /DUZA
+    UWAGI VARCHAR(255),
+    CONSTRAINT OBSZAR_DANE_PKEY PRIMARY KEY (ID),
+    CONSTRAINT CHECK_OBSERWACJA CHECK (OBSERWACJA IN ('U','B')),
+    CONSTRAINT CHECK_POLE CHECK (POLE IN ('O','Z')),
+    CONSTRAINT CHECK_NASYC_ROZKLAD CHECK (NASYC_ROZKLAD IN ('R','N')),
+    CONSTRAINT CHECK_NASYC_TYP CHECK (NASYC_TYP IN ('J','W','D')),
+    CONSTRAINT CHECK_GESTOSC_ZNAL CHECK (GESTOSC_ZNAL IN ('M','S','D')),
+    CONSTRAINT UNIQUE_OBSZAR_DANE_ST UNIQUE(ID, STANOWISKO)
 );
 CREATE TABLE STANOWISKA(
-    id integer not null,
-    obszar varchar(8) not null,
-    nr_obszar varchar(5) not null,
-    miejscowosc integer null default -1,
-    nr_miejscowosc varchar(5) null default '',
-    gmina integer null default -1,
-    powiat integer null default -1,
-    wojewodztwo integer null default -1,
-    rodzaj_badan varchar(1) not null default '?',
-    data varchar(10),
-    autor varchar(20),
-    uwagi varchar(255),
-    powierzchnia varchar(2),
-    etykieta_x varchar(20),
-    etykieta_y varchar(20),
-    etykieta_kolor varchar(7),
---    wspolrzedne POLYGON,
-    constraint stanowiska_pkey primary key(id)
+    ID INTEGER NOT NULL,
+    OBSZAR VARCHAR(8) NOT NULL,
+    NR_OBSZAR VARCHAR(5) NOT NULL,
+    MIEJSCOWOSC INTEGER NULL DEFAULT -1,
+    NR_MIEJSCOWOSC VARCHAR(5) NULL DEFAULT '',
+    GMINA INTEGER NULL DEFAULT -1,
+    POWIAT INTEGER NULL DEFAULT -1,
+    WOJEWODZTWO INTEGER NULL DEFAULT -1,
+    RODZAJ_BADAN VARCHAR(1) NOT NULL DEFAULT '?',
+    DATA VARCHAR(10),
+    AUTOR VARCHAR(20),
+    UWAGI VARCHAR(255),
+    POWIERZCHNIA VARCHAR(2),
+    ETYKIETA_X VARCHAR(20),
+    ETYKIETA_Y VARCHAR(20),
+    ETYKIETA_KOLOR VARCHAR(7),
+    CONSTRAINT STANOWISKA_PKEY PRIMARY KEY(ID)
 );
-SELECT AddGeometryColumn('stanowiska', 'wspolrzedne',
+SELECT ADDGEOMETRYCOLUMN('STANOWISKA', 'WSPOLRZEDNE',
   2180, 'POLYGON', 'XY');
--- CREATE VIRTUAL TABLE SpatialIndex USING VirtualSpatialIndex();
+
 CREATE TABLE TEREN_DANE(
-    id integer not null,
-    stanowisko integer not null,
-    zabudowany varchar(1) check (zabudowany in ('T','N')),
-    sred_zabud varchar(1) check (sred_zabud in ('T','N')),
-    las varchar(1) check (las in ('T','N')),
-    sad varchar(1) check (sad in ('T','N')),
-    park varchar(1) check (park in ('T','N')),
-    pole_orne varchar(1) check (pole_orne in ('T','N')),
-    laka varchar(1) check (laka in ('T','N')),
-    nieuzytek varchar(1) check (nieuzytek in ('T','N')),
-    torf varchar(1) check (torf in ('T','N')),
-    woda varchar(1) check (woda in ('T','N')),
-    bagno varchar(1) check (bagno in ('T','N')), 
-    prywatny varchar(1) check (prywatny in ('T','N')),
-    spoleczny varchar(1) check (spoleczny in ('T','N')),
-    przemyslowy varchar(1) check (przemyslowy in ('T','N')),
-    uwagi varchar(255), 
-    CONSTRAINT teren_dane_pkey PRIMARY KEY (id),
-      constraint unique_teren_dane_st unique(id, stanowisko)
+    ID INTEGER NOT NULL,
+    STANOWISKO INTEGER NOT NULL,
+    ZABUDOWANY VARCHAR(1) CHECK (ZABUDOWANY IN ('T','N')),
+    SRED_ZABUD VARCHAR(1) CHECK (SRED_ZABUD IN ('T','N')),
+    LAS VARCHAR(1) CHECK (LAS IN ('T','N')),
+    SAD VARCHAR(1) CHECK (SAD IN ('T','N')),
+    PARK VARCHAR(1) CHECK (PARK IN ('T','N')),
+    POLE_ORNE VARCHAR(1) CHECK (POLE_ORNE IN ('T','N')),
+    LAKA VARCHAR(1) CHECK (LAKA IN ('T','N')),
+    NIEUZYTEK VARCHAR(1) CHECK (NIEUZYTEK IN ('T','N')),
+    TORF VARCHAR(1) CHECK (TORF IN ('T','N')),
+    WODA VARCHAR(1) CHECK (WODA IN ('T','N')),
+    BAGNO VARCHAR(1) CHECK (BAGNO IN ('T','N')), 
+    PRYWATNY VARCHAR(1) CHECK (PRYWATNY IN ('T','N')),
+    SPOLECZNY VARCHAR(1) CHECK (SPOLECZNY IN ('T','N')),
+    PRZEMYSLOWY VARCHAR(1) CHECK (PRZEMYSLOWY IN ('T','N')),
+    UWAGI VARCHAR(255), 
+    CONSTRAINT TEREN_DANE_PKEY PRIMARY KEY (ID),
+    CONSTRAINT UNIQUE_TEREN_DANE_ST UNIQUE(ID, STANOWISKO)
 );
 
 CREATE TABLE WNIOSKI(
-    id integer not null,
-    stanowisko integer not null,
-    wartosc varchar(1), -- mala / srednia / duza
-    inwentaryzacja varchar(1) check (inwentaryzacja in ('T','N')),
-    wykopaliska varchar(1) check (wykopaliska in ('T','N')),
-    interwencja varchar(1) check (interwencja in ('T','N')),
-    uwagi varchar(255),
-    CONSTRAINT wnioski_pkey PRIMARY KEY (id),
-    CONSTRAINT check_wartosc CHECK (wartosc in ('M','S','D')),
-    constraint unique_wnioski_st unique(id, stanowisko)
+    ID INTEGER NOT NULL,
+    STANOWISKO INTEGER NOT NULL,
+    WARTOSC VARCHAR(1), -- MALA / SREDNIA / DUZA
+    INWENTARYZACJA VARCHAR(1) CHECK (INWENTARYZACJA IN ('T','N')),
+    WYKOPALISKA VARCHAR(1) CHECK (WYKOPALISKA IN ('T','N')),
+    INTERWENCJA VARCHAR(1) CHECK (INTERWENCJA IN ('T','N')),
+    UWAGI VARCHAR(255),
+    CONSTRAINT WNIOSKI_PKEY PRIMARY KEY (ID),
+    CONSTRAINT CHECK_WARTOSC CHECK (WARTOSC IN ('M','S','D')),
+    CONSTRAINT UNIQUE_WNIOSKI_ST UNIQUE(ID, STANOWISKO)
     
 );
 
 CREATE TABLE ZAGROZENIA(
-    id integer not null,
-    stanowisko integer not null,
-    wystepowanie varchar(1), -- istnieje / nie istnieje
-    czas varchar(1), -- stale / dorazne
-    przyczyna_ludzie varchar(1) check (przyczyna_ludzie in ('T','N')),
-    przyczyna_natura varchar(1) check (przyczyna_natura in ('T','N')),
-    uzytkownik_spoleczny varchar(1) check (uzytkownik_spoleczny in ('T','N')),
-    uzytkownik_prywatny varchar(1) check (uzytkownik_prywatny in ('T','N')),
-    uwagi varchar(255),
-    CONSTRAINT zagrozenia_pkey PRIMARY KEY (id),
-    CONSTRAINT check_wystepowanie CHECK (wystepowanie in ('I','N')),
-    CONSTRAINT check_czas CHECK (czas in ('S','D')),
-    constraint unique_zagrozenia_st unique(id, stanowisko)
+    ID INTEGER NOT NULL,
+    STANOWISKO INTEGER NOT NULL,
+    WYSTEPOWANIE VARCHAR(1), -- ISTNIEJE / NIE ISTNIEJE
+    CZAS VARCHAR(1), -- STALE / DORAZNE
+    PRZYCZYNA_LUDZIE VARCHAR(1) CHECK (PRZYCZYNA_LUDZIE IN ('T','N')),
+    PRZYCZYNA_NATURA VARCHAR(1) CHECK (PRZYCZYNA_NATURA IN ('T','N')),
+    UZYTKOWNIK_SPOLECZNY VARCHAR(1) CHECK (UZYTKOWNIK_SPOLECZNY IN ('T','N')),
+    UZYTKOWNIK_PRYWATNY VARCHAR(1) CHECK (UZYTKOWNIK_PRYWATNY IN ('T','N')),
+    UWAGI VARCHAR(255),
+    CONSTRAINT ZAGROZENIA_PKEY PRIMARY KEY (ID),
+    CONSTRAINT CHECK_WYSTEPOWANIE CHECK (WYSTEPOWANIE IN ('I','N')),
+    CONSTRAINT CHECK_CZAS CHECK (CZAS IN ('S','D')),
+    CONSTRAINT UNIQUE_ZAGROZENIA_ST UNIQUE(ID, STANOWISKO)
 );
-CREATE TABLE aktualnosci(
-  id integer NOT NULL,
-  stanowisko integer NOT NULL,
-  magazyn varchar(20),
-  nr_inwentarza varchar(20),
-  nr_krz varchar(20), -- nr rejestru zabytkow
-  data_krz date, -- data wpisu do rejestru
-  park character varying(20), -- park kulturowy
-  plan character varying(50),
-  wlasciciel varchar(500),
-  uwagi varchar(255),
-  CONSTRAINT aktualnosci_pkey PRIMARY KEY (id)
+CREATE TABLE AKTUALNOSCI(
+  ID INTEGER NOT NULL,
+  STANOWISKO INTEGER NOT NULL,
+  MAGAZYN VARCHAR(20),
+  NR_INWENTARZA VARCHAR(20),
+  NR_KRZ VARCHAR(20), -- NR REJESTRU ZABYTKOW
+  DATA_KRZ DATE, -- DATA WPISU DO REJESTRU
+  PARK CHARACTER VARYING(20), -- PARK KULTUROWY
+  PLAN CHARACTER VARYING(50),
+  WLASCICIEL VARCHAR(500),
+  UWAGI VARCHAR(255),
+  CONSTRAINT AKTUALNOSCI_PKEY PRIMARY KEY (ID)
 );
-CREATE TABLE fakty
+CREATE TABLE FAKTY
 (
-    id integer, 
-    stanowisko integer, 
-    okresa varchar(2),
-    okresb varchar(2),
-    okr_relacja varchar(1) check (okr_relacja in ('Z','P')),
-    okr_pewnosc decimal(3,2),
-    jeda varchar(6), 
-    jedb varchar(6), 
-    jed_relacja varchar(1) check (jed_relacja in ('Z','P')), 
-    jed_pewnosc decimal(3,2), 
-    funkcja varchar(8), 
-    fun_pewnosc decimal(3,2), 
-    masowy varchar(50), 
-    wydzielony varchar(50),
-     CONSTRAINT fakty_pkey PRIMARY KEY (id),
-     constraint okresa_okresy_dziejow_fkey foreign key(okresa) references okresy_dziejow(kod),
-     constraint okresb_okresy_dziejow_fkey foreign key(okresb) references okresy_dziejow(kod),
-     constraint jeda_jednostki_fkey foreign key(jeda) references jednostki(kod),
-     constraint jedb_jednostki_fkey foreign key(jedb) references jednostki(kod),
-     constraint funkcja_funkcje_fkey foreign key(funkcja) references funkcje(kod)
+    ID INTEGER, 
+    STANOWISKO INTEGER, 
+    OKRESA VARCHAR(2),
+    OKRESB VARCHAR(2),
+    OKR_RELACJA VARCHAR(1) CHECK (OKR_RELACJA IN ('Z','P')),
+    OKR_PEWNOSC DECIMAL(3,2),
+    JEDA VARCHAR(6), 
+    JEDB VARCHAR(6), 
+    JED_RELACJA VARCHAR(1) CHECK (JED_RELACJA IN ('Z','P')), 
+    JED_PEWNOSC DECIMAL(3,2), 
+    FUNKCJA VARCHAR(8), 
+    FUN_PEWNOSC DECIMAL(3,2), 
+    MASOWY VARCHAR(50), 
+    WYDZIELONY VARCHAR(50),
+     CONSTRAINT FAKTY_PKEY PRIMARY KEY (ID),
+     CONSTRAINT OKRESA_OKRESY_DZIEJOW_FKEY FOREIGN KEY(OKRESA) REFERENCES OKRESY_DZIEJOW(KOD),
+     CONSTRAINT OKRESB_OKRESY_DZIEJOW_FKEY FOREIGN KEY(OKRESB) REFERENCES OKRESY_DZIEJOW(KOD),
+     CONSTRAINT JEDA_JEDNOSTKI_FKEY FOREIGN KEY(JEDA) REFERENCES JEDNOSTKI(KOD),
+     CONSTRAINT JEDB_JEDNOSTKI_FKEY FOREIGN KEY(JEDB) REFERENCES JEDNOSTKI(KOD),
+     CONSTRAINT FUNKCJA_FUNKCJE_FKEY FOREIGN KEY(FUNKCJA) REFERENCES FUNKCJE(KOD)
 );
 
-CREATE TABLE funkcje (
-    kod varchar(8) primary key, 
-    funkcja varchar(20), 
-    czlon1 varchar(30), 
-    czlon2 varchar(30), 
-    czlon3 varchar(30), 
-    nazwa varchar(90), 
-    skrot varchar(20)
+CREATE TABLE FUNKCJE (
+    KOD VARCHAR(8) PRIMARY KEY, 
+    FUNKCJA VARCHAR(20), 
+    CZLON1 VARCHAR(30), 
+    CZLON2 VARCHAR(30), 
+    CZLON3 VARCHAR(30), 
+    NAZWA VARCHAR(90), 
+    SKROT VARCHAR(20)
 );
 
-CREATE TABLE gleba_dane -- gleby 
+CREATE TABLE GLEBA_DANE -- GLEBY 
 (
-  id integer NOT NULL,
-  stanowisko integer NOT NULL,
-  luzna character varying(1) check (luzna in ('T','N')),
-  zwiezla character varying(1) check (zwiezla in ('T','N')),
-  torf_bag character varying(1) check (torf_bag in ('T','N')),
-  kamienistosc character varying(1) check (kamienistosc in ('M','S','D')),
-  uwagi character varying(255),
-    CONSTRAINT gleba_dane_pkey PRIMARY KEY (id),
-  constraint gleba_dane_st_fkey foreign key (stanowisko) references stanowiska (id) MATCH SIMPLE
-      ON UPDATE CASCADE ON DELETE cascade,
-      constraint unique_gleba_dane_st unique(id, stanowisko)
+  ID INTEGER NOT NULL,
+  STANOWISKO INTEGER NOT NULL,
+  LUZNA CHARACTER VARYING(1) CHECK (LUZNA IN ('T','N')),
+  ZWIEZLA CHARACTER VARYING(1) CHECK (ZWIEZLA IN ('T','N')),
+  TORF_BAG CHARACTER VARYING(1) CHECK (TORF_BAG IN ('T','N')),
+  KAMIENISTOSC CHARACTER VARYING(1) CHECK (KAMIENISTOSC IN ('M','S','D')),
+  UWAGI CHARACTER VARYING(255),
+  CONSTRAINT GLEBA_DANE_PKEY PRIMARY KEY (ID)
 );
 
-CREATE TABLE gminy (
-    id integer primary key, 
-    start varchar(2) not null, 
-    nazwa varchar(50)
+CREATE TABLE GMINY (
+    ID INTEGER PRIMARY KEY, 
+    START VARCHAR(2) NOT NULL, 
+    NAZWA VARCHAR(50)
 );
 
-CREATE TABLE jednostki (
-    kod varchar(6) primary key, 
-    okres varchar(1), 
-    czlon1 varchar(30), 
-    czlon2 varchar(30), 
-    nazwa varchar(30), 
-    skrot varchar(15), 
-    start varchar(2)
+CREATE TABLE JEDNOSTKI (
+    KOD VARCHAR(6) PRIMARY KEY, 
+    OKRES VARCHAR(1), 
+    CZLON1 VARCHAR(30), 
+    CZLON2 VARCHAR(30), 
+    NAZWA VARCHAR(30), 
+    SKROT VARCHAR(15), 
+    START VARCHAR(2)
 );
 
-CREATE TABLE karty -- do kazdego stanowiska mozna dodac informacje o wypelnionej karcie azp
+CREATE TABLE KARTY -- DO KAZDEGO STANOWISKA MOZNA DODAC INFORMACJE O WYPELNIONEJ KARCIE AZP
 (
-  id integer not null,
-  stanowisko integer NOT NULL,
-  nazwa_lok varchar(50),
-  arkusz_mapy varchar(10),
-  dalsze_losy varchar(100),
-  dzieje_badan varchar(100),
-  metryka_hist varchar(10),
-  literatura varchar(100),
-  dzialka_geodezyjna varchar(255),
-  egb character varying(500) ,
-  autorzy character varying(255),
-  chronologia character varying(255), -- okreslil chronologie
-  konsultant character varying(255), -- sprawdzil
-  uwagi varchar(255),
-  CONSTRAINT pk_karty PRIMARY KEY (id)
+  ID INTEGER NOT NULL,
+  STANOWISKO INTEGER NOT NULL,
+  NAZWA_LOK VARCHAR(50),
+  ARKUSZ_MAPY VARCHAR(10),
+  DALSZE_LOSY VARCHAR(100),
+  DZIEJE_BADAN VARCHAR(100),
+  METRYKA_HIST VARCHAR(10),
+  LITERATURA VARCHAR(100),
+  DZIALKA_GEODEZYJNA VARCHAR(255),
+  EGB CHARACTER VARYING(500) ,
+  AUTORZY CHARACTER VARYING(255),
+  CHRONOLOGIA CHARACTER VARYING(255), -- OKRESLIL CHRONOLOGIE
+  KONSULTANT CHARACTER VARYING(255), -- SPRAWDZIL
+  UWAGI VARCHAR(255),
+  CONSTRAINT PK_KARTY PRIMARY KEY (ID)
 );
 
-CREATE TABLE miejsca(
-  id integer NOT NULL,
-  nazwa varchar(50), 
-  rodzaj_badan varchar(2) not null default '?', -- L - lot, P - powierzchniowe, W - weryfikacje,? - nieokreslone
-  data varchar(10) not null,
-  autor varchar(100) not null,
-  uwagi varchar(255),
-  --wspolrzedne POINT,
-  CONSTRAINT pk_miejsca PRIMARY KEY (id)
+CREATE TABLE MIEJSCA(
+  ID INTEGER NOT NULL,
+  NAZWA VARCHAR(50), 
+  RODZAJ_BADAN VARCHAR(2) NOT NULL DEFAULT '?', -- L - LOT, P - POWIERZCHNIOWE, W - WERYFIKACJE,? - NIEOKRESLONE
+  DATA VARCHAR(10) NOT NULL,
+  AUTOR VARCHAR(100) NOT NULL,
+  UWAGI VARCHAR(255),
+  --WSPOLRZEDNE POINT,
+  CONSTRAINT PK_MIEJSCA PRIMARY KEY (ID)
 );
 
-SELECT AddGeometryColumn('miejsca', 'wspolrzedne',
+SELECT ADDGEOMETRYCOLUMN('MIEJSCA', 'WSPOLRZEDNE',
   2180, 'POLYGON', 'XY');
 
-CREATE TABLE miejscowosci (
-    id integer primary key, 
-    start varchar(2) not null, 
-    nazwa varchar(50)
+CREATE TABLE MIEJSCOWOSCI (
+    ID INTEGER PRIMARY KEY, 
+    START VARCHAR(2) NOT NULL, 
+    NAZWA VARCHAR(50)
 );
 
-CREATE TABLE okresy_dziejow ( 
-    kod varchar(2) not null, 
-    kod_epoka varchar(1) not null, 
-    epoka varchar(20) not null, 
-    okres varchar(30), 
-    nazwa varchar(30) not null, 
-    skrot varchar(20) not null, 
-    CONSTRAINT okresy_dziejow_pkey primary key (kod)
+CREATE TABLE OKRESY_DZIEJOW ( 
+    KOD VARCHAR(2) NOT NULL, 
+    KOD_EPOKA VARCHAR(1) NOT NULL, 
+    EPOKA VARCHAR(20) NOT NULL, 
+    OKRES VARCHAR(30), 
+    NAZWA VARCHAR(30) NOT NULL, 
+    SKROT VARCHAR(20) NOT NULL, 
+    CONSTRAINT OKRESY_DZIEJOW_PKEY PRIMARY KEY (KOD)
 );
 
-CREATE TABLE powiaty(
-    id integer primary key, 
-    start varchar(2) not null, 
-    nazwa varchar(50)
+CREATE TABLE POWIATY(
+    ID INTEGER PRIMARY KEY, 
+    START VARCHAR(2) NOT NULL, 
+    NAZWA VARCHAR(50)
 );
 
-CREATE TABLE trasy(
-  id integer NOT NULL,
-  rodzaj_badan varchar(2) not null default '?', -- L - lot, P - powierzchniowe, W - weryfikacje, ? - nieokreslone
-  data varchar(10) not null,
-  autor varchar(100) not null,
-  rozpoczecie varchar(25),
-  zakonczenie varchar(25),
-  czestotliwosc integer default 0, -- czestotliwosc odczytow w sekundach
-  uwagi varchar(255),
-  --wspolrzedne LINESTRING,
-  CONSTRAINT pk_trasy PRIMARY KEY (id)
+CREATE TABLE TRASY(
+  ID INTEGER NOT NULL,
+  RODZAJ_BADAN VARCHAR(2) NOT NULL DEFAULT '?', -- L - LOT, P - POWIERZCHNIOWE, W - WERYFIKACJE, ? - NIEOKRESLONE
+  DATA VARCHAR(10) NOT NULL,
+  AUTOR VARCHAR(100) NOT NULL,
+  ROZPOCZECIE VARCHAR(25),
+  ZAKONCZENIE VARCHAR(25),
+  CZESTOTLIWOSC INTEGER DEFAULT 0, -- CZESTOTLIWOSC ODCZYTOW W SEKUNDACH
+  UWAGI VARCHAR(255),
+  CONSTRAINT PK_TRASY PRIMARY KEY (ID)
 );
-SELECT AddGeometryColumn('trasy', 'wspolrzedne',
+SELECT ADDGEOMETRYCOLUMN('TRASY', 'WSPOLRZEDNE',
   2180, 'LINESTRING', 'XY');
 
-CREATE TABLE wojewodztwa (
-    id integer primary key, 
-    start varchar(2) not null, 
-    nazwa varchar(50)
+CREATE TABLE WOJEWODZTWA (
+    ID INTEGER PRIMARY KEY, 
+    START VARCHAR(2) NOT NULL, 
+    NAZWA VARCHAR(50)
 );
 
-/* CREATE VIEW geom_cols_ref_sys AS
-    SELECT f_table_name, f_geometry_column, type, coord_dimension, spatial_ref_sys.srid AS srid,
-        auth_name, auth_srid, ref_sys_name, proj4text
-    FROM geometry_columns, spatial_ref_sys
-    WHERE geometry_columns.srid = spatial_ref_sys.srid
-;
-
-CREATE UNIQUE INDEX idx_spatial_ref_sys 
-    ON spatial_ref_sys (auth_srid, auth_name)
-;
-
-CREATE INDEX idx_srid_geocols ON geometry_columns (srid);
-
-CREATE INDEX idx_viewsjoin ON views_geometry_columns (f_table_name, f_geometry_column);
-
-CREATE INDEX idx_virtssrid ON virts_geometry_columns (srid); */
-
-CREATE TRIGGER del_stanowisko before delete on stanowiska 
-begin
-    delete from ekspozycja_dane where stanowisko = OLD.id;
-    delete from fizgeo_dane where stanowisko = OLD.id;
-    delete from teren_dane where stanowisko = OLD.id;
-    delete from wnioski where stanowisko = OLD.id;
-    delete from zagrozenia where stanowisko = OLD.id;
-    delete from fakty where stanowisko = OLD.id;
-    delete from karty where stanowisko = OLD.id;
-    delete from obszar_dane where stanowisko = OLD.id;
-    delete from aktualnosci where stanowisko = OLD.id;
-    delete from media where id = (select medium from st_media where stanowisko = OLD.id);
-    delete from st_media where stanowisko = OLD.id;
-end;
-
-/*
-CREATE TRIGGER "ggi_miejsca_wspolrzedne" BEFORE INSERT ON miejsca
-    FOR EACH ROW BEGIN
-        SELECT RAISE(ROLLBACK, 'miejsca.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-        WHERE (
-            SELECT type FROM geometry_columns
-            WHERE f_table_name = 'miejsca' AND f_geometry_column = 'wspolrzedne'
-            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY'
-        ) = 1) IS NULL;
+CREATE TRIGGER DEL_STANOWISKO BEFORE DELETE ON STANOWISKA 
+BEGIN
+    DELETE FROM EKSPOZYCJA_DANE WHERE STANOWISKO = OLD.ID;
+    DELETE FROM FIZGEO_DANE WHERE STANOWISKO = OLD.ID;
+    DELETE FROM TEREN_DANE WHERE STANOWISKO = OLD.ID;
+    DELETE FROM WNIOSKI WHERE STANOWISKO = OLD.ID;
+    DELETE FROM ZAGROZENIA WHERE STANOWISKO = OLD.ID;
+    DELETE FROM FAKTY WHERE STANOWISKO = OLD.ID;
+    DELETE FROM KARTY WHERE STANOWISKO = OLD.ID;
+    DELETE FROM OBSZAR_DANE WHERE STANOWISKO = OLD.ID;
+    DELETE FROM AKTUALNOSCI WHERE STANOWISKO = OLD.ID;
+    DELETE FROM MEDIA WHERE ID = (SELECT MEDIUM FROM ST_MEDIA WHERE STANOWISKO = OLD.ID);
+    DELETE FROM ST_MEDIA WHERE STANOWISKO = OLD.ID;
+    DELETE FROM GLEBA WHERE STANOWISKO = OLD.ID;
 END;
 
-CREATE TRIGGER "ggi_stanowiska_wspolrzedne" BEFORE INSERT ON stanowiska
-    FOR EACH ROW BEGIN
-        SELECT RAISE(ROLLBACK, 'stanowiska.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-        WHERE (
-            SELECT type FROM geometry_columns
-            WHERE f_table_name = 'stanowiska' AND f_geometry_column = 'wspolrzedne'
-            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
-        ) IS NULL;
-END;
-
-CREATE TRIGGER "ggi_trasy_wspolrzedne" BEFORE INSERT ON trasy
-    FOR EACH ROW BEGIN
-        SELECT RAISE(ROLLBACK, 'trasy.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-        WHERE (
-            SELECT type FROM geometry_columns
-            WHERE f_table_name = 'trasy' AND f_geometry_column = 'wspolrzedne'
-            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
-        ) IS NULL;
-END;
-
-CREATE TRIGGER "ggu_miejsca_wspolrzedne" BEFORE UPDATE ON miejsca
-    FOR EACH ROW BEGIN
-        SELECT RAISE(ROLLBACK, 'miejsca.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-        WHERE (
-            SELECT type FROM geometry_columns
-            WHERE f_table_name = 'miejsca' AND f_geometry_column = 'wspolrzedne'
-            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
-        ) IS NULL;
-END;
-
-CREATE TRIGGER "ggu_stanowiska_wspolrzedne" BEFORE UPDATE ON stanowiska
-    FOR EACH ROW BEGIN
-        SELECT RAISE(ROLLBACK, 'stanowiska.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-        WHERE (
-            SELECT type FROM geometry_columns
-            WHERE f_table_name = 'stanowiska' AND f_geometry_column = 'wspolrzedne'
-            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
-        ) IS NULL;
-END;
-
-CREATE TRIGGER "ggu_trasy_wspolrzedne" BEFORE UPDATE ON trasy
-    FOR EACH ROW BEGIN
-        SELECT RAISE(ROLLBACK, 'trasy.wspolrzedne violates Geometry constraint [geom-type or SRID not allowed]')
-        WHERE (
-            SELECT type FROM geometry_columns
-            WHERE f_table_name = 'trasy' AND f_geometry_column = 'wspolrzedne'
-            AND GeometryConstraints(NEW.wspolrzedne, type, srid, 'XY') = 1
-         ) IS NULL;
-END; 
-*/
-
-CREATE TABLE st_media(
-    medium integer, 
-    stanowisko integer, 
-    typ varchar(1)
+CREATE TABLE ST_MEDIA(
+    MEDIUM INTEGER, 
+    STANOWISKO INTEGER, 
+    TYP VARCHAR(1)
 );
 
-CREATE TABLE media(
-    id integer not null primary key, 
-    sygnatura varchar(50), 
-    plik varchar(20), 
-    format varchar(4), 
-    tabela varchar(1), 
-    dane blob
+CREATE TABLE MEDIA(
+    ID INTEGER NOT NULL PRIMARY KEY, 
+    SYGNATURA VARCHAR(50), 
+    PLIK VARCHAR(20), 
+    FORMAT VARCHAR(4), 
+    TABELA VARCHAR(1), 
+    DANE BLOB
 );
 
-CREATE TABLE ustawienia(
-    klucz varchar(10) primary key, 
-    wartosc varchar(20)
+CREATE TABLE USTAWIENIA(
+    KLUCZ VARCHAR(10) PRIMARY KEY, 
+    WARTOSC VARCHAR(20)
 );
 
---drop table projekty;
-create table projekty(
-    id integer primary key,
-    start varchar(2), 
-    nazwa varchar(255)
+CREATE TABLE PROJEKTY(
+    ID INTEGER PRIMARY KEY,
+    START VARCHAR(2), 
+    NAZWA VARCHAR(255)
 );
 
---drop table podmioty;
-create table podmioty(
-    id integer primary key,
-    start varchar(2),
-    nazwa varchar(255)
+CREATE TABLE PODMIOTY(
+    ID INTEGER PRIMARY KEY,
+    START VARCHAR(2),
+    NAZWA VARCHAR(255)
 );
 
---SELECT DiscardGeometryColumn('zdjecia_lotnicze', 'wspolrzedne');
---drop table zdjecia_lotnicze;
 CREATE TABLE ZDJECIA_LOTNICZE(
-  id integer NOT NULL,
-  folder varchar(20),
-  klatka varchar(20),
-  miejscowosc integer,
-  gmina integer,
-  powiat integer,
-  wojewodztwo integer,
-  autor integer,
-  pilot integer,
-  data_wykonania varchar(10),
-  czas_wykonania varchar(20),
-  prawa_autorskie varchar(255),
-  projekt integer,
-  numer varchar(100),
-  zleceniodawca integer,
-  platnik integer,
-  nosnik varchar(1),
-  CONSTRAINT pk_zdjecia_lotnicze PRIMARY KEY (id),
-  CONSTRAINT unique_zdjecia_lotnicze UNIQUE (folder, klatka)
+  ID INTEGER NOT NULL,
+  FOLDER VARCHAR(20),
+  KLATKA VARCHAR(20),
+  MIEJSCOWOSC INTEGER,
+  GMINA INTEGER,
+  POWIAT INTEGER,
+  WOJEWODZTWO INTEGER,
+  AUTOR INTEGER,
+  PILOT INTEGER,
+  DATA_WYKONANIA VARCHAR(10),
+  CZAS_WYKONANIA VARCHAR(20),
+  PRAWA_AUTORSKIE VARCHAR(255),
+  PROJEKT INTEGER,
+  NUMER VARCHAR(100),
+  ZLECENIODAWCA INTEGER,
+  PLATNIK INTEGER,
+  NOSNIK VARCHAR(1),
+  CONSTRAINT PK_ZDJECIA_LOTNICZE PRIMARY KEY (ID),
+  CONSTRAINT UNIQUE_ZDJECIA_LOTNICZE UNIQUE (FOLDER, KLATKA)
 );
 
-SELECT AddGeometryColumn('zdjecia_lotnicze', 'wspolrzedne',
+SELECT ADDGEOMETRYCOLUMN('ZDJECIA_LOTNICZE', 'WSPOLRZEDNE',
   2180, 'POINT', 'XY');
 
-/*INSERT INTO "geometry_columns" VALUES('trasy','wspolrzedne','LINESTRING','XY',2180,0);
-INSERT INTO "geometry_columns" VALUES('miejsca','wspolrzedne','POINT','XY',2180,0);
-INSERT INTO "geometry_columns" VALUES('stanowiska','wspolrzedne','POLYGON','XY',2180,0); */
-insert into ustawienia values('wersja','0002');
+INSERT INTO USTAWIENIA VALUES('WERSJA','0002');
