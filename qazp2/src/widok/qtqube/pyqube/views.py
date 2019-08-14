@@ -50,7 +50,7 @@ class Schema(object):
             self.views[view] = []
         else:
             rv = relation.related(view).view
-            if self.views.has_key(rv):
+            if rv in self.views:
                 self.views[view] = [rv]
                 self.views[rv].append(view)
                 self.rels[(view, rv)] = relation
@@ -65,7 +65,7 @@ class Schema(object):
         return self.views[view]
         
     def viewByName(self, name):
-        for v in self.views.iterkeys():
+        for v in self.views.keys():
             if v.name == name:
                 return v
         return None
@@ -87,17 +87,17 @@ class Schema(object):
                 - view: table or query
                 - related: table or query, which is related to view
         '''
-        if self.rels.has_key((view, related)):
+        if (view, related) in self.rels:
             return self.rels[(view, related)]
-        elif self.rels.has_key((related, view)):
+        elif (related, view) in self.rels:
             return self.rels[(related, view)]
         return None
         
     def attributes(self):
         attrs = []
-        for v in self.views.iterkeys():
+        for v in self.views.keys():
             attrs.extend(v.viewAttrs())
-        attrs.sort(cmp=lambda x,y: cmp(x.view.name+'.'+x.realName(), y.view.name+'.'+y.realName()))
+        attrs.sort(key=lambda x: x.view.name+'.'+x.realName())
         return attrs
         
 class ViewAttr(object):
@@ -239,7 +239,7 @@ class View(IView):
         return self._src
         
     def viewAttrs(self):
-        return self.attrs.itervalues()
+        return self.attrs.values()
 
 class Condition(object):
     '''

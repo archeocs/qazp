@@ -38,8 +38,6 @@ class Warunek(object):
     
     def __init__(self, atrybut=None):
         self._atrs = {}
-        if atrybut is not None:
-            self._atrs.append(atrybut)
     
     def dodaj(self, atrybut, i):
         self._atrs[i] = atrybut
@@ -53,13 +51,9 @@ class Warunek(object):
         
     @property
     def tabele(self):
-        return set([(a.tabela.tnazwa, a.tabela.alias) for a in self._atrs.itervalues()])
+        return set([(a.tabela.tnazwa, a.tabela.alias) for a in self._atrs.values()])
             
     def __repr__(self):
-        #if len(self._atrs) == 1:
-        #    return '%s = ?' % repr(self.atrs[0])
-        #p = ' OR '.join(['%s = ?' % repr(a) for a in self.atrs])
-        #return '( '+p+' )'
         if len(self._atrs) == 1:
             return self.atrs[0].warunek
         p = ' OR '.join([a.warunek for a in self.atrs])
@@ -74,7 +68,7 @@ class SqlGenerator(object):
         
     def _iterValues(self, mapa):
         sk = []
-        sk.extend(mapa.iterkeys())
+        sk.extend(mapa.keys())
         sk.sort()
         for k in sk:
             yield mapa[k]
@@ -109,7 +103,7 @@ class SqlGenerator(object):
             pd.extend(w.atrs)
         return pd
         
-    def __unicode__(self):
+    def __str__(self):
         tabs = set([('stanowiska', 'H')])
         seltab = set([])
         selatr = []
@@ -194,7 +188,7 @@ class Atrybut(object):
         
     tabela = property(getTabela, setTabela)
 
-    def __unicode__(self):
+    def __str__(self):
         return self._etykieta
 
     def __repr__(self):
@@ -325,14 +319,14 @@ class Tabela(object):
         sql = u'select distinct stanowisko from %s where '%self._nazwa
         params = []
         c = 0
-        for a, v in atrs.iteritems():
+        for a, v in atrs.items():
             if len(v) > 1:
                 war = '%s in (%s) ' % (a.anazwa, ','.join(['?' for x in range(len(v))]))
                 for y in v:
-                    params.append(unicode(y))
+                    params.append(str(y))
             else:
                 war = '%s = ? '% a.anazwa
-                params.append(unicode(v[0]))
+                params.append(str(v[0]))
             if c > 0:
                 sql += ' and '
             sql += war
@@ -343,7 +337,7 @@ class Tabela(object):
     def filtr(self, atrs):
         return self._nowyFiltr(atrs)
         
-    def __unicode__(self):
+    def __str__(self):
         return self._etykieta
         
     def __repr__(self):
@@ -358,14 +352,14 @@ class ZdjeciaTabela(Tabela):
         sql = u'select id from %s where '%self._nazwa
         params = []
         c = 0
-        for a, v in atrs.iteritems():
+        for a, v in atrs.items():
             if len(v) > 1:
                 war = '%s in (%s) ' % (a.anazwa, ','.join(['?' for x in range(len(v))]))
                 for y in v:
-                    params.append(unicode(y))
+                    params.append(str(y))
             else:
                 war = '%s = ? '% a.anazwa
-                params.append(unicode(v[0]))
+                params.append(str(v[0]))
             if c > 0:
                 sql += ' and '
             sql += war
@@ -554,7 +548,7 @@ def _faktyFiltr(atrs):
     sql = u'select distinct stanowisko from fakty where '
     params = {}
     c, pc = 0, 0
-    for a, v in atrs.iteritems():
+    for a, v in atrs.items():
         if a.anazwa == 'jednostka':
             rpola = ['jeda', 'jedb']
         elif a.anazwa == 'okres':
@@ -566,7 +560,7 @@ def _faktyFiltr(atrs):
             tpar = []
             for (yi, y) in enumerate(v):
                 tpar.append(':p'+str(pc+yi))
-                params['p'+str(pc+yi)] = unicode(y)
+                params['p'+str(pc+yi)] = str(y)
             pc += len(v)
             parstr = ','.join(tpar)
             if len(rpola) == 2:
@@ -578,7 +572,7 @@ def _faktyFiltr(atrs):
                 war = '%s = :p%d OR %s = :p%d ' % (rpola[0], pc, rpola[1], pc)
             else:
                 war = '%s = :p%d ' % (rpola[0], pc)
-            params['p'+str(pc)] = unicode(v[0])
+            params['p'+str(pc)] = str(v[0])
             pc += 1
         if c > 0:
             sql += ' AND '

@@ -2,7 +2,7 @@ WERSJA='qazp2-'$1'.zip'
 echo $WERSJA
 rm -r qazp2
 rm qazp2.zip
-	rm $WERSJA
+rm $WERSJA
 mkdir -p qazp2/keza
 mkdir qazp2/dane
 mkdir qazp2/lib

@@ -28,24 +28,24 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtCore import QVariant
-from qgis.core import QgsMapLayerRegistry, QgsMapLayer,QgsFeature
-from qgis.core import QgsVectorLayer, QgsDataSourceURI
+from PyQt5.QtCore import QVariant
+from qgis.core import QgsProject, QgsMapLayer,QgsFeature
+from qgis.core import QgsVectorLayer, QgsDataSourceUri
 from dane.model import MIEJSCA_ATR,GModel, TRASY_ATR,STANOWISKA_ATR, AModel,\
     JEDFIZG_ATR,  EKSPOZYCJA_ATR, TEREN_ATR, OBSZAR_ATR, ZAGROZENIA_ATR,\
     WNIOSKI_ATR, GLEBA_ATR, AKTUALNOSCI_ATR, KARTA_ATR, ZDJECIA_LOTNICZE_ATR, NowyModel
-from micon import Polaczenie, getLite
+from .micon import Polaczenie, getLite
 import logging
 def rejestr_map():
     """ Zwraca rejestr map z QGIS """
-    return QgsMapLayerRegistry.instance()
+    return QgsProject.instance()
 
 def get_warstwa(nazwa):
     """ Wyszukuje warstwe wedlug nazwy i zwraca pierwsza znaleziona """
     nup = nazwa.upper()
-    reg = QgsMapLayerRegistry.instance()
-    for v in reg.mapLayers().itervalues():
-        if v.isValid() and v.type() == QgsMapLayer.VectorLayer and unicode(v.name()).upper() == nup:
+    reg = QgsProject.instance()
+    for v in reg.mapLayers().values():
+        if v.isValid() and v.type() == QgsMapLayer.VectorLayer and str(v.name()).upper() == nup:
             return v
 
 def _gwarstwa(qgs_warstwa,atrybuty):
@@ -102,7 +102,7 @@ def _szukaj_warstwa(sql,nazwa_warstwy):
     """ Wyszukuje na warstwie wszystkie obiekty, ktore spelniaja polecenie sql i zwraca je w postaci
         nowej warstwy QgsVectorLayer"""
     qv = get_warstwa(nazwa_warstwy)
-    nuri = QgsDataSourceURI(qv.dataProvider().dataSourceUri())
+    nuri = QgsDataSourceUri(qv.dataProvider().dataSourceUri())
     nuri.setSql(sql)
     mid = _SZUKAJ_IDS.get(nazwa_warstwy,0)+1
     nwar = QgsVectorLayer(nuri.uri(),nazwa_warstwy+'_szukaj_'+str(mid),qv.dataProvider().name())
@@ -173,13 +173,13 @@ class Wykaz(object):
     def nazwa(self, ind, pystr=False):
         if 0 <= ind < len(self._wykaz):
             if pystr:
-                return unicode(self._wykaz[ind].toString())
+                return str(self._wykaz[ind].value())
             return self._wykaz[ind]
         raise Exception('indeks %d poza zakresem %d'%(ind,len(self._wykaz)))
 
 def getPolaczenie2(qgsWarstwa, wierszMapa = False):
     ndp = str(qgsWarstwa.dataProvider().name())
-    uri = QgsDataSourceURI(qgsWarstwa.dataProvider().dataSourceUri())
+    uri = QgsDataSourceUri(qgsWarstwa.dataProvider().dataSourceUri())
     if ndp.upper() == 'SPATIALITE':
         #import sqlite3
         #con = sqlite3.connect(str(uri.database()))
@@ -317,12 +317,12 @@ def updtSql(stid, qgsWarstwa, atr, tab,tdane=[]):
         pr = _genParam(atr,d)
         pr['id'] = int(pr['id'])
         if pr['id'] > 0:
-            logging.info("ZMIENIAM %s wartosci: %s"%(tab,str(pr)))
+            logging.info("ZMIENIAM {0} wartosci: {1}".format(tab,str(pr)))
             us.wykonaj(pr, False)
             uzyty = 2000+len(tdane)
         else:
             pr['id'] = p.jeden('select coalesce(max(id),0) from '+tab)[0]+1
-            logging.info("DODAJE %s wartosci: %s"%(tab,str(pr)))
+            logging.info("DODAJE {0} wartosci: {1}".format(tab,str(pr)))
             ins.wykonaj(pr, False)
             uzyty = 3000+len(tdane)
             nowyId = pr['id']

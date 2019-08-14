@@ -28,9 +28,10 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QDialogButtonBox, QFrame, QGridLayout,QWidget,QVBoxLayout,QHBoxLayout,\
-                        QLabel, QPushButton, QFileDialog, QPixmap, QShortcut, QKeySequence
-from PyQt4.QtCore import Qt, QVariant
+from PyQt5.QtWidgets import QDialogButtonBox, QFrame, QGridLayout,QWidget,QVBoxLayout,QHBoxLayout,\
+                        QLabel, QPushButton, QFileDialog, QShortcut
+from PyQt5.QtCore import Qt, QVariant
+from PyQt5.QtGui import QPixmap, QKeySequence
 from functools import partial
 from lib.qgsop import setMapa,zmien
 from dane.zrodla import getPolaczenie2, daneFizg, updtFizg, daneEksp, updtEkspo,\
@@ -140,7 +141,7 @@ class Edytor(QFrame):
             
     def klikZapisz(self):
         panel = self.grid.itemAtPosition(0,0).widget()
-        #print panel.wartosci()
+        ##printpanel.wartosci()
         if self.on == 'stanowisko':
             obj = self._model.feature()
             setMapa(obj, panel.wartosci(), STANOWISKA_ATR)

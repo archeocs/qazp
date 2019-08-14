@@ -29,11 +29,11 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QAction, QApplication,QMainWindow,QStackedWidget, QMessageBox,\
+from PyQt5.QtWidgets import QAction, QApplication,QMainWindow,QStackedWidget, QMessageBox,\
                         QFileDialog, QLineEdit
-from PyQt4.QtCore import QObject, SIGNAL
+from PyQt5.QtCore import QObject
 from widok import trasy,miejsca,stanowiska, wykazy, admin, zestawienia, zdjecia_lotnicze
-from qgis.core import QgsMapLayerRegistry
+from qgis.core import QgsProject, QgsEditFormConfig
 from os.path import abspath
 from dane.zrodla import get_warstwa, getPolaczenie2
 from lib.uzytki import dostosujSchemat, wykonajPolecenie
@@ -42,7 +42,8 @@ from lib.uzytki import dostosujSchemat, wykonajPolecenie
 class SchematAkcja(QAction):
     def __init__(self,iface,window):
         QAction.__init__(self,'Dostosuj schemat',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        #QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         
@@ -110,7 +111,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp2 20160217')
+        self.setWindowTitle('qazp2 3.0')
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         self.setMinimumSize(500, 500)
@@ -181,21 +182,33 @@ class QazpPlugin(object):
         self.akcja = QAction("QAZP2", self.iface.mainWindow())
         self.akcja.setWhatsThis("QAZP2")
         self.akcja.setStatusTip("qazp2")
-        QObject.connect(self.akcja, SIGNAL("triggered()"), self.run)
+        #QObject.connect(self.akcja, SIGNAL("triggered()"), self.run)
+        self.akcja.triggered.connect(self.run)
 
         self.iface.addToolBarIcon(self.akcja)
         self.iface.addPluginToMenu("QAZP2",self.akcja)
-        QgsMapLayerRegistry.instance().layerWasAdded.connect(self._dodajUi)
+        QgsProject.instance().layerWasAdded.connect(self._dodajUi)
     
     def _dodajUi(self,mapa):
         if str(mapa.name()).startswith('miejsca'):
-            mapa.setEditForm(abspath(__file__+'/../forms/miejsca.ui'))
+            uri = abspath(__file__+'/../forms/miejsca.ui')
+            config = self._utworzEditFormConfig(uri)
+            mapa.setEditFormConfig(config)
         elif str(mapa.name()).startswith('stanowiska'):
-            mapa.setEditForm(abspath(__file__+'/../forms/stanowiska.ui'))
-            mapa.setEditFormInit('qazp.initStanowiska')
+            uri = abspath(__file__+'/../forms/stanowiska.ui')
+            config = self._utworzEditFormConfig(uri, initFunction='qazp.initStanowiska')
+            mapa.setEditFormConfig(config)
         elif str(mapa.name()).startswith('trasy'):
-            mapa.setEditForm(abspath(__file__+'/../forms/trasy.ui'))
+            uri = abspath(__file__+'/../forms/trasy.ui')
+            config = self._utworzEditFormConfig(uri)
+            mapa.setEditFormConfig(config)
     
+    def _utworzEditFormConfig(self, uiUri, initFunction=None):
+        config = QgsEditFormConfig()
+        config.setUiForm(uiUri)
+        config.setInitFunction(initFunction)
+        return config
+
     def unload(self):
         self.iface.removePluginMenu("QAZP2",self.akcja)
         self.iface.removeToolBarIcon(self.akcja)
@@ -218,3 +231,18 @@ def start(mw=None,iface=None,app=None):
     td.show()
     if app:
         app.exec_()
+
+if __name__ == '__main__':
+    from sys import argv
+    import qgsctx
+    uri = qgsctx.liteUri(argv[1], 'stanowiska', 'wspolrzedne')
+    qgsctx.addVectorLayer(uri, 'spatialite')
+    uri = qgsctx.liteUri(argv[1], 'trasy', 'wspolrzedne')
+    qgsctx.addVectorLayer(uri, 'spatialite')
+    uri = qgsctx.liteUri(argv[1], 'miejsca', 'wspolrzedne')
+    qgsctx.addVectorLayer(uri, 'spatialite')
+    uri = qgsctx.liteUri(argv[1], 'zdjecia_lotnicze', 'wspolrzedne')
+    qgsctx.addVectorLayer(uri, 'spatialite')
+    qif = qgsctx.Iface()
+    app = QApplication(argv)
+    start(None, app=app, iface=qif)

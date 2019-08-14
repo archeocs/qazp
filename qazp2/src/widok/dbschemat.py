@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from qtqube.pyqube.views import View, ViewAttr, Schema, AttrPair, Relation
-from qtqube.pyqube import *
+from .qtqube.pyqube.views import View, ViewAttr, Schema, AttrPair, Relation
+from .qtqube.pyqube import *
 from collections import namedtuple
 from functools import partial
 
@@ -271,7 +271,7 @@ def relacjaFakty(faktyWidok, atr, widok):
 
 def dodajWszystkie(builder, schemat, nazwa):
     widok = schemat.viewByName(nazwa)
-    for v in widok.attrs.itervalues():
+    for v in widok.attrs.values():
         builder.select(v.select())
 
 def utworzSchemat():

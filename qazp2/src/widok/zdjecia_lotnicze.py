@@ -29,13 +29,13 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtCore import SIGNAL,QObject,QVariant, Qt, QFile, QTextStream, QIODevice
-from PyQt4.QtGui import QAction,QMessageBox,QInputDialog, QProgressDialog, QFileDialog, QDialog
+from PyQt5.QtCore import QObject, QVariant, Qt, QFile, QTextStream, QIODevice
+from PyQt5.QtWidgets import QAction,QMessageBox,QInputDialog, QProgressDialog, QFileDialog, QDialog
 
 from functools import partial
 from locale import getpreferredencoding
 
-from filtred import FiltrWidget
+from .filtred import FiltrWidget
 from widok.lista import GTabModel2, GFrame
 from dane.zrodla import gzdjecia, get_warstwa, szukaj_zdjecia,getPolaczenie2,\
     rejestr_map, stLista, sqlListaId
@@ -84,7 +84,7 @@ class ListaZdjec(GFrame):
     def _zastosujFiltr(self, mapa):
         self._win.usun()
         fzbior = None
-        for (k, m) in mapa.iteritems():
+        for (k, m) in mapa.items():
             rf = k.filtr(m)
             s = sqlListaId(self._con, rf[0], rf[1])
             if fzbior is None:
@@ -118,7 +118,7 @@ class WyszukajAkcja(QAction):
 
     def __init__(self,iface,window):
         QAction.__init__(self,'Wyszukaj',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
 
@@ -129,7 +129,7 @@ class WyszukajAkcja(QAction):
             return
         warunek = QInputDialog.getText(self._win, u'Zdjęcie', u'Wprowadź warunek', text="id > 0")
         if warunek[1]:
-            warstwa = szukaj_zdjecia(unicode(warunek[0]))
+            warstwa = szukaj_zdjecia(str(warunek[0]))
             mf = ListaZdjec(warstwa,gzdjecia(warstwa),self._iface,self._win)
             self._win.dodaj(mf)
 
@@ -146,9 +146,9 @@ class ImportujAkcja(QAction):
     def getWykaz(self, warstwa, wykNazwa, wartosc):
         if not wartosc:
             return None
-        if not self.wykazy.has_key(wykNazwa):
+        if wykNazwa not in self.wykazy:
             self.wykazy[wykNazwa] = {}
-        if self.wykazy[wykNazwa].has_key(wartosc):
+        if wartosc in self.wykazy[wykNazwa]:
             return self.wykazy[wykNazwa][wartosc]
         con = getPolaczenie2(warstwa)
         sql = 'select id from '+wykNazwa+' where nazwa = ?'
@@ -174,7 +174,7 @@ class ImportujAkcja(QAction):
         line = stream.readLine()
         while not stream.atEnd():
             line = stream.readLine()
-            wmapa = dict(zip(kolumny, unicode(line).split(";")))
+            wmapa = dict(zip(kolumny, str(line).split(";")))
             wiersze.append(wmapa)
         ff.close()
         return wiersze
@@ -233,7 +233,7 @@ class ImportujAkcja(QAction):
             QMessageBox.information(self._win,u'Dodawanie zdjęć',u'Dodano %s zdjęć' % len(wiersze))
         else:
             msg = u'Zdjęcia nie zostały dodane\nBłędy:\n'
-            msg += '\n'.join([unicode(s) for s in warstwa.commitErrors()])
+            msg += '\n'.join([str(s) for s in warstwa.commitErrors()])
             QMessageBox.information(self._win, u'Dodawanie zdjęć', msg)
             warstwa.rollBack()
 
@@ -241,7 +241,7 @@ def fdb(ident,war,tab):
     if ident is None:
         return None
     if isinstance(ident, QVariant):
-        sid=str(ident.toString())
+        sid=str(ident.value())
     else:
         sid = str(ident)
     if sid is None or sid == '':

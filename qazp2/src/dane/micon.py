@@ -107,7 +107,7 @@ class Polecenie(object):
                 self._con.commit()
             return cur.rowcount
         except Exception as e:
-            print e
+            print(e)
             return -1
     
     def wszystkie(self, params=[], f=None):
@@ -123,7 +123,6 @@ class Polecenie(object):
             else:
                 ret.append(r)
         cur.close()
-        #print ret
         return ret
     
     def jeden(self, params=[], f=None):

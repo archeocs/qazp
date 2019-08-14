@@ -1,0 +1,3 @@
+*.pyc
+qgis.db
+qazp2/dist/*

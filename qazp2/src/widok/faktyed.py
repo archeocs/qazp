@@ -28,8 +28,8 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtCore import QAbstractTableModel, Qt, QVariant
-from PyQt4.QtGui import QVBoxLayout, QHBoxLayout, QLayout, QWidget, \
+from PyQt5.QtCore import QAbstractTableModel, Qt, QVariant
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLayout, QWidget, \
                         QLabel, QLineEdit,QComboBox, QHeaderView, QTableView, \
                         QPushButton,QMessageBox
                         
@@ -182,7 +182,7 @@ class UniPole(QWidget):
             self._funZmiana(self._mapa)
         
     def _cbwyb(self,i,menu=None,klucz=None):
-        self._mapa[klucz] = str(menu.itemData(i).toString())
+        self._mapa[klucz] = str(menu.itemData(i))
         if self._mapa[klucz] == '':
             self._mapa[klucz] = None
         self._zmianaDanych()
@@ -224,7 +224,7 @@ class FaktyWidok(QWidget):
         wlay = QVBoxLayout()
         self.setLayout(wlay)
         self._tab = QTableView()
-        self._tab.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+        self._tab.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         owyk,jwyk,fwyk = okrWykaz(con), jedWykaz(con), funWykaz(con)
         self._fk = WykazFaktow(st,con,owyk,jwyk,fwyk)
         self._con = con
@@ -278,12 +278,12 @@ class FaktyWidok(QWidget):
     
     def _masZmiana(self):
         self._model.beginResetModel()
-        self._fk.setWartosc(self._bw,'masowy',unicode(self._mp.text()))
+        self._fk.setWartosc(self._bw,'masowy',str(self._mp.text()))
         self._model.endResetModel()
     
     def _wyZmiana(self):
         self._model.beginResetModel()
-        self._fk.setWartosc(self._bw,'wydzielony',unicode(self._wp.text()))
+        self._fk.setWartosc(self._bw,'wydzielony',str(self._wp.text()))
         self._model.endResetModel()
     
     def _zmBiezWier(self, p, b):

@@ -28,8 +28,10 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtPrintSupport import *
 from lib.media import odczyt
 from lib.fkwykazy import WykazFaktow, funWykaz, jedWykaz, okrWykaz
 from os.path import abspath
@@ -110,7 +112,7 @@ def _prepLog(m):
     if m['data'] is not None:
         dt = m['data'][:10]
         m['data'] = '%s/%s/%s'%(dt[8:],dt[5:7],dt[0:4])
-    for (k,v) in m.iteritems():
+    for (k,v) in m.items():
         if v == 'T':
             m[k] = 'x'
         elif v is None:
@@ -121,7 +123,7 @@ def _prepLog(m):
 def _prepObser(m):
     ob = m.pop('obserwacja',None)
     if ob is None: # ten warunek mozna potem usunac
-        print 'brak obserwacji'
+        print('brak obserwacji')
     else:
         if ob == 'B':
             m['obs_bez_przeszkod'] = 'x'
@@ -161,7 +163,7 @@ def _prepObser(m):
             m['obs_pow_ha15'] = 'x'
         elif pw > 15:
             m['obs_pow_ha15+'] = 'x'
-    #print ob,p,nr,nt,gz,pw
+    ##printob,p,nr,nt,gz,pw
     
 def _prepZagr(m):
     wy = m.pop('wystepowanie',None)
@@ -201,7 +203,7 @@ def decbin(kier, wartosci):
     while n > 1:
         if n % 2 == 1:
             tkier.append(wartosci[i])
-        n /= 2
+        n //= 2
         i+= 1
     tkier.append(wartosci[i])
     return tkier
@@ -255,7 +257,7 @@ def _prepImg(con, m):
     r = ps.jeden([m['stanowisko']])
     if r is None:
         return None
-    print r[0], m['stanowisko']
+    #printr[0], m['stanowisko']
     return odczyt(r[0], con)
 
 class Schemat2(object):
@@ -276,7 +278,7 @@ class Schemat2(object):
                 sp.close()
                 raise Exception('zly schemat linia '+str(wi)) # nieprawidlowy schemat
             x,y,s,w = int(tw[0]), int(tw[1]), int(tw[2]), int(tw[3]) 
-            v = tw[4].strip().decode('utf-8')
+            v = tw[4].strip()
             self._pola.append((x, y, s, w, v))
         sp.close()
    
@@ -304,7 +306,7 @@ class Schemat2(object):
                 r = self.mkrect(kw, kh, p)
                 pt.drawRect(r)
                 k = p[4][2:]
-                if dane.has_key(k) and dane[k] is not None:
+                if k in dane and dane[k] is not None:
                     pt.setFont(self.NORM)
                     tr = QRectF(r.x()+2, r.y()+2, r.width()-2, r.height()-2)
                     topt = QTextOption(Qt.AlignCenter)
@@ -336,7 +338,7 @@ class KezaDruk(object):
         wf = WykazFaktow(str(md['stanowisko']), self._con, self._owyk, self._jwyk, self._fwyk)
         for i in range(len(wf)):
             if i < 7:
-                for (k, v) in _prepFk(i+1,wf.mapa(i)).iteritems():
+                for (k, v) in _prepFk(i+1,wf.mapa(i)).items():
                     md[k] = v
         md['historia'] = md['historia']+'\n'+md['uwagi']
         return md

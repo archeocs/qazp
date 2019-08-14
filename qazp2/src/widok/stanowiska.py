@@ -28,8 +28,10 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtCore import SIGNAL,QObject,Qt
-from PyQt4.QtGui import QAction,QMessageBox,QInputDialog, QProgressDialog, QFileDialog, QDialog
+import logging
+
+from PyQt5.QtCore import QObject, Qt
+from PyQt5.QtWidgets import QAction,QMessageBox,QInputDialog, QProgressDialog, QFileDialog, QDialog
 from widok.lista import GTabModel2, GFrame
 from dane.zrodla import gstanowiska, get_warstwa, szukaj_stanowiska,getPolaczenie2,\
     rejestr_map, stLista, sqlListaId
@@ -60,8 +62,8 @@ class StanowiskaFrame(GFrame):
         
     def akcja_wyswietl(self):
         atrs = self.warstwa.dataProvider().fields()
-        nv = tempWarstwa(self.wszystkie(), "filtr_"+self.warstwa.name(), "Polygon", atrs)
-        nv.setCrs(self.warstwa.crs())
+        logging.info('CRS {0}'.format(self.warstwa.sourceCrs().toWkt()))
+        nv = tempWarstwa(self.wszystkie(), "filtr_"+self.warstwa.name(), "Polygon", atrs, crs=self.warstwa.sourceCrs())
         if rejestr_map().addMapLayer(nv):
             QMessageBox.information(self,'info','Do projektu zostala dodana warstwa '+nv.name())
     
@@ -75,20 +77,22 @@ class StanowiskaFrame(GFrame):
         self._win.dodaj(ed)
         
     def _akcjaDrukuj(self):
-        #kd = KezaDruk(getPolaczenie2(self.warstwa))
         kd = KezaDruk(self._con)
-        plik = QFileDialog.getSaveFileName(parent=self, filter='PDF (*.pdf)')
-        pd = QProgressDialog("Przygotowuje wydruk", "Cancel", 0, len(self._gobs)+1);
-        pd.setWindowModality(Qt.WindowModal);
+        wybrany = QFileDialog.getSaveFileName(parent=self, filter='PDF (*.pdf)')
+        plik = wybrany[0]
+        pd = QProgressDialog("Przygotowuje wydruk", "Cancel", 0, len(self._gobs)+1)
+        pd.setWindowModality(Qt.WindowModal)
         sts = []
         for st in self.wszystkie():
-            cent = st.wspolrzedne().centroid()#.asPoint()
+            cent = st.wspolrzedne().centroid()
             if cent is None:
                 raise Exception("Centroid jest NONE "+str(st['id'].toInt()[0]))
             else:
                 ptc = cent.asPoint()
-                sts.append((st['id'], unicode(st['obszar']), unicode(st['nr_obszar']),
+                sts.append((st['id'], str(st['obszar']), str(st['nr_obszar']),
                             round(ptc.x(),2), round(ptc.y(),2)))
+        if not plik.endswith('.pdf'):
+            plik = plik + '.pdf'
         kd.drukuj(plik, sts, pd)
         QMessageBox.information(self,'Drukowanie','Karty wygenerowane')
     
@@ -99,7 +103,7 @@ class StanowiskaFrame(GFrame):
     def _zastosujFiltr(self, mapa):
         self._win.usun()
         fzbior = None
-        for (k, m) in mapa.iteritems():
+        for (k, m) in mapa.items():
             rf = k.filtr(m)
             s = sqlListaId(self._con, rf[0], rf[1])
             if fzbior is None:
@@ -134,7 +138,7 @@ class WyszukajAkcja(QAction):
     
     def __init__(self,iface,window):
         QAction.__init__(self,'Wyszukaj',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         
@@ -145,7 +149,7 @@ class WyszukajAkcja(QAction):
             return 
         warunek = QInputDialog.getText(self._win, 'Stanowiska', 'Wprowadz warunek', text="obszar='18-25' and nr_obszar='3'")
         if warunek[1]:
-            warstwa = szukaj_stanowiska(unicode(warunek[0]))
+            warstwa = szukaj_stanowiska(str(warunek[0]))
             mf = StanowiskaFrame(warstwa,gstanowiska(warstwa),self._iface,self._win)
             self._win.dodaj(mf)
 
@@ -153,7 +157,7 @@ class WyszukajNrAzpAkcja(QAction):
     
     def __init__(self,iface,window):
         QAction.__init__(self,u'Wyszukaj wg numeru AZP',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         
@@ -177,7 +181,7 @@ class WyszukajNrAzpAkcja(QAction):
             elif len(dane['data_od']) == 10:
                 szukDt = dane['data_od']
             warunek += " and data >= '%s'"%szukDt
-        warstwa = szukaj_stanowiska(unicode(warunek))
+        warstwa = szukaj_stanowiska(str(warunek))
         mf = StanowiskaFrame(warstwa,gstanowiska(warstwa),self._iface,self._win)
         self._win.dodaj(mf)
 
@@ -186,7 +190,6 @@ class PokazujZaznAkcja(QAction):
     def __init__(self,iface,window):
         QAction.__init__(self,'Pokazuj zaznaczone',window)
         self.triggered.connect(self.wykonaj)
-        #QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
         self._win = window
         self._iface = iface
         self.setCheckable(True)
@@ -206,7 +209,7 @@ class PolaczSql(QAction):
     
     def __init__(self,iface,window):
         QAction.__init__(self,u'Połączenie',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         

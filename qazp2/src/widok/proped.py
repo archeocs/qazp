@@ -28,9 +28,9 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QStyledItemDelegate, QComboBox, QTableView, QAbstractItemView 
-from PyQt4.QtGui import   QHeaderView,QFrame,QDialogButtonBox,QVBoxLayout
-from PyQt4.QtCore import QVariant, QAbstractTableModel, Qt
+from PyQt5.QtWidgets import QStyledItemDelegate, QComboBox, QTableView, QAbstractItemView 
+from PyQt5.QtWidgets import   QHeaderView,QFrame,QDialogButtonBox,QVBoxLayout
+from PyQt5.QtCore import QVariant, QAbstractTableModel, Qt
 from functools import partial
 from dane.zrodla import getPolaczenie2
 from lib.qgsop import setMapa, zmien
@@ -38,10 +38,10 @@ import logging
 
 def conw(w,slow):
     if isinstance(w, QVariant):
-        klucz = str(w.toString()).upper()
+        klucz = str(w.value()).upper()
     else:
         klucz = str(w).upper()
-    if slow.has_key(klucz):
+    if klucz in slow:
         return slow[klucz]
     return None
 
@@ -69,9 +69,9 @@ class WyborDelegate(QStyledItemDelegate):
         self.initStyleOption(styl,indeks)
         c = indeks.column()
         if c == 1:
-            if self._opt.has_key(indeks.row()):
+            if indeks.row() in self._opt:
                 tw = self._opt[indeks.row()]
-            elif self._con.has_key(indeks.row()):
+            elif indeks.row() in self._con:
                 tw = self.getDane(self._con[indeks.row()])
             else:
                 return QStyledItemDelegate.createEditor(self,parent,styl,indeks)
@@ -84,7 +84,7 @@ class WyborDelegate(QStyledItemDelegate):
  
     def setEditorData(self,edytor,indeks):
         di = indeks.data()
-        if self._opt.has_key(indeks.row()) or self._con.has_key(indeks.row()):
+        if indeks.row() in self._opt or indeks.row() in self._con:
             for i in range(edytor.count()):
                 if edytor.itemText(i) == di:
                     edytor.setCurrentIndex(i)
@@ -94,7 +94,7 @@ class WyborDelegate(QStyledItemDelegate):
             QStyledItemDelegate.setEditorData(self,edytor,indeks)
     
     def setModelData(self,edytor,model,indeks):
-        if self._opt.has_key(indeks.row()) or self._con.has_key(indeks.row()):
+        if indeks.row() in self._opt or indeks.row() in self._con:
             d = edytor.itemData(edytor.currentIndex())
             model.setData(indeks,d)
         else:
@@ -119,12 +119,12 @@ class PropLista(QAbstractTableModel):
         if rola == Qt.DisplayRole:
             if c == 0:
                 return self._opt[r][0]
-            elif c == 1 and self._dane.has_key(self._opt[r][1]):
-                if not self._wid.has_key(self._opt[r][1]):
+            elif c == 1 and self._opt[r][1] in self._dane:
+                if self._opt[r][1] not in self._wid:
                     self._wid[self._opt[r][1]] = self._opt[r][2](self._dane[self._opt[r][1]]) 
                 return self._wid[self._opt[r][1]]
-        elif rola == Qt.EditRole and c == 1 and self._dane.has_key(self._opt[r][1]):
-            if not self._wid.has_key(self._opt[r][1]):
+        elif rola == Qt.EditRole and c == 1 and self._opt[r][1] in self._dane:
+            if self._opt[r][1] not in self._wid:
                 self._wid[self._opt[r][1]] = self._opt[r][2](self._dane[self._opt[r][1]]) 
             return self._wid[self._opt[r][1]]
         return None
@@ -134,7 +134,7 @@ class PropLista(QAbstractTableModel):
         if rola == Qt.EditRole and c == 1:
             self._dane[self._opt[r][1]] = wartosc
             self._wid.pop(self._opt[r][1],'')
-            #logging.info("Wstawiona wartosc: "+unicode(wartosc.toString())+"$")
+            #logging.info("Wstawiona wartosc: "+str(wartosc.value())+"$")
             return True
         return False
             #self.dataChanged(indeks,indeks)
@@ -182,21 +182,21 @@ class PropWidok(QTableView):
     
     def setDelegat(self,opcje,w):
         self.setItemDelegate(WyborDelegate(opcje,parent=self))
-        print 'ok'
+        #print'ok'
         
     def ustawModel(self,dane,opcje):
-        self.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         if not dane:
             self._dane = {}
         else:
             self._dane = dane
         _mod = PropLista(opcje,self._dane,parent=self)
         self.setModel(_mod)
-        self.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
     
     def konwert(self, dane):
         rd = {}
-        for (k,v) in dane.iteritems():
+        for (k,v) in dane.items():
             if isinstance(v, QVariant):
                 if v.isNull():
                     rd[k] = None
@@ -211,9 +211,9 @@ class PropWidok(QTableView):
                 elif t == QVariant.DateTime:
                     rd[k] = v.toDate().toString(Qt.ISODate)
                 else:
-                    rd[k] = unicode(v.toString())
+                    rd[k] = str(v.value())
             else:
-                rd[k] = unicode(v)
+                rd[k] = str(v)
         return rd
         
     def wartosci(self):

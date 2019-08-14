@@ -4,10 +4,10 @@
 name=QAZP2
 email=milosz@archeocs.com
 author=Milosz Piglas
-qgisMinimumVersion=2.0
+qgisMinimumVersion=3.0
 description=Archeologiczne Zdjecie Polski w QGIS
 about=Archeologiczne Zdjecie Polski w QGIS
-version=20160217
+version=3.0
 ; end of mandatory metadata
 
 ; these metadata can be empty, they will eventually become mandatory.

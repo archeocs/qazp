@@ -30,15 +30,15 @@
 
 import json
         
-from PyQt4.QtCore import QObject, SIGNAL
-from PyQt4.QtGui import QAction, QMessageBox, QFileDialog
+from PyQt5.QtCore import QObject
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
 from dane.zrodla import get_warstwa, getPolaczenie2
 from lib.uzytki import dostosujSchemat, wykonajPolecenie
 
 class SchematAkcja(QAction):
     def __init__(self,iface,window):
         QAction.__init__(self,'Dostosuj schemat',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         
@@ -103,7 +103,6 @@ class LogowanieAkcja(QAction):
     def __init__(self,iface,window):
         QAction.__init__(self,u'Rejestracja zdarzeń',window)
         self.triggered.connect(self.wykonaj)
-        #QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
         self._win = window
         self._iface = iface
         self.setCheckable(True)
@@ -113,7 +112,7 @@ class LogowanieAkcja(QAction):
         if self.isChecked():
             plik = QFileDialog.getSaveFileName(self._win, u'Proszę wybrać plik, w którym będą zapisywne zdarzenia')
             if plik:
-                logging.basicConfig(filename=str(plik), level=logging.INFO)
+                logging.basicConfig(filename=str(plik[0]), level=logging.INFO)
         else:
             logging.shutdown()
             logging.shutdown()
@@ -147,11 +146,11 @@ class NaprawaAkcja(QAction):
         fn = QFileDialog.getSaveFileName(self._win, filter='TXT (*.txt)')
         if fn is None or str(fn) == "":
             return
-        fn = unicode(fn)
+        fn = str(fn)
         if not fn.endswith('.txt'):
             fn += '.txt'
         with open(fn, 'w') as fout:
-            for (tab, listaSql) in polecenia.iteritems():
+            for (tab, listaSql) in polecenia.items():
                 fout.write(tab)
                 fout.write('\n-------------------------------------\n')
                 for sql in listaSql:
@@ -159,8 +158,8 @@ class NaprawaAkcja(QAction):
                     fout.write(sql[0])
                     fout.write('\n')
         
-        for (tab, listaSql) in polecenia.iteritems():
-            print '----------------', tab, '------------------------'
+        for (tab, listaSql) in polecenia.items():
+            #print'----------------', tab, '------------------------'
             for sql in listaSql:
                 x = polaczenie.wykonaj(sql[1], zatw = False)
                 if x != 1:
@@ -195,7 +194,7 @@ class NaprawaAkcja(QAction):
                 QMessageBox.information(self._win, u'Napraw dane', u'SUKCES', QMessageBox.Ok)
             else:
                 polaczenie.wycofaj()
-                print 'FAIL'
+                #print'FAIL'
             polaczenie.zakoncz()
                     
            

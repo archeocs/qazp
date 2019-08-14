@@ -59,7 +59,7 @@ class KodyWykaz(object):
             v = self._kody[k]
             if k is not None and k.startswith(pref) and v['nazwa'] is not None:
                 yield(v['kod'], v['nazwa'])
-        #for (k,v) in self._kody.iteritems():
+        #for (k,v) in self._kody.items():
         #    if k is not None and k.startswith(pref) and v['nazwa'] is not None:
         #        yield (v['kod'], v['nazwa'])
                 
@@ -106,7 +106,7 @@ class WykazFaktow(object):
         return f
     
     def setMapa(self,i,mapa):
-        for (k,v) in mapa.iteritems():
+        for (k,v) in mapa.items():
             self.setWartosc(i,k,v)
     
     def setWartosc(self,i,k,v):
@@ -160,7 +160,7 @@ class WykazFaktow(object):
         if i >= len(self._fk):
             return False
         f = self._fk[i]
-        if f['id'] < 0:
+        if not f['id']:
             f['id'] = self._mxFk.jeden()[0]+1
             r = self._insStmt.wykonaj(params=self.prepParams(f),zatwierdz=False)
             if r != 1:

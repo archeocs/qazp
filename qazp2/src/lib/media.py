@@ -28,8 +28,8 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtCore import QByteArray, QBuffer, QIODevice
-from PyQt4.QtGui import QImage
+from PyQt5.QtCore import QByteArray, QBuffer, QIODevice
+from PyQt5.QtGui import QImage
 from os.path import basename
 
 def odczyt(ident, con, nout=None):
@@ -48,7 +48,7 @@ def zapiszMapa(plik, st, syg, con, format=None):
     buf = QBuffer()
     buf.open(QIODevice.WriteOnly)
     if img.save(buf, format):
-        if stmt.wykonaj([mx, syg, basename(plik), format, buffer(buf.buffer().data())], False) != 1:
+        if stmt.wykonaj([mx, syg, basename(plik), format, memoryview(buf.buffer().data())], False) != 1:
             con.wycofaj()
             return False
         if s2.wykonaj([mx,st,'M'],False) != 1:

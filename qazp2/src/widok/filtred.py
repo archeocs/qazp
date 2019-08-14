@@ -28,8 +28,9 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
 import sys
 from dane.tabela import *
 
@@ -44,7 +45,7 @@ class Filtr(object):
             self._uc = fmt % (te, ae, we)
         self._tnazwa, self._anazwa, self._wartosc = tn, an, ww
     
-    def __unicode__(self):
+    def __str__(self):
         return self._uc
     
     @property    
@@ -70,7 +71,7 @@ class Filtr2(object):
         self._atr = atr
         self._war = wartosc
 
-    def __unicode__(self):
+    def __str__(self):
         return self._widok
 
     @property
@@ -96,7 +97,7 @@ class ListaModel(QAbstractListModel):
         
     def data(self, indeks, rola=Qt.DisplayRole):
         if rola == Qt.DisplayRole:
-            return unicode(self._filtry[indeks.row()])
+            return str(self._filtry[indeks.row()])
     
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role==Qt.DisplayRole and section==0 and orientation==Qt.Vertical:
@@ -129,7 +130,7 @@ class ComboTxt(QWidget):
     @property    
     def wartosc(self):
         if self._txt.isVisible():
-            return unicode(self._txt.text())
+            return str(self._txt.text())
         elif self._cb.isVisible():
             return self._cb.currentIndex()
         return None
@@ -234,14 +235,6 @@ class FiltrWidget(QWidget):
         self._widok.setModel(self._wmodel)
         hbox.addWidget(self._widok)
         ed = Edytor()
-        #self._tabele.append(fizgeo())
-        #self._tabele.append(ekspozycja())
-        #self._tabele.append(obszar())
-        #self._tabele.append(teren())
-        #self._tabele.append(gleba())
-        #self._tabele.append(wnioski())
-        #self._tabele.append(zagrozenia())
-        #self._tabele.append(fakty(con))
         self._tabele.extend(tabele)
         for t in self._tabele:
             ed.dodajTabele(t)
@@ -280,10 +273,10 @@ class FiltrWidget(QWidget):
     def _zatwierdz(self):
         df = {}
         for f in self._filtry:
-            if not df.has_key(f.tabela):
+            if f.tabela not in df:
                 df[f.tabela] = {}
             dt = df[f.tabela]
-            if not dt.has_key(f.atrybut):
+            if f.atrybut not in dt:
                 dt[f.atrybut] = []
             df[f.tabela][f.atrybut].append(f.wartosc)
         self.filtruj.emit(df)

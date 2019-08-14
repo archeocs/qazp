@@ -28,7 +28,9 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtCore import QVariant
+import logging
+
+from PyQt5.QtCore import QVariant
 from qgis.core import QgsFeature, QgsVectorLayer, QgsField
 from qgis.core import QgsCoordinateTransform, QgsCoordinateReferenceSystem
 
@@ -37,7 +39,7 @@ def setAtr(qgsObiekt, atr, v, lista):
     return True
 
 def setMapa(qgsObiekt,mapa,lista):
-    for (k,v) in mapa.iteritems():
+    for (k,v) in mapa.items():
         setAtr(qgsObiekt,k,v,lista)
 
 def zmien(qgsWarstwa, qgsObiekt):
@@ -52,7 +54,7 @@ def zmien(qgsWarstwa, qgsObiekt):
 #    am = qgs_obiekt.attributeMap()
 #    fid = qgs_obiekt.id()
 #    qgs_warstwa.startEditing()
-#    for (k,v) in am.iteritems():
+#    for (k,v) in am.items():
 #        qgs_warstwa.changeAttributeValue(fid, k,v)
 #    return qgs_warstwa.commitChanges()
 
@@ -72,7 +74,7 @@ def dodaj(qgsWarstwa, atr, qgsGeom, origSrid=4326, commit=False):
             nowyIndeks = nowyIndeks.toInt()[0]
         nowyIndeks += 1
     f[0] = nowyIndeks
-    for (k, v) in atr.iteritems():
+    for (k, v) in atr.items():
         if k > 0:
             f[k] = v
     wcrs = qgsWarstwa.crs()
@@ -82,7 +84,7 @@ def dodaj(qgsWarstwa, atr, qgsGeom, origSrid=4326, commit=False):
                 raise Exception('Nieudana transformacja')
     f.setGeometry(qgsGeom)
     if commit:
-        print nowyIndeks
+        print(nowyIndeks)
         qgsWarstwa.startEditing()
     return qgsWarstwa.addFeatures([f]) and (not commit or qgsWarstwa.commitChanges())
 
@@ -91,7 +93,7 @@ def dodajObj(qgsWarstwa, indeks, atr, qgsGeom, origSrid=4326):
     provider = qgsWarstwa.dataProvider()
     f = QgsFeature(provider.fields())
     f[0] = indeks
-    for (k, v) in atr.iteritems():
+    for (k, v) in atr.items():
         if k > 0:
             f[k] = v
     wcrs = qgsWarstwa.crs()
@@ -117,8 +119,12 @@ def dodaj2(qgs_warstwa,atr,qgs_geom,orig_srid=4326,commit=False):
         qgs_warstwa.startEditing()
     return qgs_warstwa.addFeatures([f]) and (not commit or qgs_warstwa.commitChanges())
 
-def tempWarstwa(dane, nazwa, typ, atrybuty):
-    v = QgsVectorLayer(typ, nazwa, 'memory')
+def tempWarstwa(dane, nazwa, typ, atrybuty, crs=None):
+    uri = typ
+    if crs:
+        uri += '?crs=WKT:' + crs.toWkt()
+    logging.info('Wyswietlam warstwe {0}'.format(uri))
+    v = QgsVectorLayer(uri, nazwa, 'memory')
     v.startEditing()
     pr = v.dataProvider()
     pola = []

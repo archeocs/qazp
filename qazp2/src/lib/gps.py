@@ -57,7 +57,7 @@ class GpxPunkt(object):
     def __init__(self,lon,lat,atrs={}):
         self.lon = lon
         self.lat = lat
-        for (k,v) in atrs.iteritems():
+        for (k,v) in atrs.items():
             setattr(self, k, v)
             
     def wkt(self):
@@ -162,7 +162,7 @@ class WayPoints(object):
     def elem_end(self,name):
         if name == 'wpt' and self.cur_pt:
             if not self.cur_pt.spr_czas():
-                print 'Nieprawidlowy czas'
+                print('Nieprawidlowy czas')
             self.pts_list.append(self.cur_pt)
             self.chname=None
             self.chval=None

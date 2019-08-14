@@ -30,7 +30,7 @@
 
 from qgis.core import QgsFeature, QgsCoordinateReferenceSystem
 from qgis.core import QgsCoordinateTransform
-from PyQt4.QtCore import QVariant
+from PyQt5.QtCore import QVariant
 from decimal import Decimal
 class AModel(dict):
     """
@@ -41,7 +41,7 @@ class AModel(dict):
         dict.__init__(self)
         self.zmiany = {}
         self._dom = domyslne
-        for (k,v) in dane.iteritems():
+        for (k,v) in dane.items():
             if v is None:
                 self[k] = domyslne.get(k)
             else:
@@ -52,7 +52,7 @@ class AModel(dict):
     def __setitem__(self, k,v):
         """ Wstawia wartosc do slownika i zapamietuje klucz, jezeli jego wartosc
             jest zmieniana"""
-        if not self.zmiany.has_key(k):
+        if k not in self.zmiany:
             self.zmiany[k] = False
         else:
             self.zmiany[k] = (v != self[k])
@@ -60,7 +60,7 @@ class AModel(dict):
     
     def czy_mod(self):
         """ Sprawdza, czy dane w slowniku byly modyfikowane """
-        for k in self.zmiany.iterkeys():
+        for k in self.zmiany.keys():
             if self.zmiany[k]:
                 return True
         return False
@@ -85,7 +85,7 @@ class AModel(dict):
     
     def zmien(self,mapa):
         """ Zmienia dane w slowniku wedlug zawartosci innej mapy przekazanej w parametrze metody """
-        for (k,v) in mapa.iteritems():
+        for (k,v) in mapa.items():
             self[k] = v
     
     def wartosc(self,i):
@@ -99,7 +99,7 @@ class AModel(dict):
         """ Zwraca podzbior kluczy i wartosci wedlug podanej listy kluczy """
         nm = {}
         for a in args:
-            if not self.has_key(a):
+            if a not in self:
                 raise Exception("submapa: Nie ma atrybutu "+a)
             nm[a] = self[a]
         return nm
@@ -108,7 +108,7 @@ class AModel(dict):
         """ Zwraca podzbior wartosci wedlug podanej listy kluczy """
         nt = []
         for a in args:
-            if not self.has_key(a):
+            if a not in self:
                 raise Exception("sublista: nie ma atrybut "+a)
             nt.append(self[a])
 
@@ -138,8 +138,8 @@ class NowyModel(AModel):
     def wspolrzedne(self):
         return self._feature.geometry()
 
-    def __unicode__(self):
-        return unicode(self)
+    def __str__(self):
+        return str(self)
 
 class GModel(AModel):
     """ Model danych do obslugi informacji pochodzacych z QGIS"""
@@ -172,8 +172,8 @@ class GModel(AModel):
     def wspolrzedne(self):
         return self._feature.geometry()
     
-    def __unicode__(self):
-        return unicode(self)
+    def __str__(self):
+        return str(self)
 
     
 def utworz_feature(atrs,g=None):

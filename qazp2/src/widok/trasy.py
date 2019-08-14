@@ -28,10 +28,10 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtCore import QVariant,SIGNAL,QObject, Qt,QSize
-from PyQt4.QtGui import QDialog, QVBoxLayout,QWidget,QFormLayout,QLineEdit,QDialogButtonBox,QMessageBox
-from PyQt4.QtGui import QAction,QFileDialog,QInputDialog, QTableWidget, QTableWidgetItem,QComboBox,QLabel
-from lista import GTabModel,GFrame
+from PyQt5.QtCore import QVariant, QObject, Qt,QSize
+from PyQt5.QtWidgets import QDialog, QVBoxLayout,QWidget,QFormLayout,QLineEdit,QDialogButtonBox,QMessageBox
+from PyQt5.QtWidgets import QAction,QFileDialog,QInputDialog, QTableWidget, QTableWidgetItem,QComboBox,QLabel
+from .lista import GTabModel,GFrame
 from dane.zrodla import rejestr_map, get_warstwa, gtrasy, szukaj_trasy
 from lib.gps import GpxPunktyLista,distr, TrackPoints
 from lib.qgsop import usun, zmien,dodaj
@@ -45,9 +45,9 @@ def tab_model(obiekty,parent=None):
 
 def txt(v,trim=False,mx=-1):
     if isinstance(v, QVariant):
-        u = unicode(v.toString())
+        u = str(v.value())
     else:
-        u = unicode(v)
+        u = str(v)
     if trim:
         u = u.strip()
     if mx > 0:
@@ -108,10 +108,10 @@ class TrasyFrame(GFrame):
             self.odswiez(gtrasy(self.warstwa))
 
 def get_val_text(txt_fld):
-    return unicode(txt_fld.text())
+    return str(txt_fld.text())
 
 def get_val_combo(combo):
-    return unicode(combo.currentText())
+    return str(combo.currentText())
 
 def get_index_combo(combo):
     return combo.currentIndex()
@@ -134,8 +134,8 @@ class TableGpsTracks(QTableWidget):
                 wit = QTableWidgetItem()
                 wit.setData(Qt.CheckStateRole,Qt.Checked)
             else:
-                wit = QTableWidgetItem(unicode(f))
-            wit.setToolTip(unicode(f))
+                wit = QTableWidgetItem(str(f))
+            wit.setToolTip(str(f))
             #wit.sets
             self.setItem(rindex,fi,wit)     
     
@@ -160,7 +160,7 @@ class TableGpsTracks(QTableWidget):
         self.cov = round(d[1] / d[0],2)# / d[0]
         self.mean = round(d[0],2)
         self.resizeColumnsToContents()
-        self.connect(self, SIGNAL('itemClicked(QTableWidgetItem *)'),self._update_cov)
+        self.itemClicked.connect(self._update_cov)
     
     def set_meanhandler(self,h):
         self._handler_mean = h
@@ -186,7 +186,7 @@ class FormInfo(QWidget):
         
     def add_txt_field(self,key,lb):
         fld = QLineEdit() 
-        if self.info.has_key(key):
+        if key in self.info:
             fld.setText(self.info[key])
         self.form.addRow(self._ff[lb], fld)
         return fld
@@ -319,14 +319,14 @@ class DialogDodajTraseGps(QDialog):
         self.button_box = QDialogButtonBox(self)
         self.vbox.addWidget(self.button_box)
         self.button_box.setStandardButtons(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.connect(self.button_box,SIGNAL('accepted()'),self.zapisz)
-        self.connect(self.button_box,SIGNAL('rejected()'),self.zakoncz)
+        self.accepted.connect(self.zapisz)
+        self.rejected.connect(self.zakoncz)
 
 class WyszukajAkcja(QAction):
     
     def __init__(self,iface,window):
         QAction.__init__(self,'Wyszukaj',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         
@@ -337,14 +337,14 @@ class WyszukajAkcja(QAction):
             return 
         warunek = QInputDialog.getText(self._win, 'Trasy', 'Wprowadz warunek', text='id > 0')
         if warunek[1]:
-            mf = TrasyFrame(szukaj_trasy(unicode(warunek[0])),self._iface,self._win)
+            mf = TrasyFrame(szukaj_trasy(str(warunek[0])),self._iface,self._win)
             self._win.dodaj(mf)
 
 class ImportGpsAkcja(QAction):
     
     def __init__(self,iface,window):
         QAction.__init__(self,'Importuj z GPS',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         

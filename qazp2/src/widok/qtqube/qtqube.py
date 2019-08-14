@@ -28,10 +28,11 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4 import QtCore as core
-from PyQt4 import QtGui as gui
-from pyqube import pyqube as p
-from pyqube import views as v
+from PyQt5 import QtCore as core
+from PyQt5 import QtGui as gui
+from PyQt5 import QtWidgets as widgets
+from .pyqube import pyqube as p
+from .pyqube import views as v
 from functools import partial
 from collections import namedtuple
 
@@ -96,7 +97,7 @@ class AttrConverter(ValueConverter):
         self.schema = schema
         
     def fromInput(self, text):
-        return self.schema.attrByName(unicode(text))
+        return self.schema.attrByName(str(text))
         
     def toOutput(self, value, role=core.Qt.DisplayRole):
         if value and isinstance(value, v.ViewAttr):
@@ -114,7 +115,7 @@ class AttrValidator(gui.QValidator):
         self.viewAttrs = []
         
     def validate(self, qtext, pos):
-        text = unicode(qtext)
+        text = str(qtext)
         if not text:
             return (gui.QValidator.Intermediate, pos)
         elif '.' in text:
@@ -153,8 +154,8 @@ class StrConverter(ValueConverter):
         
     def fromInput(self, variant):
         if isinstance(variant, core.QVariant):
-            return unicode(variant)
-        elif isinstance(variant, str) or isinstance(variant, unicode):
+            return str(variant)
+        elif isinstance(variant, str):
             return variant
         
     def toOutput(self, value, role=core.Qt.DisplayRole):
@@ -199,7 +200,7 @@ class EditorTableModel(core.QAbstractTableModel):
         if orientation == core.Qt.Vertical and role == core.Qt.DisplayRole:
             return self.matrix.label(section)
         elif orientation == core.Qt.Horizontal and role==core.Qt.DisplayRole:
-            return unicode(section+1)
+            return str(section+1)
         else:
             return None
         
@@ -224,11 +225,11 @@ class EditorTableModel(core.QAbstractTableModel):
         self.dataChanged.emit(index, index)
         return True
 
-class AttributesDelegate(gui.QStyledItemDelegate):
+class AttributesDelegate(widgets.QStyledItemDelegate):
 
     def __init__(self, schema, tableView):
-        gui.QStyledItemDelegate.__init__(self, parent=tableView)
-        self.setItemEditorFactory(gui.QItemEditorFactory.defaultFactory())
+        widgets.QStyledItemDelegate.__init__(self, parent=tableView)
+        self.setItemEditorFactory(widgets.QItemEditorFactory.defaultFactory())
         self.schema = schema
         self.matrix = tableView.model().matrix
         
@@ -239,7 +240,7 @@ class AttributesDelegate(gui.QStyledItemDelegate):
                 continue
             a = self.matrix.cellValue(0, c)
             if a:
-                sv = unicode(a.fullName())
+                sv = str(a.fullName())
                 attr = self.schema.attrByName(sv)
                 for view in self.schema.relatedViews(attr.view):
                     selected = selected | set([x.fullName() for x in view.viewAttrs() ])
@@ -251,8 +252,8 @@ class AttributesDelegate(gui.QStyledItemDelegate):
         
     def createEditor(self, parent, style, index):
         self.initStyleOption(style, index)
-        textField = gui.QLineEdit(parent)
-        completer = gui.QCompleter(self._attrs(index))
+        textField = widgets.QLineEdit(parent)
+        completer = widgets.QCompleter(self._attrs(index))
         completer.setCaseSensitivity(core.Qt.CaseInsensitive)
         textField.setCompleter(completer)
         textField.setValidator(AttrValidator(self.schema, textField))
@@ -269,11 +270,11 @@ class AttributesDelegate(gui.QStyledItemDelegate):
 FunctionItem = namedtuple('FunctionItem', ['name', 'view'])
 
 
-class FunctionsDelegate(gui.QStyledItemDelegate):
+class FunctionsDelegate(widgets.QStyledItemDelegate):
 
     def __init__(self, functions, tableView):
-        gui.QStyledItemDelegate.__init__(self, parent=tableView)
-        self.setItemEditorFactory(gui.QItemEditorFactory.defaultFactory())
+        widgets.QStyledItemDelegate.__init__(self, parent=tableView)
+        self.setItemEditorFactory(widgets.QItemEditorFactory.defaultFactory())
         self.functions = functions
 
     def createEditor(self, parent, style, index):
@@ -281,7 +282,7 @@ class FunctionsDelegate(gui.QStyledItemDelegate):
         if r == 4:
             return self._createLineEditor(parent, style, index)
         else:
-            return gui.QStyledItemDelegate.createEditor(self, parent, style, index)
+            return widgets.QStyledItemDelegate.createEditor(self, parent, style, index)
 
     def setModelData(self, editor, model, index):
         r = index.row()
@@ -292,7 +293,7 @@ class FunctionsDelegate(gui.QStyledItemDelegate):
                     model.setData(index, f)
                     return
         else:
-            gui.QStyledItemDelegate.setModelData(self, editor, model, index)
+            widgets.QStyledItemDelegate.setModelData(self, editor, model, index)
 
     def setEditorData(self, editor, index):
         value = index.data()
@@ -304,22 +305,22 @@ class FunctionsDelegate(gui.QStyledItemDelegate):
             else:
                 editor.setText('')
         else:
-            gui.QStyledItemDelegate.setEditorData(self, editor, index)
+            widgets.QStyledItemDelegate.setEditorData(self, editor, index)
 
     def _createLineEditor(self, parent, style, index):
         self.initStyleOption(style, index)
-        textField = gui.QLineEdit(parent)
-        completer = gui.QCompleter([f.view for f in self.functions])
+        textField = widgets.QLineEdit(parent)
+        completer = widgets.QCompleter([f.view for f in self.functions])
         completer.setCaseSensitivity(core.Qt.CaseInsensitive)
         textField.setCompleter(completer)
         return textField
 
 
-class ListDelegate(gui.QStyledItemDelegate):
+class ListDelegate(widgets.QStyledItemDelegate):
 
     def __init__(self, values, tableView):
-        gui.QStyledItemDelegate.__init__(self, parent=tableView)
-        self.setItemEditorFactory(gui.QItemEditorFactory.defaultFactory())
+        widgets.QStyledItemDelegate.__init__(self, parent=tableView)
+        self.setItemEditorFactory(widgets.QItemEditorFactory.defaultFactory())
         self.values = values
     
     def createEditor(self, parent, style, index):
@@ -329,26 +330,26 @@ class ListDelegate(gui.QStyledItemDelegate):
         elif r >= 7:
             return self._createLineEditor(parent, style, index, self.values[6])
         else:
-            return gui.QStyledItemDelegate.createEditor(self, parent, style, index)
+            return widgets.QStyledItemDelegate.createEditor(self, parent, style, index)
             
     def setEditorData(self, editor, index):
         r = index.row()
         if r > 4:
             self._setEditorTextData(editor, index)
         else:
-            gui.QStyledItemDelegate.setEditorData(self, editor, index)
+            widgets.QStyledItemDelegate.setEditorData(self, editor, index)
             
     def setModelData(self, editor, model, index):
         r = index.row()
         if r > 4:
             self._setModelTextData(editor, model, index)
         else:
-            gui.QStyledItemDelegate.setModelData(self, editor, model, index)
+            widgets.QStyledItemDelegate.setModelData(self, editor, model, index)
         
     def _createLineEditor(self, parent, style, index, valuesList):
         self.initStyleOption(style, index)
-        textField = gui.QLineEdit(parent)
-        completer = gui.QCompleter(valuesList)
+        textField = widgets.QLineEdit(parent)
+        completer = widgets.QCompleter(valuesList)
         completer.setCaseSensitivity(core.Qt.CaseInsensitive)
         textField.setCompleter(completer)
         return textField
@@ -360,13 +361,13 @@ class ListDelegate(gui.QStyledItemDelegate):
     def _setModelTextData(self, editor, model, index):
         model.setData(index, editor.text())
         
-class QtQube(gui.QWidget):
+class QtQube(widgets.QWidget):
     
     def __init__(self, schema, parent=None):
-        gui.QWidget.__init__(self, parent=parent)
-        self.setLayout(gui.QVBoxLayout(self))
+        widgets.QWidget.__init__(self, parent=parent)
+        self.setLayout(widgets.QVBoxLayout(self))
         self.schema = schema
-        tableView = gui.QTableView()
+        tableView = widgets.QTableView()
         self.layout().addWidget(tableView)
         self.matrix = Matrix()
         model = EditorTableModel(schema, self.matrix)
@@ -379,7 +380,7 @@ class QtQube(gui.QWidget):
         tableView.setItemDelegateForRow(4, FunctionsDelegate([FunctionItem('avg', 'Srednia'),
                                                               FunctionItem('count', 'Licz'),
                                                               FunctionItem('sum', 'Suma')], tableView))
-        #tableView.horizontalHeader().setResizeMode(gui.QHeaderView.Stretch)
+        #tableView.horizontalHeader().setSectionResizeMode(widgets.QHeaderView.Stretch)
     
     def _createConditions(self, column):
         chain = v.ConditionChain()
@@ -427,7 +428,7 @@ class QtQube(gui.QWidget):
                     aggrAttrs.append(c)
                 builder.add(selectAttrs[c], outerJoin=(not viewHasCond.get(attr.view.name, False)) )
         if aggrAttrs:
-            for (i, attr) in selectAttrs.iteritems():
+            for (i, attr) in selectAttrs.items():
                 if i not in aggrAttrs and attr.visible:
                     attr.groupBy = True
         return builder.build()

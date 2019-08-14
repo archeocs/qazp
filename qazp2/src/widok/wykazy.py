@@ -28,8 +28,8 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QFrame, QTableView, QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QComboBox,QLineEdit, QMessageBox, QAction
-from PyQt4.QtCore import QAbstractTableModel, Qt, QVariant, SIGNAL, QObject
+from PyQt5.QtWidgets import QFrame, QTableView, QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QComboBox,QLineEdit, QMessageBox, QAction
+from PyQt5.QtCore import QAbstractTableModel, Qt, QVariant, QObject
 from dane.zrodla import Wykaz, get_warstwa, getPolaczenie2
 
 class WykModel(QAbstractTableModel):
@@ -52,7 +52,7 @@ class WykModel(QAbstractTableModel):
         return self._wybrany[0].toInt()[0]
     
     def ostatni(self):
-        return (self._wybrany[0].toInt()[0],unicode(self._wybrany[1].toString()))    
+        return (self._wybrany[0].toInt()[0],str(self._wybrany[1].value()))    
         
     def rowCount(self, *args, **kwargs):
         return len(self._wyk)
@@ -130,12 +130,12 @@ class WykDialog(QFrame):
         
     def _zmWyk(self,et):
         self._mwyk.beginResetModel()
-        self._wyk.wypelnij(unicode(self._cbstart.currentText()))
+        self._wyk.wypelnij(str(self._cbstart.currentText()))
         self._mwyk.endResetModel()
         self._edtxt.setText('')
         
     def _zmBiezWier(self,biez,poprz):
-        self._edtxt.setText(biez.data().toString())
+        self._edtxt.setText(biez.data().value())
     
     def _zmianaNaz(self,arg):
         sm = self._tab.selectionModel()
@@ -143,7 +143,7 @@ class WykDialog(QFrame):
         if indeks.isValid():
             n = self._wyk[indeks.row()]
             wid = n[0].toInt()[0]
-            wn = unicode(n[1].toString())
+            wn = str(n[1].value())
         else:
             return
         if not sm.hasSelection() :
@@ -152,7 +152,7 @@ class WykDialog(QFrame):
         odp = QMessageBox.question(self,'Zmiana',u'Czy na pewno chcesz zmienić nazwę '+wn+' na '+self._edtxt.text()+' ?',QMessageBox.Yes | QMessageBox.No)
         if odp != QMessageBox.Yes:
             return
-        if self._wyk.zmien(wid,unicode(self._edtxt.text())):
+        if self._wyk.zmien(wid,str(self._edtxt.text())):
             self._mwyk.beginResetModel()
             self._wyk.wypelnij()
             self._mwyk.endResetModel()
@@ -164,7 +164,7 @@ class WykDialog(QFrame):
         odp = QMessageBox.question(self,'Dodawanie',u'Czy na pewno chcesz dodać nazwę '+self._edtxt.text()+' ?',QMessageBox.Yes | QMessageBox.No)
         if odp != QMessageBox.Yes:
             return
-        if self._wyk.dodaj(unicode(self._edtxt.text())):
+        if self._wyk.dodaj(str(self._edtxt.text())):
             self._mwyk.beginResetModel()
             self._wyk.wypelnij()
             self._mwyk.endResetModel()
@@ -196,7 +196,7 @@ class WykazAkcja(QAction):
     
     def __init__(self,et,nazwa,iface,window):
         QAction.__init__(self,et,window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         self._naz = nazwa
@@ -211,7 +211,7 @@ class WykazAkcja(QAction):
 class FkWykazAkcja(QAction):
     def __init__(self,et,nazwa,iface,window):
         QAction.__init__(self,et,window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         self._naz = nazwa

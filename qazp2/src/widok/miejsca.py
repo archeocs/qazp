@@ -34,14 +34,14 @@ Created on Sep 9, 2012
 @author: milosz
 '''
 
-from lista import GTabModel, GFrame
-from PyQt4.QtGui import QMessageBox, QAction, QVBoxLayout, QDialogButtonBox, QLineEdit
-from PyQt4.QtGui import QInputDialog, QFileDialog ,QFrame
-from PyQt4.QtCore import QObject,SIGNAL
+from .lista import GTabModel, GFrame
+from PyQt5.QtWidgets import QMessageBox, QAction, QVBoxLayout, QDialogButtonBox, QLineEdit
+from PyQt5.QtWidgets import QInputDialog, QFileDialog ,QFrame
+from PyQt5.QtCore import QObject
 from lib.qgsop import zmien, usun, dodaj, setMapa
 from lib.gps import WayPoints
 from dane.zrodla import rejestr_map, get_warstwa, gmiejsca, szukaj_miejsca
-from qgis.core import QgsDataSourceURI
+from qgis.core import QgsDataSourceUri
 from functools import partial
 from widok.proped import PropWidok, conw, PropFrame
 from dane.model import MIEJSCA_ATR
@@ -116,7 +116,7 @@ class MiejscaFrame(GFrame):
         ww = self.wybrany_wiersz()[1]
         u = usun(self.warstwa,ww.feature())
         if u:
-            QMessageBox.information(self, 'info', u'Usuniete miejsce %s'%unicode(ww['nazwa'].toString()))
+            QMessageBox.information(self, 'info', u'Usuniete miejsce %s'%str(ww['nazwa'].value()))
             
 def formularz(dialog,fid,feature):
     txtNaz = dialog.findChild(QLineEdit,"nazwa")
@@ -126,7 +126,7 @@ class WyszukajAkcja(QAction):
     
     def __init__(self,iface,window):
         QAction.__init__(self,'Wyszukaj',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         
@@ -137,14 +137,14 @@ class WyszukajAkcja(QAction):
             return 
         warunek = QInputDialog.getText(self._win, 'Miejsca', 'Wprowadz warunek', text='id > 0')
         if warunek[1]:
-            mf = MiejscaFrame(szukaj_miejsca(unicode(warunek[0])),self._iface,self._win)
+            mf = MiejscaFrame(szukaj_miejsca(str(warunek[0])),self._iface,self._win)
             self._win.dodaj(mf)
 
 class ImportGpsAkcja(QAction):
     
     def __init__(self,iface,window):
         QAction.__init__(self,'Importuj z GPS',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
         
@@ -174,13 +174,13 @@ class TestUri(QAction):
     
     def __init__(self,iface,window):
         QAction.__init__(self,'Test uri',window)
-        QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
+        self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface  
         
     def wykonaj(self):
         mw = get_warstwa("miejsca")
-        QMessageBox.information(self._win, 'test', QgsDataSourceURI(mw.dataProvider().dataSourceUri()).sql())
+        QMessageBox.information(self._win, 'test', QgsDataSourceUri(mw.dataProvider().dataSourceUri()).sql())
         
     
         

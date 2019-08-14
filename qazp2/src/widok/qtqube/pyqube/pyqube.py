@@ -30,13 +30,13 @@
 
 import collections
 import string
-from views import *   
+from .views import *   
 
 class AliasGen(object):
 
     def __init__(self):
         self._start = 1
-        self._letters = string.uppercase
+        self._letters = string.ascii_uppercase
         self._len = len(self._letters)
         
     def next(self):
@@ -113,10 +113,10 @@ class Tree(object):
         if not self.root:
             self.root = Node(Alias(view, ALIAS_GEN.next()))
             self.viewNode[view] = self.root
-        elif not self.viewNode.has_key(view):
+        elif view not in self.viewNode:
             related = self.schema.relatedViews(view)
             for v in related:
-                if self.viewNode.has_key(v):
+                if v in self.viewNode:
                     relation = self.schema.relation(v, view)
                     nn = self.viewNode[v].addJoin(Alias(view, ALIAS_GEN.next()), relation, outerJoin)
                     self.viewNode[view] = nn

@@ -28,17 +28,19 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtCore import QAbstractTableModel, Qt, QModelIndex, QVariant
-from PyQt4.QtGui import QItemEditorFactory, QStyledItemDelegate, QDialog, QVBoxLayout,\
+from PyQt5.QtCore import QAbstractTableModel, Qt, QModelIndex, QVariant
+from PyQt5.QtWidgets import QItemEditorFactory, QStyledItemDelegate, QDialog, QVBoxLayout,\
                         QFormLayout, QComboBox, QLineEdit, QTableView, QWidget,\
-                        QAbstractItemView, QHeaderView, QFontMetrics, QTextFormat,\
-                        QPrinter, QTextTableFormat, QTextLength, QFont, QGridLayout,\
-                        QFrame, QAction, QDialogButtonBox, QTextCursor, QTextDocument,\
+                        QAbstractItemView, QHeaderView, QGridLayout,\
+                        QFrame, QAction, QDialogButtonBox, \
                         QPlainTextEdit, QMessageBox, QFileDialog
+from PyQt5.QtGui import QFontMetrics, QTextFormat,\
+    QTextTableFormat, QTextLength, QFont, QTextDocument, QTextCursor
+from PyQt5.QtPrintSupport import QPrinter
 from dane.tabela import WSZYSTKIE, stanowiska, Atrybut, Warunek, fakty, klasyfikacja
 from dane.zrodla import get_warstwa, getPolaczenie2
-from qtqube.qtqube import QtQube
-from dbschemat import utworzSchemat
+from .qtqube.qtqube import QtQube
+from .dbschemat import utworzSchemat
 from functools import partial
 from locale import strcoll
 
@@ -58,7 +60,7 @@ class Odtwarzacz(object):
         if wartosc is None:
             return ""
         if self._atrs[i].dowolnaWartosc:
-            return unicode(wartosc)
+            return str(wartosc)
         return self._atrs[i].odtworz(wartosc)
         
 class WidokZestModel(QAbstractTableModel):
@@ -121,7 +123,7 @@ class WynikWidget(QTableView):
         cc = model.columnCount()
         head = u';'.join(
             [
-                unicode(model.headerData(c, Qt.Horizontal)) 
+                str(model.headerData(c, Qt.Horizontal)) 
                     for c in range(cc)
             ]
         )+u';\n'
@@ -130,7 +132,7 @@ class WynikWidget(QTableView):
         for r in range(rc):
             row = u';'.join(
                 [
-                    unicode(model.data(model.index(r, c))) 
+                    str(model.data(model.index(r, c))) 
                         for c in range(cc)
                 ]
             )+u';\n'
@@ -204,8 +206,6 @@ class WynikZestFrame(QFrame):
         elif on == 'zapisz':
             plik = QFileDialog.getSaveFileName(parent=self, filter='CSV (*.csv)')
             self._wgt.zapisz(str(plik))
-        else:
-            print on
             
 class ZestFrame(QFrame):
     
@@ -241,7 +241,7 @@ class ZestFrame(QFrame):
         self._tabzest.append(klasyfikacja(con))
     
     def _konwertujAtrybut(self, qubeAtr):
-        print 'konwertuje ', qubeAtr.view.source, qubeAtr.name
+        #print'konwertuje ', qubeAtr.view.source, qubeAtr.name
         widok = qubeAtr.view.source
         atr = qubeAtr.name
         for tabela in self._tabzest:
@@ -249,7 +249,7 @@ class ZestFrame(QFrame):
                 for a in tabela.atrs:
                     if a.anazwa == atr:
                         return a
-                print tabela.tnazwa, atr
+                #printtabela.tnazwa, atr
                 nowy = Atrybut(atr, etykieta=qubeAtr.realName())
                 nowy.tabela = tabela
                 return nowy
@@ -258,23 +258,23 @@ class ZestFrame(QFrame):
         
     def _btnKlik(self, btn):
         on = str(btn.objectName())
-        print on
+        #printon
         if on == 'dalej':
             qubeWynik = self._ed.getQuery()
             pobierane = [self._konwertujAtrybut(a) for a in qubeWynik.attributes]
             odtw = Odtwarzacz(pobierane)
             params = {}
-            for (k, v) in qubeWynik.params.iteritems():
+            for (k, v) in qubeWynik.params.items():
                 params[k] = self._konwertujAtrybut(v)
             if params:
                 pd = ParamDialog(params, self)
                 if pd.exec_() == QDialog.Accepted:
-                    print qubeWynik.statement
+                    #printqubeWynik.statement
                     wynik = self._con.wszystkie(qubeWynik.statement, pd.daneParam)
                 else:
                     return
             else:
-                print qubeWynik.statement
+                #printqubeWynik.statement
                 wynik = self._con.wszystkie(qubeWynik.statement)
             self._tv = WynikWidget(odtw, wynik)
             self._grid.removeWidget(self._ed)
@@ -318,7 +318,7 @@ class ParamFrame(QFrame):
         self._kolejnosc = []
         self._form = QFormLayout(self)
         self.setLayout(self._form)
-        for (n, a) in atrybuty.iteritems():
+        for (n, a) in atrybuty.items():
             self._kolejnosc.append(n)
             if a.dowolnaWartosc:
                 self._form.addRow(a.toStr(), QLineEdit())

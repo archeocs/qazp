@@ -28,10 +28,11 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from PyQt4.QtGui import QFrame, QVBoxLayout,QTableView,QGroupBox,QHBoxLayout,QPushButton,QButtonGroup,\
-                        QStyledItemDelegate,QShortcut,QKeySequence
-from PyQt4.QtCore import QAbstractTableModel, QVariant, SIGNAL, QModelIndex
-from PyQt4.QtCore import Qt
+from PyQt5.QtWidgets import QFrame, QVBoxLayout,QTableView,QGroupBox,QHBoxLayout,QPushButton,QButtonGroup,\
+                        QStyledItemDelegate,QShortcut
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtCore import QAbstractTableModel, QVariant, QModelIndex
+from PyQt5.QtCore import Qt
 
 class GTabModel(QAbstractTableModel):
     
@@ -53,7 +54,7 @@ class GTabModel(QAbstractTableModel):
             if not isinstance(v, QVariant):
                 return self._dane[r].wartosc(c)
             else:
-                return v.toString()
+                return v.value()
         else:
             return None
     
@@ -87,7 +88,7 @@ class GTabModel2(QAbstractTableModel):
             if not isinstance(v, QVariant):
                 return v
             else:
-                return v.toString()
+                return v.value()
         else:
             return None
     
@@ -169,7 +170,7 @@ class GFrame(QFrame):
         grupa.addButton(btn_usun, 4)
         grupa.addButton(btn_drukuj, 5)
         grupa.addButton(btn_filtr, 6)
-        self.connect(grupa, SIGNAL('buttonPressed(int)'), self.btn_klik)
+        grupa.buttonPressed[int].connect(self.btn_klik)
         QShortcut(QKeySequence(Qt.CTRL+Qt.Key_J),self._win).activated.connect(self.akcja_zmien)
     
     def getModel(self):
@@ -237,10 +238,10 @@ class GFrame(QFrame):
         pass
         
     def akcja_zmien(self):
-        print 'akcja_zmien: brak implementacji'
+        print('akcja_zmien: brak implementacji')
         
     def akcja_wyswietl(self):
-        print 'akcja_zmien: brak implementacji'
+        print('akcja_zmien: brak implementacji')
         
     def akcja_usun(self):
         pass
