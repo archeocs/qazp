@@ -48,6 +48,8 @@ insert into okresy_dziejow values('SC', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZES
 insert into okresy_dziejow values('SD', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE ŚREDNIOWIECZE D', 'WCZES. ŚRED. D'); --
 insert into okresy_dziejow values('SE', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE ŚREDNIOWIECZE E', 'WCZES. ŚRED. E'); --
 insert into okresy_dziejow values('SF', 'S', 'ŚREDNIOWIECZE', 'WCZESNE', 'WCZESNE ŚREDNIOWIECZE F', 'WCZES. ŚRED. F'); --
+insert into okresy_dziejow values('SK', 'S', 'ŚREDNIOWIECZE', 'X WIEK', 'ŚREDNIOWIECZE X WIEK', 'X W.');
+insert into okresy_dziejow values('SL', 'S', 'ŚREDNIOWIECZE', 'XI WIEK', 'ŚREDNIOWIECZE XI WIEK', 'XI W.');
 insert into okresy_dziejow values('SP', 'S', 'ŚREDNIOWIECZE', 'PÓŹNE', 'PÓŹNE ŚREDNIOWIECZE', 'PÓŹNE ŚRED.');
 insert into okresy_dziejow values('N', 'N', 'NOWOŻYTNOŚĆ', NULL, 'NOWOŻYTNOŚĆ', 'NOWOŻYTNOŚĆ');
 insert into okresy_dziejow values('NW', 'N', 'NOWOŻYTNOŚĆ', 'WCZESNA', 'WCZESNA NOWOŻYTNOŚĆ', 'WCZES. NOWOŻYT.');
