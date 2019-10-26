@@ -4,7 +4,7 @@
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are
  *  met:
- * 
+ *
  *      * Redistributions of source code must retain the above copyright
  *  notice, this list of conditions and the following disclaimer.
  *      * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *      * Neither the name of Milosz Piglas nor the names of its
  *  contributors may be used to endorse or promote products derived from
  *  this software without specific prior written permission.
- * 
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -80,7 +80,23 @@ func (dane *csv) Wiersz() (tabs []string, nastepny bool) {
 
 // Zamienia tablice wartosci reprezentujaca wiersz pliku csv na strukture
 func NewWiersz(tabs []string) (cw wiersz) {
-	cw = wiersz{miej: trim(tabs[0]), gm: trim(tabs[1]), woj: trim(tabs[2]), obsz: trim(tabs[5]), nrobsz: trim(tabs[7]), nrmiej: trim(tabs[6]), nazlok: trim(tabs[9]), rodzbad: trim(tabs[10]), databad: trim(tabs[38]), autor: trim(tabs[39]), region: trim(tabs[12]), jedfiz: trim(tabs[13]), rodzeks: trim(tabs[14]), wyseks: trim(tabs[16]), kiereks: trim(tabs[18]), stopeks: trim(tabs[17]), forszczeg: trim(tabs[15]), doster: trim(tabs[22]), blizter: trim(tabs[23]), obser: trim(tabs[24]), poleobsz: trim(tabs[25]), nasycrozk: trim(tabs[26]), nasyctyp: trim(tabs[27]), obszpow: trim(tabs[28]), gest: trim(tabs[29]), zagwys: trim(tabs[30]), zagczas: trim(tabs[31]), zagprzy: trim(tabs[32]), zaguz: trim(tabs[33]), zaguw: trim(tabs[34]), wart: trim(tabs[35]), wnio: trim(tabs[36]), wniodod: trim(tabs[37]), chrono: trim(tabs[40]), konsul: trim(tabs[41]), magazyn: trim(tabs[42]), losy: trim(tabs[43]), hisbad: trim(tabs[44]), nrinw: trim(tabs[11]), liter: trim(tabs[45]), godlo: trim(tabs[46]), uwagi: trim(tabs[50]), gleba: trim(tabs[19]), kam: trim(tabs[20]), glespec: trim(tabs[21]), zrodla: trim(tabs[49]), nwoj: trim(tabs[3]), powiat: trim(tabs[4])}
+	cw = wiersz{miej: trim(tabs[0]), gm: trim(tabs[1]),
+		woj: trim(tabs[2]), obsz: trim(tabs[5]), nrobsz: trim(tabs[7]),
+		nrmiej: trim(tabs[6]), nazlok: trim(tabs[9]), rodzbad: trim(tabs[10]),
+		databad: trim(tabs[38]), autor: trim(tabs[39]), region: trim(tabs[12]),
+		jedfiz: trim(tabs[13]), rodzeks: trim(tabs[14]), wyseks: trim(tabs[16]),
+		kiereks: trim(tabs[18]), stopeks: trim(tabs[17]), forszczeg: trim(tabs[15]),
+		doster: trim(tabs[22]), blizter: trim(tabs[23]), obser: trim(tabs[24]),
+		poleobsz: trim(tabs[25]), nasycrozk: trim(tabs[26]), nasyctyp: trim(tabs[27]),
+		obszpow: trim(tabs[28]), gest: strings.ToUpper(trim(tabs[29])), zagwys: trim(tabs[30]),
+		zagczas: trim(tabs[31]), zagprzy: trim(tabs[32]), zaguz: trim(tabs[33]),
+		zaguw: trim(tabs[34]), wart: strings.ToUpper(trim(tabs[35])), wnio: trim(tabs[36]),
+		wniodod: trim(tabs[37]), chrono: trim(tabs[40]), konsul: trim(tabs[41]),
+		magazyn: trim(tabs[42]), losy: trim(tabs[43]), hisbad: trim(tabs[44]),
+		nrinw: trim(tabs[11]), liter: trim(tabs[45]), godlo: trim(tabs[46]),
+		uwagi: trim(tabs[50]), gleba: trim(tabs[19]), kam: trim(tabs[20]),
+		glespec: trim(tabs[21]), zrodla: trim(tabs[49]), nwoj: trim(tabs[3]), powiat: trim(tabs[4])}
+	fmt.Printf("Wiersz: %#v\n\n", cw)
 	return
 }
 
@@ -203,7 +219,7 @@ func dekodStopEks(d string, e *eksdane) {
 }
 
 // Dekoduje rodzaj ekspozycji i zapisuje otrzymana wartosc w strukturze,
-// ktorej referencja jest przekazana w parametrze funkcji. 
+// ktorej referencja jest przekazana w parametrze funkcji.
 func dekodRodzEks(d string, e *eksdane) {
 	td := strings.Split(d, "")
 	for i := 0; i < len(td); i++ {

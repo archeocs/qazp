@@ -4,7 +4,7 @@
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are
  *  met:
- * 
+ *
  *      * Redistributions of source code must retain the above copyright
  *  notice, this list of conditions and the following disclaimer.
  *      * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *      * Neither the name of Milosz Piglas nor the names of its
  *  contributors may be used to endorse or promote products derived from
  *  this software without specific prior written permission.
- * 
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -33,8 +33,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
 	"strings"
+
+	"github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -60,26 +61,39 @@ func nastId(tab string) int {
 	return ost + 1
 }
 
+func initSpatialiteDriver() {
+	sql.Register("spatialite", &sqlite3.SQLiteDriver{
+		ConnectHook: func(conn *sqlite3.SQLiteConn) error {
+			err := conn.LoadExtension("mod_spatialite", "sqlite3_modspatialite_init")
+			if err == nil {
+				return nil
+			}
+			return err
+		},
+	})
+}
+
 // Inicjalizuje polaczenie z bazami danych i wczytuje rozszerzenie spatialite (sterownik
 // musi na to pozwalac
 func initDb(wspSciez, azpSciez string) (de error) {
 	// var r sql.Result
-	wspDb, de = sql.Open("sqlite3", wspSciez)
+	initSpatialiteDriver()
+	wspDb, de = sql.Open("spatialite", wspSciez)
 	if de != nil {
 		return
 	}
-	azpDb, de = sql.Open("sqlite3", azpSciez)
+	azpDb, de = sql.Open("spatialite", azpSciez)
 	if de != nil {
 		return
 	}
-	_, de = wspDb.Exec("select load_extension('libspatialite.so.3')")
-	if de != nil {
-		return
-	}
-	_, de = azpDb.Exec("select load_extension('libspatialite.so.3')")
-	if de != nil {
-		return
-	}
+	// _, de = wspDb.Exec("select load_extension('libspatialite.so.3')")
+	// if de != nil {
+	// 	return
+	// }
+	// _, de = azpDb.Exec("select load_extension('libspatialite.so.3')")
+	// if de != nil {
+	// 	return
+	// }
 	fmt.Println("DB INIT OK")
 	return
 }
@@ -128,6 +142,10 @@ func initStmt() (se error) {
 	return
 }
 
+func toString(v interface{}) string {
+	return fmt.Sprintf("%#v", v)
+}
+
 // Dodaje do bazy danych informacje ze struktury implementujacej interfejs Tabela
 // wykorzystujac do tego przygotowane polecenie SQL
 func dodaj(ps *sql.Stmt, t Tabela, spr bool) (ei error) {
@@ -146,6 +164,7 @@ func dodaj(ps *sql.Stmt, t Tabela, spr bool) (ei error) {
 	}
 	_, ei = ps.Exec(tp...)
 	if ei != nil {
+		fmt.Printf("Error %s\n\n", toString(t))
 		panic(ei.Error())
 		//fmt.Println(ei.Error())
 	}
