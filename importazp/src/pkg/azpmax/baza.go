@@ -33,6 +33,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/mattn/go-sqlite3"
@@ -86,15 +87,7 @@ func initDb(wspSciez, azpSciez string) (de error) {
 	if de != nil {
 		return
 	}
-	// _, de = wspDb.Exec("select load_extension('libspatialite.so.3')")
-	// if de != nil {
-	// 	return
-	// }
-	// _, de = azpDb.Exec("select load_extension('libspatialite.so.3')")
-	// if de != nil {
-	// 	return
-	// }
-	fmt.Println("DB INIT OK")
+	log.Println("DB INIT OK")
 	return
 }
 
@@ -164,7 +157,7 @@ func dodaj(ps *sql.Stmt, t Tabela, spr bool) (ei error) {
 	}
 	_, ei = ps.Exec(tp...)
 	if ei != nil {
-		fmt.Printf("Error %s\n\n", toString(t))
+		log.Printf("Error %s\n\n", toString(t))
 		panic(ei.Error())
 		//fmt.Println(ei.Error())
 	}

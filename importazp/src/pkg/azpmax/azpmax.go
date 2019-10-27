@@ -35,6 +35,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"strconv"
@@ -96,7 +97,7 @@ func NewWiersz(tabs []string) (cw wiersz) {
 		nrinw: trim(tabs[11]), liter: trim(tabs[45]), godlo: trim(tabs[46]),
 		uwagi: trim(tabs[50]), gleba: trim(tabs[19]), kam: trim(tabs[20]),
 		glespec: trim(tabs[21]), zrodla: trim(tabs[49]), nwoj: trim(tabs[3]), powiat: trim(tabs[4])}
-	fmt.Printf("Wiersz: %#v\n\n", cw)
+	//log.Printf("Wiersz: %#v\n\n", cw)
 	return
 }
 
@@ -154,6 +155,10 @@ func tb(s string) []byte {
 // danych z wiersza csv. Nazwy miejscowosci, gminy, powiatu i wojewodztwa
 // sa zastepowane indeksami wykazow.
 func (w wiersz) newStanowisko() (stanowisko, error) {
+	geometria := stWsp(w.obsz, w.nrobsz)
+	if geometria == strings.Trim("", " ") {
+		return stanowisko{}, fmt.Errorf("Brak geometrii dla stanowiska %s/%s", w.obsz, w.nrobsz)
+	}
 	st := stanowisko{obszar: w.obsz, nrObszar: w.nrobsz, miejscowosc: mwyk.ident(w.miej),
 		gmina: gwyk.ident(w.gm), powiat: pwyk.ident(w.powiat), rodzBad: dekodRodz(w.rodzbad),
 		autor: w.autor, nrMiej: w.nrmiej, id: nastId("stanowiska"), uwagi: w.uwagi}
@@ -168,7 +173,7 @@ func (w wiersz) newStanowisko() (stanowisko, error) {
 	} else {
 		st.data = t.Format(dbdtfmt)
 	}
-	st.geom = stWsp(st.obszar, st.nrObszar)
+	st.geom = geometria
 	return st, nil
 }
 
@@ -180,7 +185,7 @@ func (w wiersz) newEksdane(st int) (e eksdane) {
 	dekodKierEks(w.kiereks, &e)
 	f32, ferr := stof(w.wyseks)
 	if ferr != nil {
-		fmt.Println(ferr.Error())
+		log.Println(ferr.Error())
 	}
 	e.rozmiar = f32
 	return
@@ -309,7 +314,7 @@ func (w wiersz) newObsdane(st int) (o obsdane) {
 		nasyc_rozklad: maxZam["C"+w.nasycrozk], nasyc_typ: maxZam["D"+w.nasyctyp], gestosc_znal: w.gest}
 	f32, ferr := stof(w.obszpow)
 	if ferr != nil {
-		fmt.Println(ferr.Error())
+		log.Println(ferr.Error())
 		return
 	}
 	o.powierzchnia = f32
@@ -512,7 +517,6 @@ func dodajFakty(fk []fkwiersz, st int) {
 		fd.stanowisko = st
 		dodaj(fkps, fd, false)
 	}
-	fmt.Print(len(fk), ", ")
 }
 
 // Inicjalizacja programu
@@ -541,28 +545,28 @@ func main() {
 	ie := initDb(wspPlik, bazaPlik) // inicjalizacja bazy wspolrzednych i bazy docelowej
 	ie = initStmt()
 	if ie != nil {
-		fmt.Println(ie.Error())
+		log.Println(ie.Error())
 	}
 	mwyk, ie = initWykaz("miejscowosci")
 	if ie != nil {
-		fmt.Println(ie.Error())
+		log.Println(ie.Error())
 	}
 	gwyk, ie = initWykaz("gminy")
 	if ie != nil {
-		fmt.Println(ie.Error())
+		log.Println(ie.Error())
 	}
 	pwyk, ie = initWykaz("powiaty")
 	if ie != nil {
-		fmt.Println(ie.Error())
+		log.Println(ie.Error())
 	}
 	wwyk, ie = initWykaz("wojewodztwa")
 	if ie != nil {
-		fmt.Println(ie.Error())
+		log.Println(ie.Error())
 	}
 	fakty := initFakty(faktyPlik)
 	dcsv, e := NewCsv(stPlik)
 	if e != nil {
-		fmt.Println(e.Error())
+		log.Println(e.Error())
 	} else {
 		for {
 			// Glowna petla programu. Dla kazdego wiersza z pliku csv tworzy informacje
@@ -593,13 +597,13 @@ func main() {
 					dodaj(gbps, nw.newGledane(st.id), true)
 					dodaj(kaps, nw.newKardane(st.id), true)
 				} else {
-					fmt.Println(err.Error())
+					log.Println(err.Error())
 				}
 			}
 			c += 1
 		}
 	}
-	fmt.Println("Odczytano:", c)
+	log.Println("Odczytano:", c)
 	wspDb.Close()
 	azpDb.Close()
 }

@@ -4,7 +4,7 @@
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are
  *  met:
- * 
+ *
  *      * Redistributions of source code must retain the above copyright
  *  notice, this list of conditions and the following disclaimer.
  *      * Redistributions in binary form must reproduce the above
@@ -14,7 +14,7 @@
  *      * Neither the name of Milosz Piglas nor the names of its
  *  contributors may be used to endorse or promote products derived from
  *  this software without specific prior written permission.
- * 
+ *
  *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
@@ -32,7 +32,7 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	"log"
 	"os"
 	"strconv"
 )
@@ -129,9 +129,8 @@ func nilf(n float32) interface{} {
 
 func nobs(s string) string {
 	v, e := strconv.ParseFloat(trim(s), 32)
-	//fmt.Println(v, strconv.Itoa(int(v)))
 	if e != nil {
-		fmt.Println(e.Error())
+		log.Println(e.Error())
 	}
 	return strconv.Itoa(int(v))
 }
@@ -249,11 +248,11 @@ type terdane struct {
 	nieuzytek   string //  varchar(1) check (nieuzytek in ('T','N')),
 	torf        string //  varchar(1) check (torf in ('T','N')),
 	woda        string //  varchar(1) check (woda in ('T','N')),
-	bagno       string //  varchar(1) check (bagno in ('T','N')), 
+	bagno       string //  varchar(1) check (bagno in ('T','N')),
 	prywatny    string //  varchar(1) check (prywatny in ('T','N')),
 	spoleczny   string //  varchar(1) check (spoleczny in ('T','N')),
 	przemyslowy string //  varchar(1) check (przemyslowy in ('T','N')),
-	uwagi       string //  varchar(255), 
+	uwagi       string //  varchar(255),
 }
 
 func (t terdane) Params() []interface{} {
@@ -345,19 +344,19 @@ func (k kardane) Params() []interface{} {
 }
 
 type fkdane struct {
-	id          int     //integer, 
-	stanowisko  int     // integer, 
+	id          int     //integer,
+	stanowisko  int     // integer,
 	okresa      string  //varchar(2),
 	okresb      string  // varchar(2),
 	okr_relacja string  // varchar(1) check (okr_relacja in ('Z','P')),
 	okr_pewnosc float32 // decimal(3,2),
-	jeda        string  // varchar(6), 
-	jedb        string  // varchar(6), 
-	jed_relacja string  // varchar(1) check (jed_relacja in ('Z','P')), 
-	jed_pewnosc float32 // decimal(3,2), 
-	funkcja     string  // varchar(8), 
-	fun_pewnosc float32 // decimal(3,2), 
-	masowy      string  // varchar(50), 
+	jeda        string  // varchar(6),
+	jedb        string  // varchar(6),
+	jed_relacja string  // varchar(1) check (jed_relacja in ('Z','P')),
+	jed_pewnosc float32 // decimal(3,2),
+	funkcja     string  // varchar(8),
+	fun_pewnosc float32 // decimal(3,2),
+	masowy      string  // varchar(50),
 	wydzielony  string  // varchar(50),
 }
 
