@@ -138,9 +138,6 @@ class NowyModel(AModel):
     def wspolrzedne(self):
         return self._feature.geometry()
 
-    def __str__(self):
-        return str(self)
-
 class GModel(AModel):
     """ Model danych do obslugi informacji pochodzacych z QGIS"""
     def __init__(self,kolejnosc,feature):
@@ -171,9 +168,6 @@ class GModel(AModel):
     
     def wspolrzedne(self):
         return self._feature.geometry()
-    
-    def __str__(self):
-        return str(self)
 
     
 def utworz_feature(atrs,g=None):
