@@ -39,6 +39,8 @@ from dane.zrodla import get_warstwa, getPolaczenie2
 from lib.uzytki import dostosujSchemat, wykonajPolecenie
 
 
+QAZP_WERSJA = '3.0.1'
+
 class SchematAkcja(QAction):
     def __init__(self,iface,window):
         QAction.__init__(self,'Dostosuj schemat',window)
@@ -111,7 +113,7 @@ class Okno(QMainWindow):
         self.menu()
         self.statusBar().showMessage("ok")
         self.zapamietane = []
-        self.setWindowTitle('qazp2 3.0')
+        self.setWindowTitle('qazp2 '+ QAZP_WERSJA)
         self._stack = QStackedWidget()
         self.setCentralWidget(self._stack)
         self.setMinimumSize(500, 500)

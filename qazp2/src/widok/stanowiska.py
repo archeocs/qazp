@@ -88,9 +88,13 @@ class StanowiskaFrame(GFrame):
             if cent is None:
                 raise Exception("Centroid jest NONE "+str(st['id'].toInt()[0]))
             else:
-                ptc = cent.asPoint()
-                sts.append((st['id'], str(st['obszar']), str(st['nr_obszar']),
+                try:
+                    ptc = cent.asPoint()
+                    sts.append((st['id'], str(st['obszar']), str(st['nr_obszar']),
                             round(ptc.x(),2), round(ptc.y(),2)))
+                except:
+                    sts.append((st['id'], str(st['obszar']), str(st['nr_obszar']),
+                            round(0,2), round(0,2)))
         if not plik.endswith('.pdf'):
             plik = plik + '.pdf'
         kd.drukuj(plik, sts, pd)

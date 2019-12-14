@@ -41,7 +41,7 @@ from dane.model import STANOWISKA_ATR
 from widok.proped import conw, PropWidok
 from widok.faktyed import FaktyWidok
 from lib.media import odczyt, zapiszMapa, usunMapa
-from lib.uzytki import sprSchemat
+from lib.uzytki import sprSchemat, getSchemat
 
 
 
@@ -133,7 +133,8 @@ class Edytor(QFrame):
             if sprSchemat(con, '0001')[0]:
                 self.grid.addWidget(MapaWidok(str(self._model['id']),self._war),0,0)
             else:
-                self._win.statusBar().showMessage('Nieaktualny schemat bazy danych')
+                aktualnySchemat = getSchemat(con)
+                self._win.statusBar().showMessage('Nieaktualny schemat bazy danych ' + aktualnySchemat)
             con.zakoncz() 
         
     def klik_pbtn(self,btn):

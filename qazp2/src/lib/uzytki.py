@@ -31,18 +31,19 @@
 
 def getUstawienia(con, klucz, domyslna=None):
     stmt = con.prep('select wartosc from ustawienia where klucz = ?')
-    w = stmt.jeden([klucz])
+    w = stmt.jeden([klucz.upper()])
     if w is None:
         return domyslna
     return w[0]
 
 def setUstawienia(con, klucz, wartosc):
-    sw = getUstawienia(con, klucz)
+    stdKlucz = klucz.upper()
+    sw = getUstawienia(con, stdKlucz)
     if sw is None:
         stmt = con.prep('insert into ustawienia values(:klucz,:wartosc)')
     elif sw < wartosc:
         stmt = con.prep('update ustawienia set wartosc=:wartosc where klucz=:klucz')
-    if stmt.wykonaj({'klucz':klucz, 'wartosc':wartosc},False) != 1:
+    if stmt.wykonaj({'klucz':stdKlucz, 'wartosc':wartosc},False) != 1:
         con.wycofaj()
         return False
     else:
@@ -52,6 +53,9 @@ def setUstawienia(con, klucz, wartosc):
 def sprSchemat(con,oczekiwany):
     ws = getUstawienia(con, 'wersja', '0000')
     return (ws >= oczekiwany, ws)
+
+def getSchemat(con):
+    return getUstawienia(con, 'wersja', '0000')
 
 def dodajMedia(con):
     crTab = "create table media(id integer not null primary key, sygnatura varchar(50),"\
