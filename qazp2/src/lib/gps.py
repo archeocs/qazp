@@ -177,7 +177,7 @@ class WayPoints(object):
         parser.StartElementHandler = self.elem_start
         parser.EndElementHandler = self.elem_end
         parser.CharacterDataHandler = self.tekst
-        parser.ParseFile(open(fn,'r'))
+        parser.ParseFile(open(fn[0],'rb'))
         
 class TrackPoints(object):
     
@@ -241,4 +241,4 @@ class TrackPoints(object):
         parser.StartElementHandler = self.elem_start
         parser.EndElementHandler = self.elem_end
         parser.CharacterDataHandler = self.chdata
-        parser.ParseFile(open(fn,'r'))
+        parser.ParseFile(open(fn[0],'rb'))
