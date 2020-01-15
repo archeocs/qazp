@@ -32,7 +32,7 @@ import logging
 
 from PyQt5.QtCore import QVariant
 from qgis.core import QgsFeature, QgsVectorLayer, QgsField
-from qgis.core import QgsCoordinateTransform, QgsCoordinateReferenceSystem
+from qgis.core import QgsCoordinateTransform, QgsCoordinateReferenceSystem, QgsProject
 
 def setAtr(qgsObiekt, atr, v, lista):
     qgsObiekt[atr] = v
@@ -80,7 +80,7 @@ def dodaj(qgsWarstwa, atr, qgsGeom, origSrid=4326, commit=False):
     wcrs = qgsWarstwa.crs()
     ocrs = QgsCoordinateReferenceSystem(origSrid)
     if ocrs != wcrs:
-        if qgsGeom.transform(QgsCoordinateTransform(ocrs,wcrs)) != 0:
+        if qgsGeom.transform(QgsCoordinateTransform(ocrs, wcrs, QgsProject.instance())) != 0:
                 raise Exception('Nieudana transformacja')
     f.setGeometry(qgsGeom)
     if commit:
@@ -99,7 +99,7 @@ def dodajObj(qgsWarstwa, indeks, atr, qgsGeom, origSrid=4326):
     wcrs = qgsWarstwa.crs()
     ocrs = QgsCoordinateReferenceSystem(origSrid)
     if ocrs != wcrs:
-        if qgsGeom.transform(QgsCoordinateTransform(ocrs,wcrs)) != 0:
+        if qgsGeom.transform(QgsCoordinateTransform(ocrs, wcrs, QgsProject.instance())) != 0:
                 raise Exception('Nieudana transformacja')
     f.setGeometry(qgsGeom)
     return qgsWarstwa.addFeatures([f])
@@ -112,7 +112,7 @@ def dodaj2(qgs_warstwa,atr,qgs_geom,orig_srid=4326,commit=False):
     wcrs = qgs_warstwa.crs()
     ocrs = QgsCoordinateReferenceSystem(orig_srid)
     if ocrs != wcrs:
-        if qgs_geom.transform(QgsCoordinateTransform(ocrs,wcrs)) != 0:
+        if qgs_geom.transform(QgsCoordinateTransform(ocrs, wcrs, QgsProject.instance())) != 0:
                 raise Exception('Nieudana transformacja')
     f.setGeometry(qgs_geom)
     if commit:
