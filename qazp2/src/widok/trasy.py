@@ -319,8 +319,8 @@ class DialogDodajTraseGps(QDialog):
         self.button_box = QDialogButtonBox(self)
         self.vbox.addWidget(self.button_box)
         self.button_box.setStandardButtons(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.accepted.connect(self.zapisz)
-        self.rejected.connect(self.zakoncz)
+        self.button_box.accepted.connect(self.zapisz)
+        self.button_box.rejected.connect(self.zakoncz)
 
 class WyszukajAkcja(QAction):
     
