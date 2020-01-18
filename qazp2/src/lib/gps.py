@@ -177,7 +177,10 @@ class WayPoints(object):
         parser.StartElementHandler = self.elem_start
         parser.EndElementHandler = self.elem_end
         parser.CharacterDataHandler = self.tekst
-        parser.ParseFile(open(fn[0],'rb'))
+        try:
+            parser.ParseFile(open(fn[0],'rb'))
+        except:
+            raise Exception('Niepoprawna nazwa pliku ' + str(fn) + ' ' + str(fn[0]))
         
 class TrackPoints(object):
     
@@ -241,4 +244,7 @@ class TrackPoints(object):
         parser.StartElementHandler = self.elem_start
         parser.EndElementHandler = self.elem_end
         parser.CharacterDataHandler = self.chdata
-        parser.ParseFile(open(fn[0],'rb'))
+        try:
+            parser.ParseFile(open(fn[0],'rb'))
+        except:
+            raise Exception('Niepoprawna nazwa pliku ' + str(fn) + ' ' + str(fn[0]))

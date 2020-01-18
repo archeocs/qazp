@@ -135,7 +135,7 @@ class WykDialog(QFrame):
         self._edtxt.setText('')
         
     def _zmBiezWier(self,biez,poprz):
-        self._edtxt.setText(biez.data().value())
+        self._edtxt.setText(biez.data())
     
     def _zmianaNaz(self,arg):
         sm = self._tab.selectionModel()

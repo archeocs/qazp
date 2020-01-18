@@ -211,10 +211,12 @@ class ImportujAkcja(QAction):
         fn = QFileDialog.getOpenFileName(self._win, filter='Dane CSV (*.csv)')
         if not fn:
             return
-        wiersze = self.czytajQt(str(fn))
+        wiersze = self.czytajQt(str(fn[0]))
         indeks = warstwa.maximumValue(0)
-        if isinstance(indeks, QVariant):
+        if isinstance(indeks, QVariant) and not indeks.isNull():
             indeks = indeks.toInt()[0]
+        elif isinstance(indeks, QVariant):
+            indeks = 0
         warstwa.startEditing()
         postep = QProgressDialog(u'Dodaję zdjęcia', "Cancel", 0, len(wiersze)+1)
         postep.setWindowModality(Qt.WindowModal)
