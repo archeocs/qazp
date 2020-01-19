@@ -61,13 +61,11 @@ class SchematAkcja(QAction):
 class SkryptAkcja(QAction):
     def __init__(self,iface,window):
         QAction.__init__(self,'Wykonaj skrypt',window)
-        #QObject.connect(self, SIGNAL('triggered()'), self.wykonaj)
         self.triggered.connect(self.wykonaj)
         self._win = window
         self._iface = iface
     
     def uruchomSkrypt(self, con, plik):
-
         f = open(plik)
         skrypt = json.load(f)
         for s in skrypt:
@@ -85,14 +83,14 @@ class SkryptAkcja(QAction):
             QMessageBox.warning(self._win,u'Wykonaj skrypt',u'Przed wyszukiwaniem należy otworzyć warstwę "stanowiska"')
             return 
         fn = QFileDialog.getOpenFileName(self._win, filter='JSQL (*.jsql)')
-        if fn is None or str(fn) == "":
+        if fn is None or str(fn[0]) == "":
             return
         pytanie = QMessageBox.question(self._win, u'Wykonaj skrypt', u'Czy została wykonana kopia zapasowa bazy?\n'\
                                        u'Czy na pewno chcesz wykonać skrypt?', QMessageBox.Yes | QMessageBox.No, 
                                        QMessageBox.No)
         if pytanie == QMessageBox.Yes:
             con = getPolaczenie2(warstwa)
-            if self.uruchomSkrypt(con, str(fn)):
+            if self.uruchomSkrypt(con, str(fn[0])):
                 self._win.statusBar().showMessage("Zmiany wprowadzone")
             else:
                 self._win.statusBar().showMessage("Niepowodzenie")

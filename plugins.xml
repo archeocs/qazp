@@ -1,9 +1,9 @@
 <?xml version = '1.0' encoding = 'ISO-8859-1'?>
 <?xml-stylesheet type='text/xsl' href='plugins.xsl' ?>
 <plugins>
-<pyqgis_plugin name='QAZP2' version='3.0.2'>
+<pyqgis_plugin name='QAZP2' version='3.0.3'>
     <description>Przestrzenne dane archeologiczne</description>
-    <version>3.0.2</version>
+    <version>3.0.3</version>
     <qgis_minimum_version>3.0</qgis_minimum_version>
     <homepage>http://qazp.archeocs.com/</homepage>
 
@@ -12,7 +12,7 @@
     <download_url>http://qazp.archeocs.com/pobieranie/qazp2.zip</download_url>
     <uploaded_by>Milosz Piglas</uploaded_by>
     <create_date>2012-09-01</create_date>
-    <update_date>2020-01-15</update_date>
+    <update_date>2020-01-19</update_date>
 
 </pyqgis_plugin>
    

@@ -39,7 +39,7 @@ from dane.zrodla import get_warstwa, getPolaczenie2
 from lib.uzytki import dostosujSchemat, wykonajPolecenie
 
 
-QAZP_WERSJA = '3.0.2'
+QAZP_WERSJA = '3.0.3'
 
 class SchematAkcja(QAction):
     def __init__(self,iface,window):
@@ -61,45 +61,6 @@ class SchematAkcja(QAction):
             con = getPolaczenie2(warstwa)
             if dostosujSchemat(con):
                 self._win.statusBar().showMessage("Schemat zmieniony")
-            else:
-                self._win.statusBar().showMessage("Niepowodzenie")
-            con.zakoncz()
-
-class SkryptAkcja(QAction):
-    def __init__(self,iface,window):
-        QAction.__init__(self,'Wykonaj skrypt',window)
-        self.triggered.connect(self.wykonaj)
-        self._win = window
-        self._iface = iface
-    
-    def uruchomSkrypt(self, con, plik):
-        import json
-        f = open(plik)
-        skrypt = json.load(f)
-        for s in skrypt:
-            if wykonajPolecenie(con, s['stmt']) != s['wynik']:
-                con.wycofaj()
-                f.close()
-                return False
-        con.zatwierdz()
-        f.close()
-        return True
-        
-    def wykonaj(self):
-        warstwa = get_warstwa('stanowiska')
-        if warstwa is None:
-            QMessageBox.warning(self._win,u'Wykonaj skrypt',u'Przed wyszukiwaniem należy otworzyć warstwę "stanowiska"')
-            return 
-        fn = QFileDialog.getOpenFileName(self._win, filter='JSQL (*.jsql)')
-        if fn is None or str(fn[0]) == "":
-            return
-        pytanie = QMessageBox.question(self._win, u'Wykonaj skrypt', u'Czy została wykonana kopia zapasowa bazy?\n'\
-                                       u'Czy na pewno chcesz wykonać skrypt?', QMessageBox.Yes | QMessageBox.No, 
-                                       QMessageBox.No)
-        if pytanie == QMessageBox.Yes:
-            con = getPolaczenie2(warstwa)
-            if self.uruchomSkrypt(con, str(fn[0])):
-                self._win.statusBar().showMessage("Zmiany wprowadzone")
             else:
                 self._win.statusBar().showMessage("Niepowodzenie")
             con.zakoncz()
