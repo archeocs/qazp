@@ -28,7 +28,7 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from qgis.core import QgsPoint,QgsGeometry
+from qgis.core import QgsPoint, QgsPointXY, QgsGeometry
 
 class Punkt(dict):
     """ Klasa reprezentuje punkt okreslony przez dlugosc geograficzna - longitude
@@ -46,7 +46,7 @@ class Punkt(dict):
         """
         Tworzy obiekt geometryczny QgsGeometry uzywany do zapisywania wspolrzednych w QGIS
         """
-        return QgsGeometry.fromPoint(self._pt)
+        return QgsGeometry.fromPointXY(QgsPointXY(self._pt))
   
 class Linia(object):
     """ Linia jako lista punktow typu Punkt """      

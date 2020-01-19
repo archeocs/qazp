@@ -148,19 +148,20 @@ class ImportujAkcja(QAction):
             return None
         if wykNazwa not in self.wykazy:
             self.wykazy[wykNazwa] = {}
-        if wartosc in self.wykazy[wykNazwa]:
-            return self.wykazy[wykNazwa][wartosc]
+        upWartosc = wartosc.upper()
+        if upWartosc in self.wykazy[wykNazwa]:
+            return self.wykazy[wykNazwa][upWartosc]
         con = getPolaczenie2(warstwa)
         sql = 'select id from '+wykNazwa+' where nazwa = ?'
-        ident = con.jeden(sql, [wartosc])
+        ident = con.jeden(sql, [upWartosc])
         if ident:
             con.zakoncz()
-            self.wykazy[wykNazwa][wartosc] = ident[0]
+            self.wykazy[wykNazwa][upWartosc] = ident[0]
             return ident[0]
         ident = con.getMax(wykNazwa) + 1
-        con.wykonaj('insert into '+wykNazwa+' values (?, ?, ?)', [ident, wartosc[:2], wartosc], True)
+        con.wykonaj('insert into '+wykNazwa+' values (?, ?, ?)', [ident, upWartosc[:2], upWartosc], True)
         con.zakoncz()
-        self.wykazy[wykNazwa][wartosc] = ident
+        self.wykazy[wykNazwa][upWartosc] = ident
         return ident
 
     def czytajQt(self, plik):
