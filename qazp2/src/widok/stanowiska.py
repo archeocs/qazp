@@ -126,7 +126,7 @@ class StanowiskaFrame(GFrame):
         
     def akcja_usun(self):
         ww = self.wybrany_wiersz()
-        odp = QMessageBox.question(self, u'Usuwanie stanowiska', u'Czy na pewno chcesz usunąć stanowisko %d'%ww[1]['id'].toInt()[0],
+        odp = QMessageBox.question(self, u'Usuwanie stanowiska', u'Czy na pewno chcesz usunąć stanowisko %s'%ww[1]['id'],
                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if odp != QMessageBox.Yes:
             return

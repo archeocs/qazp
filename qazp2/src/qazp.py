@@ -39,7 +39,7 @@ from dane.zrodla import get_warstwa, getPolaczenie2
 from lib.uzytki import dostosujSchemat, wykonajPolecenie
 
 
-QAZP_WERSJA = '3.0.3'
+QAZP_WERSJA = '3.0.4'
 
 class SchematAkcja(QAction):
     def __init__(self,iface,window):
